@@ -1,0 +1,9 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    // e2e/ belongs to Playwright, not Vitest
+    include: ['tests/**/*.test.ts'],
+    environment: 'node',
+  },
+});

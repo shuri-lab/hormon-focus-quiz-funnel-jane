@@ -1,0 +1,2 @@
+# Netlify. Every route is served by the SPA; without this /bloating is a 404.
+/*    /index.html   200

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /quiz
+Disallow: /*/quiz
+
+# The landing pages are the entry points. The quiz itself has no standalone
+# value in search and its screens are not meant to be reached cold.

@@ -1,0 +1,65 @@
+/* Design tokens. Ported from Jane's stylesheet, with the fixed type scale
+   replaced by a fluid one so the funnel reads correctly from a 320px phone
+   up to a desktop browser without a breakpoint for every size. */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --ground: #FBF8FE;
+  --frame: #EDE6F6;
+  --surface: #FFFFFF;
+  --surface-2: #FAF6FD;
+  --wash: #F3ECFA;
+  --wash-2: #E5D9F2;
+  --line: #E4DAF0;
+  --line-2: #D2C3E6;
+
+  /* ink */
+  --ink: #241F2E;
+  --ink-2: #57516A;
+  --ink-3: #8C86A0;
+
+  /* one brand accent */
+  --plum: #7B3E9D;
+  --plum-2: #9B62BE;
+  --lilac: #B98FD6;
+
+  /* two semantics, and one icon colour for star glyphs only */
+  --good: #1E7A4F;
+  --good-2: #3AA76D;
+  --good-wash: #E8F4EE;
+  --load: #B8475F;
+  --load-2: #C9556D;
+  --load-wash: #FCEDF1;
+  --star: #C9922E;
+
+  /* Fluid type. The middle term is the phone behaviour, the clamps stop it
+     collapsing at 320px or ballooning on a desktop monitor. */
+  --t-display: clamp(28px, 8vw, 38px);
+  --t-title: clamp(21px, 5.9vw, 28px);
+  --t-lead: clamp(17px, 4.6vw, 20px);
+  --t-body: clamp(15.5px, 4.1vw, 17px);
+  --t-sub: clamp(14.5px, 3.8vw, 16px);
+  --t-small: clamp(12.5px, 3.4vw, 14px);
+
+  /* rhythm */
+  --gutter: clamp(16px, 5vw, 24px);
+  --col: 560px;
+  --col-wide: 1080px;
+
+  --radius: 16px;
+  --radius-lg: 20px;
+
+  --shadow: 0 14px 36px -26px rgba(36, 31, 46, .5);
+  --lift: 0 20px 46px -26px rgba(123, 62, 157, .5);
+
+  --sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: 'Lora', Georgia, 'Times New Roman', serif;
+
+  /* set once, read everywhere that needs to clear the notch or home bar */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover lets the page paint behind the notch and home bar;
+     the safe-area tokens in tokens.css keep the content out from under them -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF8FE">
+<title>The Hormone Check</title>
+<meta name="description" content="A two-minute symptom check that tells you which stage you are in. From JJ Smith.">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<!-- TRACKING GOES HERE.
+     Meta pixel and GA4 tags are deliberately not committed: the IDs belong to
+     the ad account, not to the repo, and this app must be served from the same
+     host as the rest of hormonefocus.jjsmithonline.com so the existing _fbc
+     cookie and domain verification carry over. src/lib/analytics.ts already
+     fires the events; it no-ops until a tag is present. -->
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
