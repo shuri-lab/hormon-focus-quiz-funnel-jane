@@ -29,7 +29,8 @@ export const CUSTOMERS = [1, 2, 3, 4, 5, 6].map((n) => `/img/customer-${n}.jpg`)
  * review flagged the unscoped "800K+ women helped" as unshippable: under a
  * lockup reading Hormone Focus it is read as 800,000 Hormone Focus customers,
  * which merges the two numbers the copy rules keep apart. This is the wording
- * that review proposed as the fix. It is awaiting Jane's sign-off.
+ * that review proposed as the fix, and Jane approved it on 15 September 2026.
+ * It is the wording that ships. Do not revert it to the unscoped form.
  *
  * The other half of the pair, "5M+ lbs lost", is per route and lives in
  * angles.ts, where only /weight carries it. */
