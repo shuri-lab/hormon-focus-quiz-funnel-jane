@@ -27,12 +27,14 @@ function Rate() {
   return <div className="rate"><Stars n={5} /><b>4.9</b></div>;
 }
 
-/* ONE chip, exactly as the source file renders it. The wording is scoped to
-   JJ's programs: 800,000 is books and challenges and never a Hormone Focus
-   customer count. Jane approved this wording on 15 September 2026. */
-function Chips() {
+/* The JJ programs chip shows on every route. The route chip shows only where
+   angles.ts gives it a value, which today is /weight and its 5M lbs figure.
+   The programs wording is scoped on purpose: 800,000 is books and challenges
+   and never a Hormone Focus customer count. Jane approved it on 15 Sept 2026. */
+function Chips({ chip1 }: { chip1: string }) {
   return (
     <div className="chips">
+      {chip1 && <span className="chip">{chip1}</span>}
       <span className="chip">
         <span className="faces">
           {CUSTOMERS.slice(0, 3).map((src) => (
@@ -97,7 +99,7 @@ export function Landing() {
 
             <div className="hero">
               <div className="herocopy">
-                <Chips />
+                <Chips chip1={angle.chip1} />
 
                 <h1 className="lpH1">{angle.h1a} <em>{angle.h1b}</em></h1>
                 <p className="lpSub">({angle.paren}).</p>

@@ -20,10 +20,9 @@ export interface Angle {
   preselect: SymptomId[];
   /** Short label. Internal only. */
   label: string;
-  /* NOT RENDERED. The source file carries this per route but its markup shows a
-     single chip, and the brief's structure table says "one chip". Kept because
-     the brief makes "5M+ lbs lost appears on /weight only" non-negotiable, so
-     the rule has somewhere to live if the second chip is ever turned on. */
+  /* The first chip. EMPTY on every route but /weight, which is the only one
+     that may carry the 5M lbs figure. An empty string renders no chip, so
+     every other route shows the single JJ programs chip alone. */
   chip1: string;
   /** Headline, split so the second half renders in plum. */
   h1a: string;
@@ -44,7 +43,7 @@ export const ANGLES: Angle[] = [
     slug: '',
     preselect: [],
     label: 'Default',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why nothing feels',
     h1b: 'the same any more',
     paren: 'and the one pattern nobody checks for',
@@ -63,7 +62,7 @@ export const ANGLES: Angle[] = [
     slug: 'bloating',
     preselect: ['bloat'],
     label: 'Bloating',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why the bloating',
     h1b: 'keeps coming back',
     paren: 'and the one thing nobody checks',
@@ -80,7 +79,7 @@ export const ANGLES: Angle[] = [
     slug: 'hot-flashes',
     preselect: ['sweats'],
     label: 'Hot flashes',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why the heat',
     h1b: 'comes out of nowhere',
     paren: 'and the one pattern behind it',
@@ -97,7 +96,7 @@ export const ANGLES: Angle[] = [
     slug: 'night-sweats',
     preselect: ['sweats'],
     label: 'Night sweats',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why you are',
     h1b: 'soaked every night',
     paren: 'and the one thing nobody asks about',
@@ -116,7 +115,7 @@ export const ANGLES: Angle[] = [
     slug: 'sleep',
     preselect: ['sleep'],
     label: 'Sleep',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why you stopped',
     h1b: 'sleeping past 3am',
     paren: 'and the one question nobody asks',
@@ -151,7 +150,7 @@ export const ANGLES: Angle[] = [
     slug: 'mood',
     preselect: ['mood'],
     label: 'Mood and fog',
-    chip1: 'NYT Bestselling Author',
+    chip1: '',
     h1a: 'Why you are',
     h1b: 'tired all the time',
     paren: 'and the one thing nobody connects it to',

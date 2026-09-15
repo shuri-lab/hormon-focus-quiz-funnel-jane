@@ -757,7 +757,7 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
   padding: 26px 0 0; border-top: 1px solid var(--line);
   margin-top: 24px; text-align: center;
 }
-.lpSec.first { border-top: 0; margin-top: 22px; padding-top: 0; }
+.landing .lpSec.first { border-top: 0; margin-top: 22px; padding-top: 0; }
 .landing .eyebrow {
   font-size: 10.5px; font-weight: 700; letter-spacing: .11em;
   text-transform: uppercase; color: var(--plum); margin: 0 0 8px;
@@ -784,13 +784,13 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
      so the inherited box is cleared rather than left to leak through. */
   padding: 0; background: none; border: 0; border-radius: 0;
 }
-.landing .stepn {
+.landing .step .stepn {
   flex: 0 0 auto; width: 27px; height: 27px; border-radius: 50%;
   background: var(--plum); color: #fff; font-size: 13px; font-weight: 700;
   line-height: 1; display: flex; align-items: center; justify-content: center;
 }
 .landing .step b { display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
-.landing .step span {
+.landing .step div span {
   display: block; font-family: var(--serif); font-size: var(--t-sub);
   line-height: 1.4; color: var(--ink-2);
 }
@@ -803,6 +803,8 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 .landing .rev {
   font-family: var(--serif); font-size: var(--t-body);
   line-height: 1.44; color: var(--ink); margin: 14px 0 8px;
+  /* the offer screen's .rev is a bordered white card; this one is plain text */
+  background: none; border: 0; padding: 0; box-shadow: none; border-radius: 0;
 }
 .revwho { font-size: 12.5px; color: var(--ink-2); font-weight: 600; margin: 0; }
 .tiny { font-size: 10.5px; line-height: 1.5; color: var(--ink-3); margin: 10px 0 0; }
@@ -839,7 +841,7 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
      row is driven by the copy, with 440px as the floor. */
   .landing .heroimg {
     margin: 0; grid-row: 1 / 3; grid-column: 2; align-self: stretch;
-    position: relative; min-height: 440px; border-radius: 20px; overflow: hidden;
+    position: relative; min-height: 400px; border-radius: 20px; overflow: hidden;
   }
   .landing .heroimg img {
     position: absolute; inset: 0;
@@ -854,14 +856,28 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
   /* but stay centred inside the centred sections */
   .landing .lpSec .cta { margin-left: auto; margin-right: auto; }
 
+  /* The hero is the only full-width block, so it does not also need the
+     screen's bottom padding: that was stacking with the section gap and
+     leaving a void between the photograph and Step one. */
+  .landing .lpHero .screen { padding-bottom: 0; }
+
   /* Sections centre at a readable measure rather than stretching. */
   .landing .lpSec {
     max-width: 680px; margin-left: auto; margin-right: auto;
-    padding-top: 38px; margin-top: 38px;
+    padding-top: 34px; margin-top: 34px;
   }
+  .landing .lpSec.first { margin-top: 30px; padding-top: 0; }
   .landing .sech { font-size: 30px; }
   .landing .recogbox li { font-size: 17px; }
-  .landing .proofGrid { grid-template-columns: repeat(6, 1fr); }
+  /* Six across, per the brief. The 680px cap is there to hold TEXT to a
+     readable measure; at that width six photographs become 94px thumbnails,
+     so the grid alone breaks out to a width that lets them read as faces. */
+  .landing .proofGrid {
+    grid-template-columns: repeat(6, 1fr);
+    width: 940px; max-width: calc(100vw - 80px);
+    margin-left: 50%; transform: translateX(-50%);
+    gap: 10px;
+  }
   .landing .step { max-width: 520px; margin-left: auto; margin-right: auto; }
   .landing .fine { max-width: 680px; margin-left: auto; margin-right: auto; }
 }
