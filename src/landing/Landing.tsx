@@ -83,8 +83,17 @@ export function Landing() {
 
   const lead = REVIEWS[0];
 
+  /* Desktop layout. 'e' is the chosen one: the whole page on the hero's
+     left axis, with a background band per section. ?layout=a|b|c|d still
+     serves the rejected options for comparison; delete them and this
+     switch once 'e' is signed off. */
+  let layout = 'e';
+  try {
+    layout = new URLSearchParams(window.location.search).get('layout') ?? 'e';
+  } catch { /* no window */ }
+
   return (
-    <div className="app landing">
+    <div className="app landing" data-layout={layout}>
       <main className="appMain">
 
         {/* ------------------------------------------------ 1. HERO ----- */}

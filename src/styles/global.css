@@ -829,7 +829,9 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
      the copy 317px to hold a 46px headline, which is what read as squeezed.
      Held to the same measure as the sections so the hero does not sprawl and
      over-crop the photograph into a zoomed face. */
-  .landing .hero { text-align: left; max-width: 680px; margin-inline: auto; }
+  /* Capped so the photograph does not sprawl, but left-aligned rather than
+     centred: the page runs on one left axis and the hero sets it. */
+  .landing .hero { text-align: left; max-width: 680px; margin-left: 0; margin-right: auto; }
   .landing .hero .chips { justify-content: flex-start; }
   .landing .lpH1 { font-size: 46px; margin-top: 22px; }
   .landing .lpSub { font-size: 20px; }
@@ -911,4 +913,117 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
   }
   .landing .lpSteps .step .stepn { margin: 0 auto 10px; }
   .landing .lpSteps .step div span { margin-top: 2px; }
+}
+
+/* =============================== LAYOUT EXPERIMENTS, desktop only =====
+   Four desktop treatments, switched with ?layout=a|b|c|d so they can be
+   compared live. 'a' is the current page and needs no rules.
+   DELETE THIS BLOCK and the data-layout attribute once one is chosen. */
+@media (min-width: 1000px) {
+
+  /* ---- B: full-bleed alternating bands ----------------------------
+     Same measure, but each section gets an edge. Rhythm without any
+     change to line length. */
+  .landing[data-layout='b'] .lpSec {
+    max-width: none; width: 100vw;
+    margin-left: 50%; transform: translateX(-50%);
+    border-top: 0; margin-top: 0;
+    padding: 56px clamp(24px, 6vw, 80px);
+  }
+  .landing[data-layout='b'] .lpSec > * { max-width: 680px; margin-inline: auto; }
+  .landing[data-layout='b'] .lpSec:nth-of-type(even) { background: var(--surface); }
+  .landing[data-layout='b'] .lpSec:nth-of-type(odd) { background: var(--wash); }
+  .landing[data-layout='b'] .lpSteps,
+  .landing[data-layout='b'] .proofGrid { max-width: 940px; width: 940px; margin-left: auto; margin-right: auto; transform: none; }
+
+  /* ---- C: cards on a tinted ground --------------------------------
+     Each section becomes a panel. This is the "more cards" instinct. */
+  .landing[data-layout='c'] { background: var(--frame); }
+  .landing[data-layout='c'] .lpSec {
+    max-width: 920px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: var(--shadow); border-top: 1px solid var(--line);
+    padding: 44px clamp(28px, 4vw, 56px); margin-top: 26px;
+  }
+  .landing[data-layout='c'] .lpSec > *:not(.lpSteps):not(.proofGrid) { max-width: 640px; margin-inline: auto; }
+  .landing[data-layout='c'] .lpSteps,
+  .landing[data-layout='c'] .proofGrid { width: auto; max-width: none; margin-left: 0; transform: none; }
+  .landing[data-layout='c'] .lpSec.first { margin-top: 26px; padding-top: 44px; }
+  .landing[data-layout='c'] .fine { background: none; box-shadow: none; }
+
+  /* ---- D: wider editorial measure, left-aligned --------------------
+     Stops the centred-ribbon look by widening the measure and setting
+     the page ragged-right instead of centred. */
+  .landing[data-layout='d'] .lpSec {
+    max-width: 860px; text-align: left;
+    padding-top: 44px; margin-top: 44px;
+  }
+  .landing[data-layout='d'] .sech { font-size: 34px; }
+  .landing[data-layout='d'] .eyebrow,
+  .landing[data-layout='d'] .rate,
+  .landing[data-layout='d'] .priv,
+  .landing[data-layout='d'] .revwho,
+  .landing[data-layout='d'] .tiny { text-align: left; justify-content: flex-start; }
+  .landing[data-layout='d'] .lpSec .cta { margin-left: 0; margin-right: 0; }
+  .landing[data-layout='d'] .recogbox li { font-size: 19px; }
+  .landing[data-layout='d'] .lpSteps,
+  .landing[data-layout='d'] .proofGrid {
+    width: 100%; max-width: none; margin-left: 0; transform: none;
+  }
+  .landing[data-layout='d'] .lpSteps .step { text-align: left; }
+  .landing[data-layout='d'] .lpSteps .step .stepn { margin: 0 0 10px; }
+  .landing[data-layout='d'] .fine { max-width: none; }
+
+  /* E's steps go side by side only once there is room for three columns. */
+  .landing[data-layout='e'] .lpSteps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px;
+  }
+  .landing[data-layout='e'] .lpSteps .step { text-align: left; }
+  .landing[data-layout='e'] .lpSteps .step .stepn { margin: 0 0 10px; }
+
+}
+
+
+/* ---- E: the chosen desktop layout, from 760px ------------------------
+   The hero copy is left-aligned, so centring everything beneath it fought
+   the hero. E puts the whole page on ONE left axis and gives each section
+   a background band, which is the edge that flat centred prose lacked.
+   The inner wrapper matches .screen exactly so the axis is shared; prose
+   is capped inside it rather than centred, so the measure stays readable
+   without moving that axis. */
+@media (min-width: 760px) {
+  .landing[data-layout='e'] .lpSec {
+    max-width: none; width: 100vw;
+    margin-left: 50%; transform: translateX(-50%);
+    border-top: 0; margin-top: 0; text-align: left;
+    padding: 58px 0;
+  }
+  .landing[data-layout='e'] .lpSec > * {
+    max-width: 1080px; margin-inline: auto;
+    /* exactly .screen's padding, or the axis drifts by a couple of pixels */
+    padding-inline: 40px;
+  }
+  .landing[data-layout='e'] .lpSec:nth-of-type(even) { background: var(--surface); }
+  .landing[data-layout='e'] .lpSec:nth-of-type(odd) { background: var(--wash); }
+
+  .landing[data-layout='e'] .sech,
+  .landing[data-layout='e'] .secBody,
+  .landing[data-layout='e'] .recogbox,
+  .landing[data-layout='e'] .rev,
+  .landing[data-layout='e'] .fine {
+    max-width: 860px; margin-left: 0; margin-right: auto;
+  }
+  .landing[data-layout='e'] .sech { font-size: 34px; }
+  .landing[data-layout='e'] .recogbox li { font-size: 19px; }
+  .landing[data-layout='e'] .eyebrow,
+  .landing[data-layout='e'] .rate,
+  .landing[data-layout='e'] .priv,
+  .landing[data-layout='e'] .revwho,
+  .landing[data-layout='e'] .tiny { text-align: left; justify-content: flex-start; }
+  .landing[data-layout='e'] .lpSec .cta { margin-left: 0; margin-right: 0; }
+  .landing[data-layout='e'] .lpSteps,
+  .landing[data-layout='e'] .proofGrid {
+    width: auto; max-width: 1080px;
+    margin-left: auto; margin-right: auto; transform: none;
+  }
 }
