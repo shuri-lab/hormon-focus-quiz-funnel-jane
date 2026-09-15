@@ -36,6 +36,13 @@ export const CUSTOMERS = [1, 2, 3, 4, 5, 6].map((n) => `/img/customer-${n}.jpg`)
  * angles.ts, where only /weight carries it. */
 export const CHIP_PROGRAMS = "800K+ women in JJ's programs";
 
+/* The hero photograph. The SAME on every route: the brief is explicit that only
+   the headline, the sub-line and the symptom list change between routes.
+   The brief names these /img/selfie-1.jpg .. selfie-6.jpg on the live site;
+   in this repo the same photographs are customer-1..6.jpg. */
+export const HERO_IMG = '/img/customer-1.jpg';
+export const HERO_ALT = 'A customer holding Hormone Focus';
+
 /** Attribution under the proof grid. */
 export const REVIEW_SOURCE =
   'Reviews and photos from verified buyers on JJSmithOnline.com. Individual results vary.';
@@ -205,11 +212,11 @@ export const MARKER_LABELS: [MarkerId, string][] = [
 
 /** The safety copy that has to appear on every screen that names the product. */
 export const FDA_DISCLAIMER =
-  'These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure or prevent any disease.';
+  'These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.';
 
 export const OFFER_DISCLAIMER =
   'Not for use if pregnant or nursing. Speak to your doctor first if you have a history of breast, uterine or ovarian cancer, liver disease, blood clots, heart disease or stroke, or if you take blood thinners or prescribed medication. ' +
   FDA_DISCLAIMER + ' Individual results vary.';
 
 export const QUIZ_DISCLAIMER =
-  'This check is based on what you told us and is not medical advice. It cannot diagnose anything and it is not a substitute for seeing a doctor.';
+  'This check is not medical advice. It cannot diagnose anything and it is not a substitute for seeing a doctor. Individual results vary.';

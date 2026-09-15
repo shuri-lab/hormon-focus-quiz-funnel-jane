@@ -20,7 +20,10 @@ export interface Angle {
   preselect: SymptomId[];
   /** Short label. Internal only. */
   label: string;
-  /** The first chip. The weight route is the only one that may carry 5M lbs. */
+  /* NOT RENDERED. The source file carries this per route but its markup shows a
+     single chip, and the brief's structure table says "one chip". Kept because
+     the brief makes "5M+ lbs lost appears on /weight only" non-negotiable, so
+     the rule has somewhere to live if the second chip is ever turned on. */
   chip1: string;
   /** Headline, split so the second half renders in plum. */
   h1a: string;
@@ -31,8 +34,6 @@ export interface Angle {
   lines: string[];
   /** The question the list ends on, which the check answers. */
   closer: string;
-  hero: string;
-  heroAlt: string;
   description: string;
   /** Why this route exists. Internal, never rendered. */
   note: string;
@@ -55,8 +56,6 @@ export const ANGLES: Angle[] = [
       'Snapping at people you love.',
     ],
     closer: 'Five separate problems, or one? That is what the check tells you.',
-    hero: '/img/symptom-mood.jpg',
-    heroAlt: '',
     description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
     note: 'Unparameterised and brand traffic. Names no single symptom, because it cannot know which one brought her.',
   },
@@ -74,8 +73,6 @@ export const ANGLES: Angle[] = [
       'Cutting out the obvious things changed nothing.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-bloating.jpg',
-    heroAlt: '',
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
     note: 'Highest-scoring theme on the account at 85.2 Quality Score, largest confirmed sample at n=12.',
   },
@@ -93,8 +90,6 @@ export const ANGLES: Angle[] = [
       'You dress in layers now, all year.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-night-sweats.jpg',
-    heroAlt: '',
     description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
     note: '37% of 114 customer reviews. The single most-mentioned relief in the review set.',
   },
@@ -112,8 +107,6 @@ export const ANGLES: Angle[] = [
       'Cool again by four, and wide awake.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-night-sweats.jpg',
-    heroAlt: '',
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
     description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
@@ -133,8 +126,6 @@ export const ANGLES: Angle[] = [
       'Sleeping in does not fix it.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-sleep.jpg',
-    heroAlt: '',
     description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
     note: '27% of reviews. Distinct from night sweats: she is not hot, she simply cannot stay asleep.',
   },
@@ -153,8 +144,6 @@ export const ANGLES: Angle[] = [
       'It settled on your middle and stayed.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-weight.jpg',
-    heroAlt: '',
     description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
     note: 'The only route that may carry the 5M lbs figure. 35% of reviews, and our most-published, second-worst-scoring theme.',
   },
@@ -172,8 +161,6 @@ export const ANGLES: Angle[] = [
       'Walking into a room and forgetting why.',
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
-    hero: '/img/symptom-mood.jpg',
-    heroAlt: '',
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
     note: 'Jane set this headline. Note it reads as the energy angle rather than mood and fog - the recognition lines underneath are still mood and fog.',
   },
