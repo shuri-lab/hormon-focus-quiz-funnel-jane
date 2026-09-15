@@ -4,13 +4,18 @@ import {
   answerAndWait, pickOption, pressPrimary, pressSecondary,
 } from './helpers';
 
-const ANGLES = ['', 'bloating', 'weight', 'hot-flashes', 'sleep', 'mood', 'energy'];
+/* Must match src/lib/angles.ts. A slug that no longer exists would otherwise
+   redirect to the default page and pass silently, so the URL is asserted. */
+const ANGLES = ['', 'bloating', 'hot-flashes', 'night-sweats', 'sleep', 'weight', 'mood'];
 
 test.describe('landing pages', () => {
   for (const slug of ANGLES) {
     test(`/${slug} lays out and offers a way in`, async ({ page }) => {
       await page.goto(`/${slug}`);
       await page.waitForLoadState('networkidle');
+
+      // a retired slug redirects to '/', which would otherwise pass unnoticed
+      await expect(page).toHaveURL(new RegExp(`/${slug}$`));
 
       await expectNoHorizontalOverflow(page, `/${slug}`);
       await expectTapTargets(page, `/${slug}`);

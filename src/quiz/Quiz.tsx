@@ -35,7 +35,7 @@ export function Quiz() {
   const angle = angleBySlug(slug);
 
   usePageMeta({
-    title: `The Hormone Check${angle.slug ? ` — ${angle.kicker}` : ''}`,
+    title: `The Hormone Check${angle.slug ? ` — ${angle.label}` : ''}`,
     description: angle.description,
     /* The quiz itself should never be indexed. The landing pages are the
        entry points and the quiz has no standalone value in search. */

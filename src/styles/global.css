@@ -621,6 +621,8 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 .bullets li { display: flex; gap: 11px; align-items: flex-start; font-size: var(--t-body); color: var(--ink-2); line-height: 1.4; }
 .bullets svg { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 1px; }
 
+
+
 .section { padding: clamp(28px, 7vw, 56px) 0; border-top: 1px solid var(--line); }
 .sectionTitle { font-family: var(--serif); font-size: clamp(22px, 5.6vw, 32px); font-weight: 700; line-height: 1.16; margin: 0; text-wrap: balance; }
 .cardRow { display: grid; gap: 12px; margin-top: 20px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
@@ -681,4 +683,137 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 .headerProof { display: none; }
 @media (min-width: 640px) {
   .headerProof { display: inline-flex; white-space: nowrap; }
+}
+
+
+/* ===================================================== LANDING PAGE =====
+   Five sections: hero, what is going on, how it works, proof, closer.
+   Structure follows the reference page; every word comes from angles.ts
+   and content.ts. Mobile-first, single column, one button per section. */
+
+.landing .appMain { padding: 0; }
+.landing .container { max-width: 560px; margin-inline: auto; padding-inline: var(--gutter); }
+
+.lpHero { padding: 22px 0 0; }
+.lpLogo { text-align: center; margin: 4px 0 15px; }
+.lpLogo b { display: block; font-size: 15px; font-weight: 800; letter-spacing: .16em; color: var(--ink); }
+.lpLogo b i { font-style: normal; font-weight: 500; }
+.landing .lpLogo span {
+  display: block; font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin-top: 4px;
+}
+
+.chips { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; }
+.landing .chip {
+  display: flex; align-items: center; gap: 6px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 99px; padding: 6px 11px 6px 9px;
+  font-size: 11px; font-weight: 600; color: var(--ink); box-shadow: var(--shadow);
+}
+.faces { display: flex; margin-right: 1px; }
+.landing .faces i {
+  display: block; width: 17px; height: 17px; border-radius: 50%;
+  background-size: cover; background-position: center 18%;
+  border: 1.5px solid #fff; margin-left: -6px;
+}
+.faces i:first-child { margin-left: 0; }
+
+.landing .lpH1 {
+  font-size: clamp(27px, 7.6vw, 34px); line-height: 1.1; font-weight: 800;
+  letter-spacing: -.032em; margin: 18px 0 0; text-wrap: balance;
+}
+.lpH1 em { font-style: normal; color: var(--plum); }
+.landing .lpSub {
+  font-size: clamp(15.5px, 4.3vw, 17.5px); line-height: 1.28; font-weight: 700;
+  color: var(--plum); margin: 11px 0 0; letter-spacing: -.012em;
+}
+
+.getline { display: flex; gap: 9px; align-items: flex-start; margin: 18px 0 0; }
+.getline svg { width: 19px; height: 19px; flex: 0 0 auto; margin-top: 1px; }
+.getline p { margin: 0; font-size: var(--t-body); line-height: 1.35; color: var(--ink); }
+/* A highlight rather than an underline: it survives a line break cleanly. */
+.landing .getline u {
+  text-decoration: none; font-weight: 600; white-space: nowrap;
+  background: linear-gradient(transparent 62%, var(--wash-2) 62%);
+}
+
+.landing .cta { width: 100%; max-width: none; margin-top: 16px; }
+.landing .heroCta { max-width: none; }
+
+.rate { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 11px 0 0; }
+.rate svg { width: 14px; height: 14px; }
+.rate b { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.priv { margin: 7px 0 0; text-align: center; font-size: 11px; color: var(--ink-3); }
+
+.heroimg { margin-top: 16px; }
+.landing .heroimg img {
+  display: block; width: 100%; height: clamp(260px, 62vw, 340px);
+  object-fit: cover; object-position: center 36%;
+}
+
+.landing .lpSec {
+  padding: 26px 0 0; border-top: 1px solid var(--line);
+  margin-top: 24px; text-align: center;
+}
+.lpSec.first { border-top: 0; margin-top: 22px; padding-top: 0; }
+.landing .eyebrow {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--plum); margin: 0 0 8px;
+}
+.landing .sech {
+  font-size: clamp(21px, 5.6vw, 25px); font-weight: 800; line-height: 1.16;
+  letter-spacing: -.025em; margin: 0 0 10px; text-wrap: balance;
+}
+.sech em { font-style: normal; color: var(--plum); }
+.landing .secBody {
+  font-family: var(--serif); font-size: var(--t-body);
+  line-height: 1.48; color: var(--ink-2); margin: 0;
+}
+
+.recogbox { margin: 12px 0 0; padding: 0; list-style: none; }
+.landing .recogbox li {
+  font-family: var(--serif); font-size: var(--t-body);
+  line-height: 1.4; color: var(--ink); margin-bottom: 9px;
+}
+
+.landing .step {
+  display: flex; gap: 12px; margin-bottom: 15px; text-align: left;
+  /* The offer screen's .step is a bordered card. The landing page's is not,
+     so the inherited box is cleared rather than left to leak through. */
+  padding: 0; background: none; border: 0; border-radius: 0;
+}
+.landing .stepn {
+  flex: 0 0 auto; width: 27px; height: 27px; border-radius: 50%;
+  background: var(--plum); color: #fff; font-size: 13px; font-weight: 700;
+  line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+.landing .step b { display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.landing .step span {
+  display: block; font-family: var(--serif); font-size: var(--t-sub);
+  line-height: 1.4; color: var(--ink-2);
+}
+
+.proofGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 14px; }
+.landing .proofGrid img {
+  width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center 20%;
+  border-radius: 11px; display: block; box-shadow: var(--shadow);
+}
+.landing .rev {
+  font-family: var(--serif); font-size: var(--t-body);
+  line-height: 1.44; color: var(--ink); margin: 14px 0 8px;
+}
+.revwho { font-size: 12.5px; color: var(--ink-2); font-weight: 600; margin: 0; }
+.tiny { font-size: 10.5px; line-height: 1.5; color: var(--ink-3); margin: 10px 0 0; }
+
+.landing .fine {
+  margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line);
+  text-align: left; padding-bottom: calc(24px + var(--safe-bottom));
+}
+.landing .fine p { font-size: 9.5px; line-height: 1.55; color: var(--ink-3); margin: 0 0 8px; }
+.landing .fine a { color: var(--ink-2); }
+
+/* The reference page is a single phone column. Past that width it centres
+   rather than stretching, so the measure never runs long. */
+@media (min-width: 620px) {
+  .heroimg img { border-radius: var(--radius-lg); }
+  .lpHero > .heroimg { max-width: 560px; margin-inline: auto; padding-inline: var(--gutter); }
 }

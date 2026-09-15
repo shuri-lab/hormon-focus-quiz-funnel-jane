@@ -23,6 +23,22 @@ export const BOTTLE = '/img/hormone-focus-bottle.jpg';
 export const JJ = '/img/jj-smith.jpg';
 export const CUSTOMERS = [1, 2, 3, 4, 5, 6].map((n) => `/img/customer-${n}.jpg`);
 
+/* ---- ABOVE-THE-FOLD AND PROOF STRINGS ----
+ *
+ * CHIP_PROGRAMS is the SCOPED form of the 800,000 figure. The artifact's own
+ * review flagged the unscoped "800K+ women helped" as unshippable: under a
+ * lockup reading Hormone Focus it is read as 800,000 Hormone Focus customers,
+ * which merges the two numbers the copy rules keep apart. This is the wording
+ * that review proposed as the fix. It is awaiting Jane's sign-off.
+ *
+ * The other half of the pair, "5M+ lbs lost", is per route and lives in
+ * angles.ts, where only /weight carries it. */
+export const CHIP_PROGRAMS = "800K+ women in JJ's programs";
+
+/** Attribution under the proof grid. */
+export const REVIEW_SOURCE =
+  'Reviews and photos from verified buyers on JJSmithOnline.com. Individual results vary.';
+
 export const SHORT: Record<SymptomId, string> = {
   weight: 'the weight', bloat: 'the bloating', sleep: 'the poor sleep',
   sweats: 'the hot flashes', mood: 'the mood swings', energy: 'the low energy',

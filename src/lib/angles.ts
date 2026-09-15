@@ -1,179 +1,188 @@
 /* THE SKINS.
  *
- * One quiz, many front doors. Each ad angle gets its own route with its own
- * headline, subheadline, hero and proof, and hands off to the same quiz with
- * the matching symptom ALREADY SELECTED — the woman who clicked the bloating
- * ad should not be asked whether she bloats.
+ * One quiz, many front doors. Each ad angle gets its own route, and hands off
+ * to the same quiz with the matching symptom ALREADY SELECTED — the woman who
+ * clicked the bloating ad should not be asked whether she bloats.
  *
  * Adding an angle is adding an entry here. Nothing else changes.
  *
- * Copy rules apply to everything in this file: no contractions, no timeframes,
- * no quantified results, no invented percentages. 800,000 is books and
- * challenges only. 169 is the review count and sits beside 4.9, nowhere else.
+ * COPY SOURCE: every headline, recognition line and closer below is Jane's,
+ * taken verbatim from the landing-page artifact. Nothing here is drafted by
+ * the build. The copy rules still hold: no contractions, no timeframe on any
+ * RESULT (the two minutes describes the check itself), no quantified outcome.
  */
 import type { SymptomId } from './logic';
-import { IMG } from './content';
 
 export interface Angle {
   /** URL slug. '' is the default landing page at `/`. */
   slug: string;
   /** Seeded into the quiz so she is not asked what the ad already told us. */
   preselect: SymptomId[];
-  /** <title> and meta description for the ad's landing page. */
-  title: string;
-  description: string;
-  kicker: string;
-  /** `em` renders in plum. Use it on the phrase the ad promised. */
-  headline: string;
-  headlineEm?: string;
-  sub: string;
+  /** Short label. Internal only. */
+  label: string;
+  /** The first chip. The weight route is the only one that may carry 5M lbs. */
+  chip1: string;
+  /** Headline, split so the second half renders in plum. */
+  h1a: string;
+  h1b: string;
+  /** The parenthetical sub-line. Rendered as `(…).` */
+  paren: string;
+  /** Recognition lines. Only the default names more than one symptom. */
+  lines: string[];
+  /** The question the list ends on, which the check answers. */
+  closer: string;
   hero: string;
   heroAlt: string;
-  bullets: string[];
-  cta: string;
-  /** Which of the three published reviews leads on this page. */
-  review: number;
+  description: string;
+  /** Why this route exists. Internal, never rendered. */
+  note: string;
 }
-
-const COMMON_BULLETS = [
-  'Twelve questions. It takes about two minutes.',
-  'You get a read on which stage you are in, not a sales page.',
-  'Built on what JJ has published, and on what her customers actually report.',
-];
 
 export const ANGLES: Angle[] = [
   {
     slug: '',
     preselect: [],
-    title: 'The Hormone Check — Find out what is actually going on',
-    description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
-    kicker: 'The Hormone Check',
-    headline: 'Nobody told you this would happen to your body.',
-    headlineEm: 'this',
-    sub: 'The weight, the sleep, the mood, the heat. Answer twelve questions and find out which stage you are actually in, and why nothing you have tried has worked.',
-    hero: IMG.mood,
+    label: 'Default',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why nothing feels',
+    h1b: 'the same any more',
+    paren: 'and the one pattern nobody checks for',
+    lines: [
+      'Breakouts you have not had since your twenties.',
+      'Clothes that fit last year and do not now.',
+      'Heat that arrives out of nowhere.',
+      'Awake at three, and staying awake.',
+      'Snapping at people you love.',
+    ],
+    closer: 'Five separate problems, or one? That is what the check tells you.',
+    hero: '/img/symptom-mood.jpg',
     heroAlt: '',
-    bullets: COMMON_BULLETS,
-    cta: 'Start the check',
-    review: 0,
+    description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    note: 'Unparameterised and brand traffic. Names no single symptom, because it cannot know which one brought her.',
   },
   {
     slug: 'bloating',
     preselect: ['bloat'],
-    title: 'Bloated most days? It may not be your food — The Hormone Check',
+    label: 'Bloating',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why the bloating',
+    h1b: 'keeps coming back',
+    paren: 'and the one thing nobody checks',
+    lines: [
+      'Flat at breakfast, swollen by six.',
+      'A waistband you undo in the car.',
+      'Cutting out the obvious things changed nothing.',
+    ],
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-bloating.jpg',
+    heroAlt: '',
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
-    kicker: 'Bloated most days',
-    headline: 'You cut the foods out. You are still bloated.',
-    headlineEm: 'still',
-    sub: 'When bloating does not answer to your plate, it is usually not coming from your plate. Twelve questions to find out what is actually driving it.',
-    hero: IMG.bloat,
-    heroAlt: '',
-    bullets: [
-      'For women whose bloating tracks their cycle rather than their meals.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
-    ],
-    cta: 'Find out why',
-    review: 0,
-  },
-  {
-    slug: 'weight',
-    preselect: ['weight'],
-    title: 'Weight that will not shift? — The Hormone Check',
-    description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
-    kicker: 'Weight that will not shift',
-    headline: 'You are doing everything you used to do. It is not working any more.',
-    headlineEm: 'any more',
-    sub: 'The same food, the same training, a different result. That change has a cause, and it is worth naming before you cut anything else out.',
-    hero: IMG.weight,
-    heroAlt: '',
-    bullets: [
-      'For women whose weight stopped answering to diet and exercise.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
-    ],
-    cta: 'Find out what changed',
-    review: 0,
+    note: 'Highest-scoring theme on the account at 85.2 Quality Score, largest confirmed sample at n=12.',
   },
   {
     slug: 'hot-flashes',
     preselect: ['sweats'],
-    title: 'Hot flashes and night sweats — The Hormone Check',
-    description: 'Hot flashes and night sweats can start years before your periods stop. Find out which stage you are in with a two-minute check.',
-    kicker: 'Hot flashes and night sweats',
-    headline: 'It starts years before anybody calls it menopause.',
-    headlineEm: 'years before',
-    sub: 'Hot flashes and night sweats are the signs most women recognise, and the ones they are told to wait out. Twelve questions to find out where you actually are.',
-    hero: IMG.sweats,
-    heroAlt: '',
-    bullets: [
-      'For women waking up hot, and being told it is nothing.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
+    label: 'Hot flashes',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why the heat',
+    h1b: 'comes out of nowhere',
+    paren: 'and the one pattern behind it',
+    lines: [
+      'Heat that arrives out of nowhere.',
+      'Your face goes and everybody notices.',
+      'You dress in layers now, all year.',
     ],
-    cta: 'Find out which stage',
-    review: 1,
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-night-sweats.jpg',
+    heroAlt: '',
+    description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
+    note: '37% of 114 customer reviews. The single most-mentioned relief in the review set.',
+  },
+  {
+    slug: 'night-sweats',
+    preselect: ['sweats'],
+    label: 'Night sweats',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why you are',
+    h1b: 'soaked every night',
+    paren: 'and the one thing nobody asks about',
+    lines: [
+      'You wake soaked and throw the covers off.',
+      'Sheets you change more than you used to.',
+      'Cool again by four, and wide awake.',
+    ],
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-night-sweats.jpg',
+    heroAlt: '',
+    /* PENDING: this route is new and had no description in the repo. Carrying
+       the default page's wording until Jane supplies one of its own. */
+    description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    note: '27% of reviews. Kept separate from hot flashes because the moment is different and so is the ad.',
   },
   {
     slug: 'sleep',
     preselect: ['sleep'],
-    title: 'Waking at 3am? — The Hormone Check',
-    description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
-    kicker: 'Sleep that broke',
-    headline: 'You fixed your bedtime. You are still awake at three.',
-    headlineEm: 'still awake',
-    sub: 'Sleep that does not answer to sleep hygiene is usually being driven by something else. Twelve questions to find out what.',
-    hero: IMG.sleep,
-    heroAlt: '',
-    bullets: [
-      'For women who did everything the sleep advice says, and still wake up.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
+    label: 'Sleep',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why you stopped',
+    h1b: 'sleeping past 3am',
+    paren: 'and the one question nobody asks',
+    lines: [
+      'Asleep by ten, awake at three.',
+      'Nothing about your bedtime changed.',
+      'Sleeping in does not fix it.',
     ],
-    cta: 'Find out why',
-    review: 0,
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-sleep.jpg',
+    heroAlt: '',
+    description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
+    note: '27% of reviews. Distinct from night sweats: she is not hot, she simply cannot stay asleep.',
+  },
+  {
+    slug: 'weight',
+    preselect: ['weight'],
+    label: 'Weight',
+    /* The ONLY route that may carry the 5M lbs figure. */
+    chip1: '5M+ lbs lost',
+    h1a: 'Why losing weight after 40 feels',
+    h1b: 'impossible',
+    paren: 'and the one thing nobody checks for',
+    lines: [
+      'Clothes that fit last year and do not now.',
+      'The same food, the same walking, a different body.',
+      'It settled on your middle and stayed.',
+    ],
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-weight.jpg',
+    heroAlt: '',
+    description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
+    note: 'The only route that may carry the 5M lbs figure. 35% of reviews, and our most-published, second-worst-scoring theme.',
   },
   {
     slug: 'mood',
     preselect: ['mood'],
-    title: 'Snapping at people you love? — The Hormone Check',
+    label: 'Mood and fog',
+    chip1: 'NYT Bestselling Author',
+    h1a: 'Why you are',
+    h1b: 'tired all the time',
+    paren: 'and the one thing nobody connects it to',
+    lines: [
+      'Snapping at people you love.',
+      'Anxious for no reason you can point to.',
+      'Walking into a room and forgetting why.',
+    ],
+    closer: 'A stage, or something else? That is what the check tells you.',
+    hero: '/img/symptom-mood.jpg',
+    heroAlt: '',
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
-    kicker: 'Mood swings and brain fog',
-    headline: 'You do not feel like yourself, and you cannot say why.',
-    headlineEm: 'yourself',
-    sub: 'Snapping at people you love. Losing the word mid-sentence. Crying at nothing. It is not your personality, and it is not nothing.',
-    hero: IMG.mood,
-    heroAlt: '',
-    bullets: [
-      'For women who have been told it is just stress.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
-    ],
-    cta: 'Find out what is behind it',
-    review: 0,
-  },
-  {
-    slug: 'energy',
-    preselect: ['energy'],
-    title: 'Tired no matter how much you sleep — The Hormone Check',
-    description: 'Low energy that sleep does not fix is worth looking at properly. Take the two-minute hormone check.',
-    kicker: 'Low energy',
-    headline: 'Tired in a way that sleeping does not touch.',
-    headlineEm: 'does not touch',
-    sub: 'When rest stops restoring you, the problem is not rest. Twelve questions to find out which stage you are in and what is driving it.',
-    hero: IMG.energy,
-    heroAlt: '',
-    bullets: [
-      'For women whose bloods came back fine and who still feel flattened.',
-      'Twelve questions. It takes about two minutes.',
-      'You get a read on which stage you are in, not a sales page.',
-    ],
-    cta: 'Find out why',
-    review: 2,
+    note: 'Jane set this headline. Note it reads as the energy angle rather than mood and fog - the recognition lines underneath are still mood and fog.',
   },
 ];
 
 export const DEFAULT_ANGLE = ANGLES[0];
+
+/** Built from the approved headline, so the tab never carries drafted words. */
+export const angleTitle = (a: Angle) => `${a.h1a} ${a.h1b} — The Hormone Check`;
 
 export function angleBySlug(slug: string | undefined): Angle {
   if (!slug) return DEFAULT_ANGLE;
