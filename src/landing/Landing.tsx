@@ -145,6 +145,9 @@ export function Landing() {
             <p className="eyebrow">How it works</p>
             <h2 className="sech">Three steps, <em>two minutes</em></h2>
 
+            {/* Wrapper so the three steps can sit side by side once there is
+                room. Named lpSteps: .steps already belongs to the offer screen. */}
+            <div className="lpSteps">
             <div className="step">
               <span className="stepn">1</span>
               <div>
@@ -165,6 +168,7 @@ export function Landing() {
                 <b>Find out what helps.</b>
                 <span>What fits your stage, and what to do next.</span>
               </div>
+            </div>
             </div>
 
             <Cta to={quizHref} />
