@@ -1,9 +1,35 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import {
+  BrowserRouter, Navigate, Route, Routes, useLocation, useParams,
+} from 'react-router-dom';
 import { Landing } from './landing/Landing';
 import { Quiz } from './quiz/Quiz';
 import { ANGLES } from './lib/angles';
-import { captureAttribution, initClarity } from './lib/analytics';
+import { captureAttribution, initClarity, pageView } from './lib/analytics';
+
+/**
+ * Tells GTM about client-side navigations, which it cannot see on its own.
+ *
+ * Rendered AFTER <Routes> on purpose. React runs effects in tree order, so
+ * this sits downstream of the route's own usePageMeta effect and therefore
+ * reads the title that route just set, rather than the previous one.
+ *
+ * The ref guards the push: StrictMode double-invokes effects in development,
+ * and a re-render with an unchanged path must not count as a second view.
+ */
+function RouteTracking() {
+  const location = useLocation();
+  const last = useRef<string | null>(null);
+
+  useEffect(() => {
+    const path = location.pathname + location.search;
+    if (last.current === path) return;
+    last.current = path;
+    pageView(path, document.title);
+  }, [location]);
+
+  return null;
+}
 
 /** An unknown slug is a bad ad link. Send her to the default page, not a 404. */
 function KnownAngle({ children }: { children: React.JSX.Element }) {
@@ -29,6 +55,7 @@ export default function App() {
         <Route path="/:slug/quiz" element={<KnownAngle><Quiz /></KnownAngle>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <RouteTracking />
     </BrowserRouter>
   );
 }

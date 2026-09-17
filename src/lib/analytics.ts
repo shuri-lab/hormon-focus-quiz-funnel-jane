@@ -35,6 +35,28 @@ function meta(name: string, props: Props = {}, standard = false) {
   } catch { /* as above */ }
 }
 
+/* -------------------------------------------------------- SPA pageviews -- */
+
+/**
+ * A virtual pageview for GTM.
+ *
+ * The container script in index.html runs once, on the first HTML document.
+ * Every navigation after that is client-side — React Router swaps the tree
+ * and the browser never requests a new document — so GTM's built-in Page View
+ * trigger never fires again. This push is what makes the later routes visible.
+ *
+ * IN THE CONTAINER: trigger page tags on the Custom Event `page_view`, NOT on
+ * the built-in Page View, or the first route counts twice: once from the
+ * container loading and once from here.
+ */
+export function pageView(path: string, title: string): void {
+  push('page_view', {
+    page_path: path,
+    page_location: window.location.href,
+    page_title: title,
+  });
+}
+
 /* ------------------------------------------------------------ clarity -- */
 
 const CLARITY_ID = import.meta.env.VITE_CLARITY_ID as string | undefined;
