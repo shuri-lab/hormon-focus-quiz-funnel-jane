@@ -308,5 +308,15 @@ export function path(S: QuizState): ScreenId[] {
 
 /* The only two places this funnel may send anyone. The doctor route goes to
    the brand site. It must never link to the shop. */
-export const SHOP_BASE = 'https://shop.jjsmithonline.com/products/hormonal-imbalance';
+/**
+ * The Shopify cart permalink: variant 41200079175791, quantity 1.
+ *
+ * `storefront=true` is what makes this the CART rather than the checkout.
+ * Drop it and Shopify takes her straight to payment, skipping the cart page
+ * — that is a different funnel and not the one we are running. shopUrl() in
+ * analytics.ts re-asserts the flag rather than trusting this string, so an
+ * edit here that loses it cannot quietly change the destination.
+ */
+export const SHOP_BASE =
+  'https://shop.jjsmithonline.com/cart/41200079175791:1?storefront=true';
 export const BRAND = 'https://www.jjsmithonline.com/';

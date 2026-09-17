@@ -216,11 +216,12 @@ export function R7() {
       <Guarantee />
 
       <ActionBar>
+        {/* Same tab, deliberately: she is leaving the funnel for the cart,
+            and a new tab would leave a dead quiz behind her. No rel, either
+            — noreferrer would strip the Referer that Shopify attributes on. */}
         <a
           className="cta"
           href={href}
-          target="_blank"
-          rel="noopener noreferrer"
           onClick={() => track.checkout(outcome, ONE_MONTH_PRICE)}
         >
           Start today &mdash; {money(ONE_MONTH_PRICE)}
@@ -234,8 +235,8 @@ export function R7() {
           <b>Internal note — not shown to customers.</b> The {SUBSCRIBE_SAVING} subscribe-and-save
           comes from JJ&rsquo;s live product page, so {money(SUBSCRIBE_PRICE)} is derived rather than
           confirmed. No 3 or 6-month bundle exists yet. The Starter Guide still has to be produced.
-          The button goes to the product page carrying quiz UTMs; a prefilled Shopify checkout
-          would be better and does not exist yet.
+          The button now goes to the Shopify cart with the bottle already in it, carrying the
+          ad&rsquo;s own UTMs where it sent any.
         </div>
       )}
 

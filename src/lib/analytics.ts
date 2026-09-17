@@ -146,6 +146,8 @@ export const track = {
 const AD_PARAMS = [
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
   'fbclid', 'gclid', 'ttclid', 'src',
+  /* Funnel and variant, so a split test can be read on the Shopify side. */
+  'hf_funnel', 'hf_variant',
 ];
 
 const STORE_KEY = 'hf_attribution';
@@ -172,16 +174,42 @@ export function readAttribution(): Record<string, string> {
   }
 }
 
-/** The shop link, carrying the quiz outcome and whatever the ad sent us. */
+/**
+ * The cart link, carrying the quiz outcome and whatever the ad sent us.
+ *
+ * WHAT THE AD SENT WINS. If she arrived with a utm_content, that is the value
+ * the ad account is reporting on and it is carried through untouched; the
+ * quiz's own value is only a fallback for traffic that arrived with none.
+ * The outcome is never lost either way, because hf_outcome always carries it.
+ *
+ * `storefront=true` is set explicitly rather than inherited from the base, so
+ * this cannot silently become the direct-to-checkout link.
+ */
 export function shopUrl(base: string, outcome: string, angle: string): string {
   const url = new URL(base);
-  const attribution = readAttribution();
+  const ad = readAttribution();
+
+  /* The cart, not the checkout. Asserted here, not assumed from the base. */
+  url.searchParams.set('storefront', 'true');
+
   url.searchParams.set('src', 'quiz');
-  url.searchParams.set('utm_source', attribution.utm_source ?? 'quiz');
-  url.searchParams.set('utm_medium', attribution.utm_medium ?? 'owned');
-  url.searchParams.set('utm_campaign', attribution.utm_campaign ?? 'hormone_check');
-  url.searchParams.set('utm_content', `offer_screen__${outcome}`);
-  if (angle) url.searchParams.set('utm_term', angle);
-  if (attribution.fbclid) url.searchParams.set('fbclid', attribution.fbclid);
+  url.searchParams.set('utm_source', ad.utm_source ?? 'quiz');
+  url.searchParams.set('utm_medium', ad.utm_medium ?? 'owned');
+  url.searchParams.set('utm_campaign', ad.utm_campaign ?? 'hormone_check');
+  url.searchParams.set('utm_content', ad.utm_content ?? `offer_screen__${outcome}`);
+
+  const term = ad.utm_term ?? angle;
+  if (term) url.searchParams.set('utm_term', term);
+
+  /* Pass-through, only when the ad actually set them. */
+  for (const key of ['hf_funnel', 'hf_variant'] as const) {
+    if (ad[key]) url.searchParams.set(key, ad[key]);
+  }
+
+  /* The quiz result, kept in its own param so carrying the ad's utm_content
+     through does not cost us the outcome attribution. */
+  url.searchParams.set('hf_outcome', outcome);
+
+  if (ad.fbclid) url.searchParams.set('fbclid', ad.fbclid);
   return url.toString();
 }
