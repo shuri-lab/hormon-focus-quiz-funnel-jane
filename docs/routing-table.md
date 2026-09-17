@@ -73,7 +73,16 @@ The verdict copy for A and C is rewritten in this case so it does not claim a cy
 
 No product, no price, no upsell. A scripted opening line for the appointment, her ticked symptoms to read out, what they may look at, and a restart button. The copy is specific to the reason: young, surgery, treatment, or late bleeding.
 
-The email gate before it drops "your plan is ready" and says "your read is ready" instead.
+**She exits at s4b, and there is no email gate.** `docReason()` is settled by
+s2, s4 and s4b, so the moment the answer is D the quiz stops: no further
+questions, no name, no address, and no reveal screen but `rDoc`.
+
+This replaced the earlier behaviour, in which D walked the whole quiz, handed
+over an email at s13, and was then refused. The gate merely said "your read is
+ready" instead of "your plan is ready". Collecting an address from a woman in
+order to market to her, seconds before telling her we will not sell to her, is
+not a copy problem. `tests/logic.test.ts` now asserts across the whole input
+space that a D state reaches neither s12 nor s13.
 
 ## The bug this replaced
 

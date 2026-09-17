@@ -13,6 +13,7 @@ declare global {
     fbq?: (...args: unknown[]) => void;
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
+    clarity?: (...args: unknown[]) => void;
   }
 }
 
@@ -23,6 +24,7 @@ function push(event: string, props: Props = {}) {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event, ...props });
     window.gtag?.('event', event, props);
+    clarity(event, props);
   } catch { /* tracking must never break the funnel */ }
 }
 
@@ -30,6 +32,45 @@ function push(event: string, props: Props = {}) {
 function meta(name: string, props: Props = {}, standard = false) {
   try {
     window.fbq?.(standard ? 'track' : 'trackCustom', name, props);
+  } catch { /* as above */ }
+}
+
+/* ------------------------------------------------------------ clarity -- */
+
+const CLARITY_ID = import.meta.env.VITE_CLARITY_ID as string | undefined;
+
+/**
+ * Microsoft Clarity. Injected once, and only when VITE_CLARITY_ID is set, so
+ * an unconfigured build ships no third-party script at all. Same contract as
+ * fbq everywhere else in this file: if it is absent, every call is a no-op.
+ */
+export function initClarity(): void {
+  try {
+    if (!CLARITY_ID || window.clarity) return;
+    /* Microsoft's own snippet, as a function rather than an inline tag. */
+    (function (c: Window, l: Document, a: string, r: string, i: string) {
+      (c as unknown as Record<string, unknown>)[a] =
+        (c as unknown as Record<string, unknown>)[a] ||
+        function (...args: unknown[]) {
+          (((c as unknown as Record<string, unknown>)[a] as { q?: unknown[] }).q ||=
+            []).push(args);
+        };
+      const t = l.createElement(r) as HTMLScriptElement;
+      t.async = true;
+      t.src = 'https://www.clarity.ms/tag/' + i;
+      const y = l.getElementsByTagName(r)[0];
+      y.parentNode?.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', CLARITY_ID);
+  } catch { /* tracking must never break the funnel */ }
+}
+
+/** A Clarity custom event. No-op when Clarity is absent. */
+function clarity(name: string, props: Props = {}) {
+  try {
+    window.clarity?.('event', name);
+    for (const [k, v] of Object.entries(props)) {
+      window.clarity?.('set', k, String(v));
+    }
   } catch { /* as above */ }
 }
 

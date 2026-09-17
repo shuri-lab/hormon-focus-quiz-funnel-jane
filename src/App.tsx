@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-
 import { Landing } from './landing/Landing';
 import { Quiz } from './quiz/Quiz';
 import { ANGLES } from './lib/angles';
-import { captureAttribution } from './lib/analytics';
+import { captureAttribution, initClarity } from './lib/analytics';
 
 /** An unknown slug is a bad ad link. Send her to the default page, not a 404. */
 function KnownAngle({ children }: { children: React.JSX.Element }) {
@@ -16,6 +16,8 @@ export default function App() {
   useEffect(() => {
     /* Read the ad parameters once, before any navigation can strip them. */
     captureAttribution();
+    /* No-op unless VITE_CLARITY_ID is set. */
+    initClarity();
   }, []);
 
   return (

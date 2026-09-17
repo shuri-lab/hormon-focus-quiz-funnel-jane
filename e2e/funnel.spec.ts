@@ -107,6 +107,14 @@ test.describe('the quiz', () => {
     await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
     await page.fill('#nf', 'Renee');
     await page.fill('#ef', 'renee@example.com');
+
+    /* A valid address is not enough: the opt-in is unticked and required, so
+       the button stays disabled until she agrees to be emailed. */
+    await expect(page.locator('#cf')).not.toBeChecked();
+    await expect(page.locator('.actionBar .cta')).toBeDisabled();
+    await page.locator('#cf').check();
+    await expect(page.locator('.actionBar .cta')).toBeEnabled();
+
     await page.locator('.actionBar .cta').click();
 
     await expect(page.locator('.verdict .name')).toHaveText('Perimenopause');
@@ -168,31 +176,22 @@ test.describe('the quiz', () => {
 
 /* The one test that is not about polish. */
 test.describe('the doctor route is an exit', () => {
-  test('never shows a price and never links to the shop', async ({ page }) => {
+  test('exits at s4b, shows no gate, no price and no shop link', async ({ page }) => {
     await startQuiz(page);
     await page.locator('.tile').nth(0).click();
     await answerAndWait(page, pressPrimary(page), /What is your age/);
     await answerAndWait(page, pickOption(page, 4), /already done this/);          // 60+
     await answerAndWait(page, pressPrimary(page), /Do you still have periods/);
-    await answerAndWait(page, pickOption(page, 0), /how regular/);                // still bleeding -> D
-    await answerAndWait(page, pickOption(page, 0), /mood changed/);               // like clockwork
-    await answerAndWait(page, pressSecondary(page), /last year/);                 // mood: none of these
-    await page.locator('.opt').nth(5).click();                                    // markers: none of these
-    await answerAndWait(page, pressPrimary(page), /How often/);
-    await answerAndWait(page, pickOption(page, 3), /one place/);                  // nearly every day
-    await answerAndWait(page, pressPrimary(page), /already tried/);
-    await answerAndWait(page, pressSecondary(page), /Did any of it help/);        // nothing yet
-    await page.locator('.opt').nth(2).click();                                    // nothing changed
 
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
-    await page.fill('#ef', 'pat@example.com');
-    await page.locator('.actionBar .cta').click();
+    /* Still bleeding at sixty is D, and docReason is settled right here. She
+       goes straight to rDoc: no regularity question, no name, and above all
+       no email gate. Before the exit she walked nine more screens and handed
+       over an address, and was then refused. */
+    await answerAndWait(page, pickOption(page, 0), /Take this to your doctor/);
 
-    await expect(page.locator('.verdict .name')).toHaveText('This one needs a doctor');
-    await page.locator('.actionBar .cta').click();             // r2
-    await page.locator('.actionBar .cta').click();             // rDoc
-
-    await expect(heading(page)).toContainText('Take this to your doctor');
+    await expect(page.locator('#ef'), 'the email gate must never appear on the doctor route')
+      .toHaveCount(0);
+    await expect(page.locator('#nf'), 'she is never asked her name either').toHaveCount(0);
 
     const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
     expect(hrefs.filter((h) => h.includes('shop.jjsmithonline.com')), 'the doctor route must never link to the shop').toEqual([]);

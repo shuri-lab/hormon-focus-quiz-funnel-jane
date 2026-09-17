@@ -43,6 +43,8 @@ export interface QuizState {
   helped: Helped | '';
   name: string;
   email: string;
+  /** Ticked opt-in. No address is sent anywhere while this is false. */
+  consent: boolean;
 }
 
 /** The complete shape. Every field, and what it may hold. */
@@ -50,7 +52,7 @@ export function createState(): QuizState {
   return {
     sym: [], age: '', periods: '', stopCause: '', reg: '',
     mood: [], markers: [], sev: '', tried: [], helped: '',
-    name: '', email: '',
+    name: '', email: '', consent: false,
   };
 }
 
@@ -229,6 +231,31 @@ export const QUESTIONS: ScreenId[] = ['s1', 's2', 's4', 's4b', 's5', 's6', 's7',
 /** The reveal, which is paced differently from the questions. */
 export const REVEAL: ScreenId[] = ['r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 'r7'];
 
+/** Everything between s4b and rDoc. A doctor-route state sees none of it. */
+const EXIT_AT_S4B: ScreenId[] = [
+  's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 'r1', 'r2',
+];
+
+/**
+ * Is docReason() settled yet? It needs her age and whether her periods have
+ * stopped. Mid-quiz the state is half empty, so this guards the exit from
+ * firing on an answer she has not given: a sixty-year-old is only 'late'
+ * once we know she is still bleeding.
+ *
+ * It deliberately does NOT wait on stopCause. Every screen the exit skips
+ * sits after s4b in FLOW, so by the time one is evaluated s4b has already
+ * been shown or skipped; and a stopped state with no cause given still
+ * routes to D, which must exit like any other.
+ */
+export function docDecided(S: QuizState): boolean {
+  return Boolean(S.age && S.periods);
+}
+
+/** Settled, and the answer is the doctor. */
+export function doctorExit(S: QuizState): boolean {
+  return docDecided(S) && stateKey(S) === 'D';
+}
+
 /**
  * Should this screen be skipped for this state?
  *
@@ -238,6 +265,12 @@ export const REVEAL: ScreenId[] = ['r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 
  */
 export function shouldSkip(S: QuizState, id: ScreenId): boolean {
   if (id === 's4b') return S.periods !== 'stopped';
+  /* THE DOCTOR EXIT. docReason() is settled by s2 (age), s4 (periods) and,
+     where she has stopped, s4b (why). The moment it is settled and the
+     answer is D, she leaves: no further questions, no name, NO EMAIL GATE,
+     and no reveal but rDoc. Taking an address from a woman we are about to
+     refuse, in order to market to her later, was the bug this closes. */
+  if (doctorExit(S) && EXIT_AT_S4B.includes(id)) return true;
   if (id === 's5') return S.periods === 'stopped';
   if (id === 'rDoc') return stateKey(S) !== 'D';
   if (id === 'r4' || id === 'r4b' || id === 'r5' || id === 'r6' || id === 'r7') {

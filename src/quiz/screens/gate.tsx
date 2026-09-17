@@ -91,10 +91,12 @@ export function S13() {
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const valid = isEmail(S.email);
+  /* Consent is a separate gate from a valid address. Both must pass. */
+  const ready = valid && S.consent;
 
   async function submit() {
     setTouched(true);
-    if (!valid || busy) return;
+    if (!ready || busy) return;
     setBusy(true);
     track.lead(outcome);
     await submitLead(S, outcome, angle.slug);
@@ -134,16 +136,37 @@ export function S13() {
           <p className="fieldErr" id="ef-err">Please check that address — we cannot send your result without it.</p>
         )}
 
+        {/* Unticked, and required. An unsubscribe link is a way out of
+            something she never agreed to join; it is not consent. */}
+        <label className="consent" htmlFor="cf">
+          <input
+            className="consentBox" id="cf" type="checkbox"
+            checked={S.consent}
+            aria-invalid={touched && !S.consent}
+            aria-describedby={touched && !S.consent ? 'cf-err' : undefined}
+            onChange={(e) => set({ consent: e.target.checked })}
+          />
+          <span>
+            Yes, send my result and keep me posted from JJ Smith. I can
+            unsubscribe at any time.
+          </span>
+        </label>
+        {touched && !S.consent && (
+          <p className="fieldErr" id="cf-err">
+            Please tick the box so we know it is alright to email you.
+          </p>
+        )}
+
         <ActionBar>
-          <button type="submit" className="cta" disabled={busy}>
+          <button type="submit" className="cta" disabled={busy || !ready}>
             {busy ? 'One moment…' : 'Show me my results'}
           </button>
         </ActionBar>
       </form>
 
       <p className="fine">
-        We use your address to send your result and to keep you posted from JJ Smith.
-        You can unsubscribe at any time.
+        We use your address to send your result and to keep you posted from JJ
+        Smith. Nothing is sent unless you tick the box above.
       </p>
     </Screen>
   );

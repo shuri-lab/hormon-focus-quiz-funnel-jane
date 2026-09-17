@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 import {
   createState, stateKey, periScore, path, shouldSkip,
   type QuizState, type Age, type Periods, type StopCause, type Regularity, type ScreenId,
+  type Outcome,
 } from '../src/lib/logic';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -236,6 +237,14 @@ test('the doctor route never reaches the offer, and the offer never reaches it',
 test('the cycle questions are asked of exactly the right group', () => {
   for (const S of combinations()) {
     const seen = path(S);
+    /* A doctor-route state leaves at s4b, so it is asked neither cycle
+       question: a sixty-year-old who is still bleeding is sent to be looked
+       at, and how regular she is does not change that. Her exit is covered
+       by 'the doctor route stops at s4b' below. */
+    if (stateKey(S) === 'D') {
+      expect(seen, 'D is not asked about regularity: ' + label(S)).not.toContain('s5');
+      continue;
+    }
     if (S.periods === 'stopped') {
       expect(seen, 'stopped must be asked why: ' + label(S)).toContain('s4b');
       expect(seen, 'stopped is never asked about regularity: ' + label(S)).not.toContain('s5');
@@ -244,6 +253,44 @@ test('the cycle questions are asked of exactly the right group', () => {
       expect(seen, 'still cycling is asked about regularity: ' + label(S)).toContain('s5');
     }
   }
+});
+
+test('the whole input space lands on the expected outcome spread', () => {
+  const count: Record<Outcome, number> = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+  let total = 0;
+  for (const S of combinations()) {
+    count[stateKey(S)]++;
+    total++;
+  }
+  /* 560 states, and where each of them lands. This is the shape of the whole
+     routing table in one assertion: if a branch is reordered, a comparison
+     flipped or a threshold moved, the split moves with it and this fails
+     even when every named case above still passes. */
+  expect(total, 'the input space itself changed size').toBe(560);
+  expect(count).toEqual({ A: 152, B: 152, C: 80, D: 160, E: 16 });
+});
+
+test('the doctor route stops at s4b and never reaches the email gate', () => {
+  let seenD = 0;
+  for (const S of combinations()) {
+    if (stateKey(S) !== 'D') continue;
+    seenD++;
+    const seen = path(S);
+    /* The gate is the point of this test. She is about to be refused; taking
+       an address from her first is the thing that must not happen. */
+    expect(seen, 'D must never reach the email gate: ' + label(S)).not.toContain('s13');
+    expect(seen, 'D is never asked her name: ' + label(S)).not.toContain('s12');
+    /* And no reveal screen but her own. */
+    expect(seen, 'D sees no reveal but rDoc: ' + label(S)).not.toContain('r1');
+    expect(seen, 'D sees no reveal but rDoc: ' + label(S)).not.toContain('r2');
+    expect(seen, 'D must reach rDoc: ' + label(S)).toContain('rDoc');
+    /* Nothing between s4b and rDoc survives. */
+    for (const id of ['s5', 's6', 's7', 's8', 's9', 's10', 's11'] as ScreenId[]) {
+      expect(seen, 'D exits at s4b, so ' + id + ' is skipped: ' + label(S)).not.toContain(id);
+    }
+  }
+  /* Guard against the whole test passing because nothing routed to D. */
+  expect(seenD, 'no D states in the space').toBe(160);
 });
 
 test('every state reaches a terminal screen', () => {
