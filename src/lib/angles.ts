@@ -6,6 +6,13 @@
  *
  * Adding an angle is adding an entry here. Nothing else changes.
  *
+ * THIS REPOSITORY IS PUBLIC. Every string in this file ships to the browser
+ * and is readable by anyone. It previously carried a `note` field per route
+ * holding our own ad-performance commentary: quality scores, sample sizes,
+ * which themes were scoring worst. Nothing rendered it, and it is gone.
+ * Do not reintroduce internal metrics here. tests/angles.test.ts fails the
+ * build if you do.
+ *
  * COPY SOURCE: every headline, recognition line and closer below is Jane's,
  * taken verbatim from the landing-page artifact. Nothing here is drafted by
  * the build. The copy rules still hold: no contractions, no timeframe on any
@@ -34,8 +41,6 @@ export interface Angle {
   /** The question the list ends on, which the check answers. */
   closer: string;
   description: string;
-  /** Why this route exists. Internal, never rendered. */
-  note: string;
 }
 
 export const ANGLES: Angle[] = [
@@ -56,7 +61,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'Five separate problems, or one? That is what the check tells you.',
     description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
-    note: 'Unparameterised and brand traffic. Names no single symptom, because it cannot know which one brought her.',
   },
   {
     slug: 'bloating',
@@ -73,7 +77,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
-    note: 'Highest-scoring theme on the account at 85.2 Quality Score, largest confirmed sample at n=12.',
   },
   {
     slug: 'hot-flashes',
@@ -90,7 +93,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
     description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
-    note: '37% of 114 customer reviews. The single most-mentioned relief in the review set.',
   },
   {
     slug: 'night-sweats',
@@ -109,7 +111,6 @@ export const ANGLES: Angle[] = [
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
     description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
-    note: '27% of reviews. Kept separate from hot flashes because the moment is different and so is the ad.',
   },
   {
     slug: 'sleep',
@@ -126,7 +127,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
     description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
-    note: '27% of reviews. Distinct from night sweats: she is not hot, she simply cannot stay asleep.',
   },
   {
     slug: 'weight',
@@ -144,7 +144,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
     description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
-    note: 'The only route that may carry the 5M lbs figure. 35% of reviews, and our most-published, second-worst-scoring theme.',
   },
   {
     slug: 'mood',
@@ -161,7 +160,6 @@ export const ANGLES: Angle[] = [
     ],
     closer: 'A stage, or something else? That is what the check tells you.',
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
-    note: 'Jane set this headline. Note it reads as the energy angle rather than mood and fog - the recognition lines underneath are still mood and fog.',
   },
 ];
 

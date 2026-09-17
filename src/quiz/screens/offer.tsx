@@ -114,7 +114,7 @@ export function R5() {
         </div>
         <div className="step">
           <b className="n">2</b>
-          <div className="t"><b>While you wait</b><span>JJ&rsquo;s Starter Guide arrives the day your bottle ships. One thing to change a week.</span></div>
+          <div className="t"><b>While you wait</b><span>JJ&rsquo;s Starter Guide arrives today. One thing to change a week.</span></div>
         </div>
         <div className="step">
           <b className="n">3</b>
