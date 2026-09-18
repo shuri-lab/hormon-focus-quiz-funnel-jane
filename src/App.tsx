@@ -42,7 +42,7 @@ export default function App() {
   useEffect(() => {
     /* Read the ad parameters once, before any navigation can strip them. */
     captureAttribution();
-    /* No-op unless VITE_CLARITY_ID is set. */
+    /* Injects Clarity once. VITE_CLARITY_ID overrides the committed project. */
     initClarity();
   }, []);
 

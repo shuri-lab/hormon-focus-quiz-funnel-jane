@@ -59,12 +59,28 @@ export function pageView(path: string, title: string): void {
 
 /* ------------------------------------------------------------ clarity -- */
 
-const CLARITY_ID = import.meta.env.VITE_CLARITY_ID as string | undefined;
+/**
+ * The Clarity project. Committed rather than left to an env var, for the same
+ * reason the GTM container ID is committed in index.html: a Clarity project
+ * ID is not a secret — it is readable in the page source of every site that
+ * runs Clarity — and committing it is what makes the tag work in CI, in any
+ * deploy, and on a teammate's clone without a .env being set up first.
+ *
+ * VITE_CLARITY_ID still wins where it is set, so anyone can point a build at
+ * a throwaway project instead of recording into the real one.
+ */
+const CLARITY_ID =
+  (import.meta.env.VITE_CLARITY_ID as string | undefined) || 'yk2cnbfcxa';
 
 /**
- * Microsoft Clarity. Injected once, and only when VITE_CLARITY_ID is set, so
- * an unconfigured build ships no third-party script at all. Same contract as
- * fbq everywhere else in this file: if it is absent, every call is a no-op.
+ * Microsoft Clarity. Injected once — the window.clarity guard is what makes a
+ * second call a no-op, so this stays safe under StrictMode's double effects
+ * and any future re-mount. Same contract as fbq everywhere else in this file:
+ * if the script is blocked or absent, every call is a no-op and the funnel
+ * carries on.
+ *
+ * Do NOT also paste Microsoft's raw snippet into index.html. This IS that
+ * snippet; two copies would load the tag twice and record duplicate sessions.
  */
 export function initClarity(): void {
   try {
