@@ -11,8 +11,8 @@ const LOAD_STEPS = [
   'Reading what you told me',
   'Weighing how often it hits',
   'Working out your stage',
-  /* 169 is the Hormone Focus review count, not a number of customers. Saying
-     "169 women" turns a rating into a club size, which is the exact error the
+  /* The review count is a review count, not a number of customers. Saying
+     "170 women" turns a rating into a club size, which is the exact error the
      claim rule names. No number here: none is needed. */
   'Matching it against what other women report',
   'Building your plan',

@@ -1,3 +1,5 @@
+import { RATING, REVIEW_COUNT } from '../lib/reviews';
+
 export function Star({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="var(--star)" className={className} aria-hidden="true">
@@ -38,12 +40,12 @@ export function Stars({ n = 5 }: { n?: number }) {
   return <>{Array.from({ length: n }, (_, i) => <Star key={i} />)}</>;
 }
 
-/** The rating line. 4.9 and 169 travel together and appear nowhere else. */
+/** The rating line. 4.9 and the count travel together and appear nowhere else. */
 export function RatingLine() {
   return (
     <span className="stars">
       <Stars />
-      <b>4.9</b> <em>169 verified reviews</em>
+      <b>{RATING}</b> <em>{REVIEW_COUNT} verified reviews</em>
     </span>
   );
 }

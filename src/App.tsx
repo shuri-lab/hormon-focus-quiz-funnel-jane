@@ -4,7 +4,8 @@ import {
 } from 'react-router-dom';
 import { Landing } from './landing/Landing';
 import { Quiz } from './quiz/Quiz';
-import { ANGLES } from './lib/angles';
+import { OfferPage } from './offer/OfferPage';
+import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { captureAttribution, initClarity, pageView } from './lib/analytics';
 
 /**
@@ -31,6 +32,13 @@ function RouteTracking() {
   return null;
 }
 
+/** An offer slug we do not sell against falls back to the master offer page. */
+function KnownOffer({ children }: { children: React.JSX.Element }) {
+  const { slug } = useParams();
+  const known = OFFER_ANGLES.some((a) => a.slug && a.slug === slug);
+  return known ? children : <Navigate to="/offer" replace />;
+}
+
 /** An unknown slug is a bad ad link. Send her to the default page, not a 404. */
 function KnownAngle({ children }: { children: React.JSX.Element }) {
   const { slug } = useParams();
@@ -51,6 +59,12 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/quiz" element={<Quiz />} />
+        {/* The offer, on our own host. A static segment outranks /:slug in the
+            router, so these are matched before the landing pages whatever
+            order they are written in. */}
+        <Route path="/offer" element={<OfferPage />} />
+        <Route path="/offer/:slug" element={<KnownOffer><OfferPage /></KnownOffer>} />
+        <Route path="/live" element={<OfferPage live />} />
         <Route path="/:slug" element={<KnownAngle><Landing /></KnownAngle>} />
         <Route path="/:slug/quiz" element={<KnownAngle><Quiz /></KnownAngle>} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -134,7 +134,9 @@ test.describe('the quiz', () => {
 
     await expect(heading(page)).toContainText('where I would start you, Renee');
     await expectNoHorizontalOverflow(page, 'r7 offer');
-    await expect(page.locator('.actionBar .cta')).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
+    /* The offer screen now renders the shared options component, so the buy
+       button is .buyBtn rather than the screen's own action bar. */
+    await expect(page.locator('.buyBtn')).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
     expect(errors, 'javascript errors during the run').toEqual([]);
   });
 

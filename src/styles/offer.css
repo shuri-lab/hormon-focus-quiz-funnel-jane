@@ -1,0 +1,337 @@
+/* ======================================================= OFFER PAGES =====
+ *
+ * /offer, /offer/<slug> and /live. Built on the same tokens as the rest of the
+ * funnel, to the approved V1 mock-up.
+ *
+ * THE RULE THAT SHAPES THE HERO: on a 390px phone all six above-the-fold
+ * elements fit before the fold — proof, headline, sub-headline, photograph,
+ * the options with their button, and the guarantee. Sixty per cent of visitors
+ * never scroll past it, so everything here is sized against that budget and
+ * e2e/offer.spec.ts fails the build when one of them drops below the fold.
+ * Grow a font or a margin in this block and check that test before pushing.
+ */
+
+.offer .appMain { padding: 0; }
+.offer .screen { max-width: var(--col); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* ------------------------------------------------------- the live strip -- */
+
+.liveStrip {
+  margin: 0;
+  background: var(--plum);
+  color: #fff;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.35;
+  padding: 9px var(--gutter);
+  padding-top: calc(9px + var(--safe-top));
+}
+.liveStrip b { font-family: var(--sans); font-weight: 600; }
+
+/* ------------------------------------------------------------ the hero -- */
+
+.ofHero { padding: 0 0 18px; }
+
+.ofLogo { padding: 13px 0 4px; }
+.ofLogo b { display: block; font-size: 14px; font-weight: 800; letter-spacing: .13em; color: var(--ink); }
+.ofLogo b i { font-style: normal; font-weight: 500; color: var(--plum); }
+.ofLogo span {
+  display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600; margin-top: 1px;
+}
+
+.offer .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start; margin: 8px 0 9px; }
+.offer .chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--wash); color: var(--plum);
+  border-radius: 99px; padding: 4px 9px;
+  font-size: 11px; font-weight: 600; line-height: 1.2;
+}
+.offer .chip svg { width: 11px; height: 11px; }
+.offer .chip b { color: var(--plum); font-weight: 700; }
+.offer .faces { display: flex; }
+.offer .faces i {
+  display: block; width: 16px; height: 16px; border-radius: 50%;
+  background-size: cover; background-position: center;
+  border: 1.5px solid #fff; margin-left: -6px;
+}
+.offer .faces i:first-child { margin-left: 0; }
+
+.ofH1 {
+  font-family: var(--sans); font-weight: 700;
+  font-size: clamp(25px, 6.7vw, 40px);
+  line-height: 1.07; letter-spacing: -.03em;
+  margin: 0 0 9px; text-wrap: balance;
+}
+.ofH1 em { font-style: normal; color: var(--plum); }
+
+.ofSub {
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.38;
+  color: var(--ink-2); margin: 0 0 7px;
+}
+.ofBeat {
+  font-family: var(--serif); font-style: italic; font-size: 13.5px;
+  line-height: 1.34; color: var(--ink-2); margin: 0 0 11px;
+}
+
+.ofShot {
+  background: var(--wash); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 6px; margin: 0 0 10px;
+}
+.ofShot img {
+  display: block; width: 100%; height: 96px;
+  object-fit: contain; object-position: center;
+}
+
+/* -------------------------------------------------- the options block -- */
+
+.buy {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 9px; box-shadow: var(--shadow);
+}
+
+.buyRows { display: flex; flex-direction: column; gap: 7px; }
+
+.buyRow {
+  display: grid; grid-template-columns: 18px 1fr auto;
+  gap: 9px; align-items: center; text-align: left;
+  padding: 9px 10px; min-height: 52px;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer;
+  transition: border-color .13s, background .13s;
+}
+.buyRow.on { border-color: var(--plum); background: var(--wash); }
+
+.buyDot {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 2px solid var(--line-2); background: var(--surface);
+}
+.buyRow.on .buyDot {
+  border-color: var(--plum); background: var(--plum);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.buyWhat { min-width: 0; }
+.buyWhat b { display: block; font-size: 14px; font-weight: 600; line-height: 1.22; }
+.buyWhat small {
+  display: block; font-family: var(--serif); font-size: 11.5px;
+  color: var(--ink-2); line-height: 1.3; margin-top: 1px;
+}
+
+.buyBadge {
+  display: inline-block; margin-left: 5px; padding: 1px 7px;
+  border-radius: 99px; background: var(--good-wash); color: var(--good);
+  font-size: 10px; font-weight: 700; vertical-align: 1px; white-space: nowrap;
+}
+
+.buyPrice {
+  text-align: right; font-size: 15.5px; font-weight: 700;
+  color: var(--ink); white-space: nowrap;
+}
+.buyPrice small {
+  display: block; font-size: 10.5px; font-weight: 500;
+  color: var(--ink-3); white-space: nowrap;
+}
+
+.offer .buy .cta, .ofSticky .cta {
+  margin-top: 9px; padding: 14px 18px; min-height: 50px;
+  font-size: 15.5px; border-radius: 13px;
+}
+
+.buyNote, .buyShip {
+  margin: 5px 0 0; text-align: center;
+  font-size: 11px; color: var(--ink-3);
+}
+.buyShip { color: var(--good); font-weight: 600; }
+
+.guar {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: var(--good-wash); border-radius: 11px;
+  padding: 8px 10px; margin-top: 8px;
+}
+.guar .guarTick {
+  flex: 0 0 auto; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--good); color: #fff; font-size: 11px;
+  display: grid; place-items: center; margin-top: 1px;
+}
+.guar p { margin: 0; font-size: 12.5px; line-height: 1.32; color: var(--ink); }
+.guar b { color: var(--good); font-weight: 700; }
+
+/* The same block on the quiz's own offer screen, which has its own rhythm. */
+.quizBuy { margin-top: 18px; }
+
+/* --------------------------------------------------------- the sections -- */
+
+.ofSec { padding: 24px 0; border-top: 1px solid var(--line); }
+.ofSec.wash { background: var(--wash); }
+
+.offer .eyebrow {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--plum); font-weight: 700; margin: 0 0 5px;
+}
+
+.ofH2 {
+  font-family: var(--sans); font-weight: 700;
+  font-size: var(--t-title); line-height: 1.16; letter-spacing: -.02em;
+  margin: 0 0 10px; text-wrap: balance; color: var(--ink);
+}
+
+.ofRecog {
+  list-style: none; margin: 11px 0 0; padding: 13px 15px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.ofRecog li {
+  font-family: var(--serif); font-size: var(--t-body);
+  line-height: 1.4; margin-bottom: 7px;
+}
+.ofRecog li:last-child { margin-bottom: 0; }
+.ofRecog li::before { content: "\2014"; color: var(--plum); margin-right: 7px; }
+
+.ofTurn { margin: 11px 0 0; font-size: var(--t-lead); font-weight: 600; line-height: 1.32; }
+
+/* ---------------------------------------------------------------- wall -- */
+
+.ofWall { display: grid; gap: 9px; margin-top: 12px; }
+.ofRev {
+  margin: 0; padding: 11px 13px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 13px;
+}
+.ofRev .rs { display: flex; gap: 2px; }
+.ofRev .rs svg { width: 13px; height: 13px; }
+.ofRev p {
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.44;
+  color: var(--ink); margin: 6px 0 7px;
+}
+.ofRev cite { font-style: normal; font-size: 12.5px; color: var(--ink-3); }
+.ofRev cite b { color: var(--ink); font-weight: 600; }
+
+.ofNote { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-3); }
+
+/* --------------------------------------------------- props, steps, mg -- */
+
+.ofVp, .ofSteps, .ofMg { display: grid; gap: 9px; margin-top: 12px; }
+
+.ofVp div, .ofMg div, .ofStep {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 13px; padding: 11px 13px;
+}
+.ofVp b { display: block; font-size: 14.5px; font-weight: 600; margin-bottom: 2px; line-height: 1.25; }
+.ofVp span { font-family: var(--serif); font-size: 14px; color: var(--ink-2); line-height: 1.36; }
+
+.ofStep { display: flex; gap: 11px; align-items: flex-start; }
+.ofStep i {
+  flex: 0 0 28px; height: 28px; border-radius: 50%;
+  background: var(--plum); color: #fff; font-style: normal; font-weight: 700;
+  font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center;
+}
+.ofStep b { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.25; }
+.ofStep span { font-family: var(--serif); font-size: 14px; color: var(--ink-2); line-height: 1.36; }
+
+.ofMg div { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; }
+.ofMg b { font-size: 17px; font-weight: 700; color: var(--plum); white-space: nowrap; }
+.ofMg span { font-family: var(--serif); font-size: 14px; color: var(--ink-2); line-height: 1.36; }
+.ofMg strong { font-family: var(--sans); font-weight: 600; color: var(--ink); }
+
+/* ----------------------------------------------------------------- faq -- */
+
+.ofFaq { margin-top: 12px; }
+.ofFaq details {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 10px 13px; margin-bottom: 8px;
+}
+.ofFaq details:last-child { margin-bottom: 0; }
+.ofFaq summary {
+  font-weight: 600; font-size: 14.5px; cursor: pointer; line-height: 1.3;
+  /* a 44px tap target without a 44px box of whitespace around the text */
+  padding: 6px 0; margin: -6px 0;
+}
+.ofFaq p {
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.44;
+  color: var(--ink-2); margin: 9px 0 0;
+}
+
+/* -------------------------------------------------- closer and footer -- */
+
+.ofCloser { padding: 24px 0 28px; background: var(--wash-2); border-top: 1px solid var(--line); }
+.ofCloser .ofSub { margin-bottom: 12px; font-size: 15px; }
+
+.ofDoctor {
+  font-family: var(--serif); font-size: 12.5px; line-height: 1.45;
+  color: var(--ink-2); margin: 12px 0 0;
+}
+
+.ofFoot { padding: 16px 0 calc(20px + var(--safe-bottom)); background: var(--ground); }
+.ofFoot p { font-size: 10.5px; line-height: 1.55; color: var(--ink-3); margin: 0 0 8px; }
+.ofFoot p:last-child { margin: 0; }
+
+/* ----------------------------------------------------- the sticky bar -- */
+
+/* Phones only. On a tablet or a desktop the buy block is never far enough
+   away to need it, and it would cover the page. */
+.ofSticky {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  padding: 9px var(--gutter) calc(9px + var(--safe-bottom));
+  background: color-mix(in srgb, var(--ground) 94%, transparent);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border-top: 1px solid var(--line);
+  animation: slideUp .28s cubic-bezier(.2, .7, .3, 1) both;
+}
+.ofSticky > span {
+  flex: 0 0 auto; font-size: 10.5px; color: var(--ink-2);
+  line-height: 1.2; white-space: nowrap;
+}
+.ofSticky > span b { display: block; font-size: 15px; font-weight: 700; color: var(--ink); }
+.ofSticky .cta { flex: 1 1 auto; width: auto; margin-top: 0; box-shadow: none; white-space: nowrap; }
+
+/* At 320px the price block is what gives way, never the button. */
+@media (max-width: 349px) {
+  .ofSticky > span { display: none; }
+}
+
+@media (min-width: 760px) {
+  .ofSticky { display: none; }
+}
+
+/* the footer clears the bar it sits behind */
+.ofFoot { padding-bottom: calc(86px + var(--safe-bottom)); }
+@media (min-width: 760px) { .ofFoot { padding-bottom: calc(24px + var(--safe-bottom)); } }
+
+/* ------------------------------------------------ 760px and wider ------ */
+
+@media (min-width: 760px) {
+  .offer .screen { max-width: var(--col-wide); padding: 0 32px; }
+
+  .ofHero { padding-bottom: 36px; }
+  .ofLogo { padding: 22px 0 8px; }
+
+  .ofHeroGrid {
+    display: grid; grid-template-columns: 1.05fr .95fr;
+    gap: 36px; align-items: center;
+  }
+  .ofHeroCopy { align-self: center; }
+
+  .ofSub { font-size: 17px; line-height: 1.5; margin-bottom: 10px; }
+  .ofBeat { font-size: 15.5px; margin-bottom: 0; }
+
+  .ofShot { padding: 10px; }
+  .ofShot img { height: 210px; }
+
+  .ofSec, .ofCloser { padding: 40px 0; }
+
+  .ofWall, .ofVp, .ofSteps, .ofMg { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ofRecog { columns: 2; column-gap: 24px; }
+  .ofRecog li { break-inside: avoid; }
+
+  /* The closer is a mini above-the-fold, so it keeps the hero's two columns. */
+  .ofCloser .screen { max-width: 620px; }
+  .ofFaq { max-width: 760px; }
+}
+
+@media (min-width: 1000px) {
+  .ofH1 { font-size: 42px; }
+}

@@ -1,14 +1,15 @@
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { score, stateKey, SHOP_BASE } from '../../lib/logic';
+import { score, stateKey } from '../../lib/logic';
 import {
   BOTTLE, CUSTOMERS, FDA_DISCLAIMER, OFFER_DISCLAIMER, SEV_PHRASE, TRIED_WHY, VERDICT,
 } from '../../lib/content';
 import { Stars } from '../../components/icons';
-import { shopUrl, track } from '../../lib/analytics';
+import { RATING, REVIEW_COUNT } from '../../lib/reviews';
 import {
-  GUARANTEE_DAYS, ONE_MONTH_PRICE, SUBSCRIBE_PRICE, SUBSCRIBE_SAVING, money, showInternalNotes,
+  GUARANTEE_DAYS, PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, showInternalNotes,
 } from '../../lib/offer';
+import { BuyOptions, useOfferChoice } from '../../components/BuyOptions';
 import type { Severity } from '../../lib/logic';
 
 function Guarantee() {
@@ -159,9 +160,9 @@ export function R6() {
       <p className="selfieCap">Real customers, from JJ&rsquo;s own product page.</p>
 
       <div className="ratingBlock" style={{ marginTop: 14 }}>
-        <div className="ratingBig">4.9</div>
+        <div className="ratingBig">{RATING}</div>
         <div className="ratingStars"><Stars /></div>
-        <p className="ratingSub">from 169 verified reviews of Hormone Focus</p>
+        <p className="ratingSub">from {REVIEW_COUNT} verified reviews of Hormone Focus</p>
       </div>
 
       <ActionBar>
@@ -178,7 +179,10 @@ export function R7() {
   const outcome = stateKey(S);
   const v = VERDICT[outcome];
   const sc = score(S);
-  const href = shopUrl(SHOP_BASE, outcome, angle.slug);
+
+  /* THE SAME OFFER AS /offer. The rows, the prices and the three cart modes
+     all come from BuyOptions, so the quiz cannot drift away from the pages. */
+  const { chosen, choose } = useOfferChoice();
 
   return (
     <Screen id="r7">
@@ -191,52 +195,32 @@ export function R7() {
         {S.sev && ` · ${SEV_PHRASE[S.sev as Severity]}`}
       </p>
 
-      <div className="ladder">
-        <div className="rung">
-          <span className="rn">1</span>
-          <div className="rt"><b>Your Starter Guide</b><i>Arrives today. What to change this week, before the capsules have done anything.</i></div>
-          <span className="rp free">Free</span>
-        </div>
-        <div className="rung on">
-          <span className="rn">2</span>
-          <div className="rt"><b>Hormone Focus, 30 days</b><i>Two capsules a day. You change nothing else.</i></div>
-          <span className="rp">{money(ONE_MONTH_PRICE)}</span>
-        </div>
-        <div className="rung">
-          <span className="rn">3</span>
-          <div className="rt"><b>Subscribe and save {SUBSCRIBE_SAVING}</b><i>It takes more than one month to know. Cancel any time.</i></div>
-          <span className="rp">{money(SUBSCRIBE_PRICE)}<em>/mo</em></span>
-        </div>
-      </div>
-
       <div className="shot">
         <img src={BOTTLE} alt="Hormone Focus" width={620} height={540} loading="lazy" decoding="async" />
       </div>
 
-      <Guarantee />
+      <div className="offer quizBuy">
+        <BuyOptions
+          chosen={chosen}
+          onChoose={choose}
+          outcome={outcome}
+          angle={angle.slug}
+          name="quiz"
+        />
+      </div>
 
-      <ActionBar>
-        {/* Same tab, deliberately: she is leaving the funnel for the cart,
-            and a new tab would leave a dead quiz behind her. No rel, either
-            — noreferrer would strip the Referer that Shopify attributes on. */}
-        <a
-          className="cta"
-          href={href}
-          onClick={() => track.checkout(outcome, ONE_MONTH_PRICE)}
-        >
-          Start today &mdash; {money(ONE_MONTH_PRICE)}
-        </a>
-      </ActionBar>
+      <Guarantee />
 
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
 
       {showInternalNotes() && (
         <div className="warn">
-          <b>Internal note — not shown to customers.</b> The {SUBSCRIBE_SAVING} subscribe-and-save
-          comes from JJ&rsquo;s live product page, so {money(SUBSCRIBE_PRICE)} is derived rather than
-          confirmed. No 3 or 6-month bundle exists yet. The Starter Guide still has to be produced.
-          The button now goes to the Shopify cart with the bottle already in it, carrying the
-          ad&rsquo;s own UTMs where it sent any.
+          <b>Internal note — not shown to customers.</b> The Protocol link runs on the
+          discount code {PROTOCOL_DISCOUNT_CODE ?? 'that is not set yet'} while
+          PROTOCOL_VARIANT_ID is {PROTOCOL_VARIANT_ID ?? 'null'}, so the code has to
+          exist in the store before this button is worth anything. The subscription row
+          stays unrendered until there is a plan behind it. No 3 or 6-month bundle
+          exists yet, and the Starter Guide still has to be produced.
         </div>
       )}
 
