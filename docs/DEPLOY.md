@@ -29,6 +29,9 @@ unknown paths will return 404 for every ad destination except `/`.
 | `/bloating` `/weight` `/hot-flashes` `/sleep` `/mood` `/energy` | one landing page per ad angle |
 | `/quiz` | the quiz, no angle |
 | `/<angle>/quiz` | the quiz, with that angle's symptom pre-selected |
+| `/offer` | the offer page, master angle |
+| `/offer/<angle>` | the offer page with the hero swapped for that ad angle |
+| `/live` | the offer page with the Live strip at the top |
 
 Configuration is committed for two hosts and written out for the rest:
 
@@ -47,6 +50,18 @@ Configuration is committed for two hosts and written out for the rest:
    until a tag is present.
 3. **Settle the three open commercial items.** They are listed in
    `src/lib/offer.ts` and rendered on the offer screen with `?debug=1`.
+4. **Create the two Shopify discounts the Protocol runs on.** The buy button
+   sells two bottles at $84.99 with free shipping, and neither half of that
+   exists in the store until somebody makes it:
+   - a discount code `PROTOCOL`, $14.99 off, minimum quantity 2 of Hormone
+     Focus, no expiry, set to combine with shipping discounts;
+   - an automatic free-shipping discount for any cart holding two or more
+     Hormone Focus.
+
+   Until the code exists, the Protocol button opens a cart with two bottles at
+   full price. The moment a dedicated two-bottle variant exists instead, set
+   `PROTOCOL_VARIANT_ID` in `src/lib/offer.ts` and the link switches to it on
+   the next deploy; the code then becomes the backup.
 
 ## Checking a build before it ships
 
@@ -60,6 +75,15 @@ npm run preview
 `npm run e2e` uses the Chrome already installed on the machine. On a CI box
 without one, run `npx playwright install chromium` and remove the `channel`
 lines from `playwright.config.ts`.
+
+## The offer lives in one file
+
+Prices, variant ids, the discount code and the subscription flag are all in
+`src/lib/offer.ts`, and `shopUrl()` in `src/lib/analytics.ts` builds every cart
+link from them. The offer pages and the screen at the end of the quiz render the
+same `BuyOptions` component, so there is one offer in the code rather than two.
+`tests/copy.test.ts` holds the authored copy to the claim rules and
+`e2e/offer.spec.ts` holds the cart links and the fold.
 
 ## Adding an ad angle
 

@@ -12,6 +12,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
+
+  /* The suite runs five viewports over the funnel AND the offer pages, which
+     is enough Chrome instances to starve a laptop. Left on the default worker
+     count it does not fail on a bug, it fails on contention: assertions time
+     out at thirty seconds while the machine swaps. Four workers and a longer
+     timeout make a red run mean something. */
+  workers: 4,
+  timeout: 45_000,
   use: {
     baseURL: 'http://localhost:4317',
     trace: 'on-first-retry',
