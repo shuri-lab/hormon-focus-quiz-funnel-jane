@@ -11,19 +11,35 @@
  * field that already exists.
  */
 import { test, expect } from 'vitest';
-import { ANGLES, type Angle } from '../src/lib/angles';
+import { ANGLES, type Angle, type AngleOffer } from '../src/lib/angles';
 
 /** Exactly the fields a route may carry. Adding one is a deliberate act. */
 const ALLOWED_KEYS: (keyof Angle)[] = [
   'slug', 'preselect', 'label', 'chip1',
   'h1a', 'h1b', 'paren', 'lines', 'closer', 'description',
+  /* Added with the offer pages. The route's hero at /offer/<slug>. */
+  'offer',
+];
+
+/** And exactly the fields the offer block may carry. */
+const ALLOWED_OFFER_KEYS: (keyof AngleOffer)[] = [
+  'h1a', 'h1b', 'h1c', 'sub', 'beat', 'close', 'title', 'description',
 ];
 
 test('no route carries a field beyond the allowed set', () => {
   for (const a of ANGLES) {
     const keys = Object.keys(a).sort();
-    expect(keys, `/${a.slug || ''} carries an unexpected field`)
-      .toEqual([...ALLOWED_KEYS].sort());
+    const allowed = [...ALLOWED_KEYS].filter((k) => k !== 'offer' || a.offer).sort();
+    expect(keys, `/${a.slug || ''} carries an unexpected field`).toEqual(allowed);
+
+    if (!a.offer) continue;
+    const offerKeys = Object.keys(a.offer).sort();
+    for (const k of offerKeys) {
+      expect(
+        (ALLOWED_OFFER_KEYS as string[]).includes(k),
+        `/${a.slug || ''} offer block carries an unexpected field: ${k}`,
+      ).toBe(true);
+    }
   }
 });
 
@@ -41,10 +57,21 @@ const INTERNAL = [
   /\bimpressions?\b|\bspend\b|\bconversion rate\b/i,
 ];
 
+/** Flattens a route to [field path, string] pairs, offer block included. */
+function routeStrings(value: unknown, path: string, out: [string, string][] = []) {
+  if (typeof value === 'string') { out.push([path, value]); return out; }
+  if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      routeStrings(v, path === '' ? k : `${path}.${k}`, out);
+    }
+  }
+  return out;
+}
+
 test('no route string reads as internal commentary', () => {
   for (const a of ANGLES) {
-    for (const [field, value] of Object.entries(a)) {
-      const strings = Array.isArray(value) ? value : [value];
+    for (const [field, value] of routeStrings(a, '')) {
+      const strings = [value];
       for (const v of strings) {
         if (typeof v !== 'string') continue;
         for (const pattern of INTERNAL) {

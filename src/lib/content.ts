@@ -5,7 +5,8 @@
  *  - Every product claim is JJ's own published wording. No timeframes,
  *    no quantified results, no invented percentages.
  *  - 800,000 is scoped to books and challenges, NOT supplement buyers.
- *  - 169 is the Hormone Focus review count. It belongs beside 4.9, nowhere else.
+ *  - The Hormone Focus review count lives in reviews.ts, and belongs beside
+ *    the 4.9 and nowhere else.
  */
 import type { QuizState, SymptomId, TriedId, MarkerId, MoodId, Severity, Outcome } from './logic';
 import { masked, docReason } from './logic';

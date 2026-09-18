@@ -8,6 +8,8 @@
  * IDs are confirmed. This module only fires events at them.
  */
 
+import { cartPath, type OfferKind } from './offer';
+
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
@@ -145,6 +147,12 @@ export const track = {
     meta('ViewContent', { content_name: 'offer', content_category: outcome }, true);
   },
 
+  /** She changed which bottle count she is buying. Fired on change, not on load. */
+  selectOption(offer: string, value: number) {
+    push('select_option', { offer, value, currency: 'USD' });
+    meta('SelectOption', { offer, value });
+  },
+
   /** The click out to the shop. The doctor route never reaches this. */
   checkout(outcome: string, value: number) {
     push('begin_checkout', { outcome, value, currency: 'USD' });
@@ -198,11 +206,21 @@ export function readAttribution(): Record<string, string> {
  * quiz's own value is only a fallback for traffic that arrived with none.
  * The outcome is never lost either way, because hf_outcome always carries it.
  *
- * `storefront=true` is set explicitly rather than inherited from the base, so
- * this cannot silently become the direct-to-checkout link.
+ * `base` supplies the STORE ORIGIN only. The path and the cart query come from
+ * `cartPath()` in offer.ts, which is where the three modes live: one bottle,
+ * two bottles by discount code, two bottles by variant. Passing the origin in
+ * rather than repeating it keeps the store host named once, in logic.ts.
+ *
+ * `storefront=true` is set explicitly rather than inherited, so this cannot
+ * silently become the direct-to-checkout link.
  */
-export function shopUrl(base: string, outcome: string, angle: string): string {
-  const url = new URL(base);
+export function shopUrl(
+  base: string,
+  outcome: string,
+  angle: string,
+  offer: OfferKind = 'single',
+): string {
+  const url = new URL(cartPath(offer), base);
   const ad = readAttribution();
 
   /* The cart, not the checkout. Asserted here, not assumed from the base. */
@@ -225,6 +243,10 @@ export function shopUrl(base: string, outcome: string, angle: string): string {
   /* The quiz result, kept in its own param so carrying the ad's utm_content
      through does not cost us the outcome attribution. */
   url.searchParams.set('hf_outcome', outcome);
+
+  /* Which of the three she chose, so the store side can read bundle mix
+     without inferring it from the line items. */
+  url.searchParams.set('hf_offer', offer);
 
   if (ad.fbclid) url.searchParams.set('fbclid', ad.fbclid);
   return url.toString();
