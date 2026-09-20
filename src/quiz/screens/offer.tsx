@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { score, stateKey } from '../../lib/logic';
@@ -10,8 +9,7 @@ import { RATING, REVIEW_COUNT } from '../../lib/reviews';
 import {
   GUARANTEE_DAYS, PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, showInternalNotes,
 } from '../../lib/offer';
-import { BuyOptions, useOfferChoice } from '../../components/BuyOptions';
-import { PLAN_LINK_LABEL, planHref } from '../../lib/planCopy';
+import { BuyOptions, GuideCard, useOfferChoice } from '../../components/BuyOptions';
 import type { Severity } from '../../lib/logic';
 
 function Guarantee() {
@@ -186,7 +184,6 @@ export function R7() {
      three cart modes all come from BuyOptions, so the quiz cannot drift away
      from the pages. */
   const { chosen, choose } = useOfferChoice();
-  const plan = planHref(S);
 
   return (
     <Screen id="r7">
@@ -203,13 +200,7 @@ export function R7() {
         <img src={BOTTLE} alt="Hormone Focus" width={620} height={540} loading="lazy" decoding="async" />
       </div>
 
-      {/* The Starter Guide is a page she can open now, so the value stack is
-          not promising her an email that does not exist yet. */}
-      {plan && (
-        <p className="planLink">
-          <Link to={plan}>{PLAN_LINK_LABEL} &rarr;</Link>
-        </p>
-      )}
+      <GuideCard />
 
       <div className="offer quizBuy">
         <BuyOptions

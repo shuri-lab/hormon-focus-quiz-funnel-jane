@@ -18,8 +18,7 @@
  * tell us" in the same breath, and tests/copy.test.ts fails the build if one
  * loses it.
  */
-import { score, stateKey, type Outcome, type QuizState, type Severity } from './logic';
-import { SEV_PHRASE } from './content';
+import type { Outcome } from './logic';
 
 /** The archetypes /plan answers to. Anything else is not a plan we wrote. */
 export type Archetype = 'imbalance' | 'perimenopause' | 'menopause' | 'early-menopause';
@@ -201,28 +200,31 @@ export const planTitle = (reader: PlanReader): string =>
 export const planDescription = (v: PlanVersion): string =>
   `Your hormone plan: what to change this week, how to take Hormone Focus, and what customers report at two weeks, four, and sixty. Your result is ${v.stage}.`;
 
-/* -------------------------------------------------------------- the link -- */
-
-/** What the link reads, on the result screen and on the offer screen. */
-export const PLAN_LINK_LABEL = 'Open your plan';
+/* ------------------------------------------------- who links to this page -- */
 
 /**
- * The link the quiz hands her, and the same URL the post-quiz email will
- * carry once Klaviyo is ours.
+ * NOTHING IN THIS APPLICATION LINKS HERE, and that is the design.
  *
- * Null for outcome D. That route is an exit: no plan, no offer, no shop link,
- * and a null here is what makes it impossible to render one by accident.
+ * The Starter Guide is one of the two bonuses in the value stack. A bonus she
+ * can open before she buys is not a bonus, it is a free page that happens to
+ * be listed on the receipt — so the quiz names it and does not hand it over.
+ *
+ * She reaches it in exactly two places, both after the order:
+ *   1. the store's order confirmation page, and
+ *   2. the first post-purchase email, from the Klaviyo flow.
+ *
+ * Both build the URL below from the profile properties the quiz already
+ * writes: hf_quiz_archetype, hf_quiz_signs and hf_quiz_frequency, plus her
+ * first name. ARCHETYPE_FOR is the mapping from the quiz outcome, and it is
+ * exported so whoever wires that flow can read it rather than guess it.
+ *
+ *   https://hormonefocus.jjsmithonline.com/plan/{archetype}
+ *     ?signs={n}&freq={frequency}&name={first name}
+ *
+ * Every parameter is optional and the page reads correctly without any of
+ * them, so a flow that cannot supply one is not a broken link.
+ *
+ * The route carries noindex, and robots.txt disallows /plan/, because a page
+ * holding her first name has no business in a search index.
  */
-export function planHref(S: QuizState): string | null {
-  const outcome = stateKey(S);
-  if (outcome === 'D') return null;
-
-  const params = new URLSearchParams();
-  params.set('signs', String(score(S).raw));
-  if (S.sev) params.set('freq', SEV_PHRASE[S.sev as Severity]);
-
-  const first = S.name.trim().split(/\s+/)[0];
-  if (first) params.set('name', first);
-
-  return `/plan/${ARCHETYPE_FOR[outcome]}?${params.toString()}`;
-}
+export const PLAN_URL_PATH = '/plan/{archetype}?signs={n}&freq={frequency}&name={first name}';

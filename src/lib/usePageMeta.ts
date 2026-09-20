@@ -38,7 +38,10 @@ export function usePageMeta({ title, description, image, noindex }: Meta) {
   useEffect(() => {
     document.title = title;
     meta('description', description);
-    meta('robots', noindex ? 'noindex,nofollow' : 'index,follow');
+    /* Exactly 'noindex'. Not 'noindex,nofollow': the pages that set this are
+       our own funnel screens, and telling a crawler not to follow the links
+       out of them was never the intent. */
+    meta('robots', noindex ? 'noindex' : 'index,follow');
 
     meta('og:title', title, 'property');
     meta('og:description', description, 'property');

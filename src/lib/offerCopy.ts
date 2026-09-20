@@ -185,6 +185,18 @@ export const FAQ: [string, string][] = [
 export const CLOSER_SUB =
   'Two capsules with a meal. Change nothing else. Two bottles, because one month is not enough to know.';
 
+/**
+ * The Starter Guide, on the quiz result screen and the quiz offer screen.
+ *
+ * It is a card and not a link on purpose. The guide is one of the two bonuses
+ * she receives WITH the bottles, and handing it over before she has bought
+ * anything spends the bonus and leaves the stack naming something she already
+ * has. She reads what it is here; she is given it after the order.
+ */
+export const GUIDE_CARD_LEAD = 'Your Starter Guide comes with your two bottles.';
+export const GUIDE_CARD_REST =
+  ' What to change this week, and what to expect at two weeks, four, and sixty, as customers report.';
+
 /** Near the button, when SHOW_BATCH_LINE is on. True, said once, no timer. */
 export const batchLine = (count: string, next: string): string =>
   `This batch: ${count} bottles on the shelf. The next batch lands in ${next}.`;

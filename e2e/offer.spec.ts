@@ -350,6 +350,34 @@ test.describe('the plan page', () => {
       expect(await page.locator('body').innerText()).not.toMatch(/\{[a-z ]+\}/i);
     });
 
+  /* A page holding her first name and her result has no business in a search
+     index, and the meta tag is the half of that which works per route. */
+  test('the plan page asks not to be indexed', async ({ page }) => {
+    await page.goto(PLAN);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+
+    await page.goto('/offer');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'index,follow');
+  });
+
+  /* THE GUIDE IS A BONUS, NOT A FREE PAGE. Nothing in the application links
+     here: she arrives from the order confirmation page or the first
+     post-purchase email, both of which David and the Klaviyo flow build. A
+     link added anywhere in the funnel spends the bonus, so this test fails
+     the build the moment one appears. */
+  test('nothing in the funnel links to the plan', async ({ page }) => {
+    for (const route of [...ROUTES, '/', '/quiz', '/bloating']) {
+      await page.goto(route);
+      const hrefs = await page.locator('a[href]').evaluateAll(
+        (as) => as.map((a) => a.getAttribute('href') ?? ''),
+      );
+      expect(
+        hrefs.filter((h) => h.includes('/plan')),
+        `${route} links to the Starter Guide, which is a bonus she receives with the bottles`,
+      ).toEqual([]);
+    }
+  });
+
   test('an archetype we did not write a plan for goes to the front door',
     async ({ page }) => {
       await page.goto('/plan/not-a-real-result');

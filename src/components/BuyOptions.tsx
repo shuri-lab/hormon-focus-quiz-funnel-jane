@@ -7,8 +7,9 @@ import {
   type OfferKind,
 } from '../lib/offer';
 import {
-  GUARANTEE_LINK_TEXT, GUARANTEE_PRE, GUARANTEE_REST, REFUND_POLICY_URL,
-  SHIPPING_LINE, STACK_HEADING, batchLine, liveDeadlineLine,
+  GUARANTEE_LINK_TEXT, GUARANTEE_PRE, GUARANTEE_REST, GUIDE_CARD_LEAD,
+  GUIDE_CARD_REST, REFUND_POLICY_URL, SHIPPING_LINE, STACK_HEADING, batchLine,
+  liveDeadlineLine,
 } from '../lib/offerCopy';
 
 /**
@@ -62,6 +63,23 @@ export function Guarantee() {
         </b>
         {GUARANTEE_REST}
       </p>
+    </div>
+  );
+}
+
+/**
+ * The Starter Guide, named rather than handed over.
+ *
+ * It is one of the two bonuses in the stack, and a bonus she can open before
+ * she buys is not a bonus. So the quiz says what it is and what is in it, and
+ * she is given it after the order — on the confirmation page and in the first
+ * post-purchase email. Nothing here links to /plan.
+ */
+export function GuideCard() {
+  return (
+    <div className="guideCard">
+      <span className="guideBonus">Bonus</span>
+      <p><b>{GUIDE_CARD_LEAD}</b>{GUIDE_CARD_REST}</p>
     </div>
   );
 }

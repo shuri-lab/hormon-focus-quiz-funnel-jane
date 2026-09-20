@@ -2,6 +2,12 @@ User-agent: *
 Allow: /
 Disallow: /quiz
 Disallow: /*/quiz
+Disallow: /plan/
 
 # The landing pages are the entry points. The quiz itself has no standalone
 # value in search and its screens are not meant to be reached cold.
+#
+# /plan/ carries her first name and her result in the query string. It also
+# sets noindex, but this file is the half of that which works without running
+# our JavaScript. Nothing in the site links to it: she arrives from the order
+# confirmation page or the first post-purchase email.

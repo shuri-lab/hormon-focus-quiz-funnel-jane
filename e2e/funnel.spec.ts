@@ -137,6 +137,16 @@ test.describe('the quiz', () => {
     /* The offer screen now renders the shared options component, so the buy
        button is .buyBtn rather than the screen's own action bar. */
     await expect(page.locator('.buyBtn')).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
+
+    /* The Starter Guide is named as a bonus she receives with the bottles,
+       and never handed over as a link before she has bought anything. */
+    await expect(page.locator('.guideCard')).toBeVisible();
+    await expect(page.locator('.guideCard')).toContainText('comes with your two bottles');
+    const quizHrefs = await page.locator('a[href]').evaluateAll(
+      (as) => as.map((a) => a.getAttribute('href') ?? ''),
+    );
+    expect(quizHrefs.filter((h) => h.includes('/plan')), 'the quiz must not link to the plan')
+      .toEqual([]);
     expect(errors, 'javascript errors during the run').toEqual([]);
   });
 
