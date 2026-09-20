@@ -1,8 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { expectNoHorizontalOverflow, expectTapTargets } from './helpers';
 import {
-  PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, cartPath,
+  BATCH_ON_SHELF, LIVE_DEADLINE, PLAN_SHORT, PROTOCOL_DISCOUNT_CODE,
+  PROTOCOL_VARIANT_ID, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, SINGLE_VARIANT_ID,
+  VALUE_STACK, cartPath, dailyPrice,
 } from '../src/lib/offer';
+
+/* The Starter Guide, with everything the quiz would have put on the link. */
+const PLAN = '/plan/perimenopause?signs=4&freq=most%20weeks&name=Test';
 
 /* The three routes the offer lives on. /offer is the master angle, the slug
    route swaps the hero, and /live adds the strip. Everything below the hero is
@@ -24,7 +29,7 @@ const phone390 = (page: Page) => page.viewportSize()?.width === 390;
 
 test.describe('the offer pages', () => {
   for (const route of ROUTES) {
-    test(`${route} lays out, pre-selects the Protocol and buys`, async ({ page }) => {
+    test(`${route} lays out, pre-selects the Plan and buys`, async ({ page }) => {
       await page.goto(route);
       await page.waitForLoadState('networkidle');
 
@@ -36,22 +41,56 @@ test.describe('the offer pages', () => {
       await expectNoHorizontalOverflow(page, route);
       await expectTapTargets(page, route);
 
-      /* The Protocol is the offer. It arrives chosen, on every route and at
-         every width, and it is the only row that is. */
+      /* The Plan is the offer. It arrives chosen, on every route and at every
+         width, and it is the only row that is. */
       const chosen = page.locator('.ofHeroBuy .buyRow[aria-checked="true"]');
       await expect(chosen).toHaveCount(1);
-      await expect(chosen).toContainText('60-Day Protocol');
+      await expect(chosen).toContainText(PLAN_SHORT);
       await expect(chosen).toContainText('Best Seller');
+
+      /* The word we use among ourselves never reaches her. */
+      expect(
+        /protocol/i.test(await page.locator('body').innerText()),
+        `${route} says Protocol to the customer`,
+      ).toBe(false);
     });
   }
 
   test('/live is the only route that carries the strip', async ({ page }) => {
     await page.goto('/live');
     await expect(page.locator('.liveStrip')).toBeVisible();
-    await expect(page.locator('.liveStrip')).toContainText('through Monday night');
+    await expect(page.locator('.liveStrip')).toContainText(PLAN_SHORT);
 
     await page.goto('/offer');
     await expect(page.locator('.liveStrip')).toHaveCount(0);
+  });
+
+  /* LIVE_DEADLINE is the only deadline the page may carry, and it is the one
+     JJ says out loud. Unset, it renders nothing at all rather than an empty
+     'Through .' that somebody has to catch in a screenshot. */
+  test('the Live deadline renders only where one is set', async ({ page }) => {
+    await page.goto('/live');
+    const strip = page.locator('.liveStrip');
+    const under = page.locator('.ofHeroBuy .buyDeadline');
+
+    if (LIVE_DEADLINE) {
+      await expect(strip).toContainText(`Through ${LIVE_DEADLINE}.`);
+      await expect(under).toHaveText(`Through ${LIVE_DEADLINE}.`);
+    } else {
+      await expect(strip).not.toContainText('Through');
+      await expect(under).toHaveCount(0);
+    }
+  });
+
+  test('there is no countdown, on any route', async ({ page }) => {
+    for (const route of ROUTES) {
+      await page.goto(route);
+      const body = await page.locator('body').innerText();
+      expect(
+        /hurry|only \d+ left|ends in|expires in|last chance/i.test(body),
+        `${route} manufactures urgency`,
+      ).toBe(false);
+    }
   });
 
   test('an offer slug we do not sell against falls back to /offer', async ({ page }) => {
@@ -191,6 +230,139 @@ test.describe('the cart link', () => {
         ? `/cart/${PROTOCOL_VARIANT_ID}:1?storefront=true`
         : `/cart/${SINGLE_VARIANT_ID}:2?storefront=true&discount=${PROTOCOL_DISCOUNT_CODE}`,
     );
+  });
+});
+
+/* ------------------------------------------------- the stack and the lines -- */
+
+test.describe('what she gets for the money', () => {
+  test('the value stack is on the page, twice, with its bonuses named', async ({ page }) => {
+    await page.goto('/offer');
+
+    /* Once under the hero price and once at the close, both from the one
+       array in offer.ts. */
+    await expect(page.locator('.stack')).toHaveCount(2);
+
+    const hero = page.locator('.ofHeroBuy .stack');
+    for (const item of VALUE_STACK) {
+      await expect(hero).toContainText(item.what.slice(0, 40));
+      await expect(hero).toContainText(item.worth);
+    }
+
+    /* Two of the six are bonuses, and a bonus named is worth more than the
+       same thing folded into the price. */
+    await expect(hero.locator('.stackBonus')).toHaveCount(
+      VALUE_STACK.filter((i) => i.bonus).length,
+    );
+    await expect(hero).toContainText('Starter Guide');
+    await expect(hero).toContainText('Flat Belly Cheat Sheet for Women Over 40');
+  });
+
+  test('the daily price and the batch line say what the switches say', async ({ page }) => {
+    await page.goto('/offer');
+
+    const daily = page.locator('.ofHeroBuy .buyDaily');
+    if (SHOW_DAILY_PRICE) {
+      await expect(daily).toContainText(`${dailyPrice()} a day`);
+      /* It is the Plan that sixty days divides, so the line goes when the
+         single bottle is chosen. */
+      await page.locator('.ofHeroBuy .buyRow').first().click();
+      await expect(daily).toHaveCount(0);
+    } else {
+      await expect(daily).toHaveCount(0);
+    }
+
+    await page.goto('/offer');
+    const batch = page.locator('.ofHeroBuy .buyBatch');
+    if (SHOW_BATCH_LINE) {
+      await expect(batch).toContainText(BATCH_ON_SHELF.toLocaleString('en-US'));
+      await expect(batch).toContainText('The next batch lands in');
+
+      /* Near the button, which is what makes it scarcity rather than trivia. */
+      const btn = (await page.locator('.ofHeroBuy .buyBtn').boundingBox())!;
+      const line = (await batch.boundingBox())!;
+      expect(line.y - (btn.y + btn.height)).toBeLessThan(60);
+    } else {
+      await expect(batch).toHaveCount(0);
+    }
+  });
+
+  test('the guarantee is on /offer twice, verbatim, with the policy behind it',
+    async ({ page }) => {
+      await page.goto('/offer');
+
+      const guarantee = page.locator('.guar');
+      await expect(guarantee).toHaveCount(2);
+
+      for (let i = 0; i < 2; i += 1) {
+        await expect(guarantee.nth(i).locator('p')).toHaveText(
+          '60-Day Happiness Guarantee. Try it for two months. '
+          + 'If you are not satisfied, we refund up to two bottles within 60 days.',
+        );
+        await expect(guarantee.nth(i).locator('a')).toHaveAttribute(
+          'href', 'https://shop.jjsmithonline.com/policies/refund-policy',
+        );
+      }
+    });
+});
+
+/* ------------------------------------------------------ the Starter Guide -- */
+
+test.describe('the plan page', () => {
+  test('reads back her result, her signs and her name', async ({ page }) => {
+    await page.goto(PLAN);
+    await page.waitForLoadState('networkidle');
+
+    await expect(page).toHaveURL(/\/plan\/perimenopause/);
+    await expectNoHorizontalOverflow(page, PLAN);
+    await expectTapTargets(page, PLAN);
+
+    /* What the link carried, read back to her in the first two lines. */
+    await expect(page.locator('[data-plan-title]')).toContainText('Test');
+    await expect(page.locator('[data-plan-result]')).toContainText('4 of 14 signs');
+    await expect(page.locator('[data-plan-result]')).toContainText('most weeks');
+    await expect(page.locator('[data-plan-result]')).toContainText('perimenopause');
+
+    /* Every section of the spine, and no token left unfilled. */
+    await expect(page.locator('.planSec')).toHaveCount(7);
+    expect(await page.locator('body').innerText()).not.toMatch(/\{[a-z ]+\}/i);
+  });
+
+  test('carries the same buy block and the same stack as the offer page', async ({ page }) => {
+    await page.goto(PLAN);
+
+    await expect(page.locator('.buy')).toHaveCount(1);
+    await expect(page.locator('.buyRow[aria-checked="true"]')).toContainText(PLAN_SHORT);
+    await expect(page.locator('.stack')).toHaveCount(1);
+    await expect(page.locator('.guar')).toHaveCount(1);
+
+    const url = new URL((await page.locator('.buyBtn').getAttribute('href'))!);
+    expect(url.origin).toBe('https://shop.jjsmithonline.com');
+    expect(url.searchParams.get('hf_offer')).toBe('protocol');
+    expect(url.searchParams.get('hf_outcome')).toBe('plan_perimenopause');
+  });
+
+  test('reads like something a person wrote when the link carried nothing',
+    async ({ page }) => {
+      await page.goto('/plan/menopause');
+      await expect(page.locator('[data-plan-title]')).toHaveText('Your hormone plan is here');
+      await expect(page.locator('[data-plan-result]')).toContainText('You said yes to several things');
+      expect(await page.locator('body').innerText()).not.toMatch(/\{[a-z ]+\}/i);
+    });
+
+  test('an archetype we did not write a plan for goes to the front door',
+    async ({ page }) => {
+      await page.goto('/plan/not-a-real-result');
+      await expect(page).toHaveURL(/\/$/);
+      await expect(page.locator('h1')).toBeVisible();
+    });
+
+  test('every archetype we do write renders', async ({ page }) => {
+    for (const a of ['imbalance', 'perimenopause', 'menopause', 'early-menopause']) {
+      await page.goto(`/plan/${a}?signs=6&freq=most%20weeks&name=Renee`);
+      await expect(page.locator('[data-plan-result]'), a).toContainText('6 of 14 signs');
+      await expect(page.locator('.buyBtn'), a).toBeVisible();
+    }
   });
 });
 

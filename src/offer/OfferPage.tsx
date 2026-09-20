@@ -14,7 +14,8 @@ import {
   INGREDIENTS, LIVE_HERO, LIVE_STRIP_LEAD, LIVE_STRIP_REST, MG_EYEBROW,
   MG_HEADLINE, OFFER_FINE_PRINT, PAIN_EYEBROW, PAIN_TURN, STEPS, STEPS_EYEBROW,
   STEPS_HEADLINE, VALUE_EYEBROW, VALUE_HEADLINE, VALUE_PROPS, WALL_EYEBROW,
-  WALL_HEADLINE, WALL_NOTE, heroFor, painHeadline, type OfferHero,
+  WALL_HEADLINE, WALL_NOTE, heroFor, liveDeadlineLine, painHeadline,
+  type OfferHero,
 } from '../lib/offerCopy';
 
 /**
@@ -102,6 +103,8 @@ export function OfferPage({ live = false }: Props) {
     return () => io.disconnect();
   }, []);
 
+  const deadline = live ? liveDeadlineLine() : null;
+
   const buy = (name: string) => (
     <BuyOptions
       chosen={chosen}
@@ -109,6 +112,7 @@ export function OfferPage({ live = false }: Props) {
       outcome={outcome}
       angle={angle.slug}
       name={name}
+      live={live}
     />
   );
 
@@ -116,9 +120,12 @@ export function OfferPage({ live = false }: Props) {
     <div className="app offer">
       <main className="appMain">
 
+        {/* The deadline is JJ's, said out loud on the broadcast. With
+            LIVE_DEADLINE unset the strip simply does not claim one. */}
         {live && (
           <p className="liveStrip">
             <b>{LIVE_STRIP_LEAD}</b>{LIVE_STRIP_REST}
+            {deadline && <span className="liveBy"> {deadline}</span>}
           </p>
         )}
 

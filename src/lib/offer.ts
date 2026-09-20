@@ -11,7 +11,12 @@
  *    product page. It is not confirmed, and SUBSCRIPTION_LIVE keeps the
  *    option off the page until the plan exists.
  *  - No 3 or 6-month bundle exists. The ladder shows one.
- *  - The Starter Guide does not exist. It is promised as step 1.
+
+ * THE NAME. She reads "The 60-Day Plan". We write PROTOCOL_ in the constant
+ * names because that is what the store, the discount code and the analytics
+ * call it, and renaming those would break live links. The word never reaches
+ * her: tests/copy.test.ts fails the build if it appears in a string she
+ * could read.
  *
  * The on-screen warning about all three now renders only in development or
  * with ?debug=1, so the team still sees it in review and a customer never does.
@@ -31,6 +36,21 @@ export const money = (n: number) => `$${n.toFixed(2)}`;
 
 /** Two bottles at the Protocol price, shown per bottle. */
 export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
+
+/* --------------------------------------------------------- the name -- */
+
+/**
+ * What the two-bottle option is called, everywhere she sees it.
+ *
+ * Magnet reason, avatar, interval and container in four words: sixty days,
+ * women over 40, a plan. "Protocol" is a delivery vehicle and it is our word
+ * for it, not hers.
+ */
+export const PLAN_NAME = 'The 60-Day Plan for Women Over 40';
+export const PLAN_SHORT = 'The 60-Day Plan';
+
+/** The same name mid-sentence, where a capital article reads like a shout. */
+export const planShortInline = (): string => PLAN_SHORT.replace(/^The /, 'the ');
 
 /* ----------------------------------------------- what the cart needs -- */
 
@@ -96,10 +116,10 @@ const SINGLE_OPTION: OfferOption = {
 
 const PROTOCOL_OPTION: OfferOption = {
   kind: 'protocol',
-  title: '2 bottles · 60-Day Protocol',
+  title: `2 bottles · ${PLAN_SHORT}`,
   detail: `${money(PROTOCOL_PER_BOTTLE)} per bottle · free shipping`,
-  cta: 'Start the 60-Day Protocol',
-  ctaShort: 'Start the Protocol',
+  cta: `Start ${planShortInline()}`,
+  ctaShort: `Start ${planShortInline()}`,
   price: PROTOCOL_PRICE,
   priceNote: 'free shipping',
   badge: 'Best Seller',
@@ -107,7 +127,7 @@ const PROTOCOL_OPTION: OfferOption = {
 
 const SUBSCRIBE_OPTION: OfferOption = {
   kind: 'subscribe',
-  title: 'Protocol Subscription',
+  title: 'Monthly delivery',
   detail: 'One bottle every 30 days · skip, pause or cancel any time',
   cta: 'Start the subscription',
   ctaShort: 'Subscribe',
@@ -125,11 +145,91 @@ export const OFFER_OPTIONS: OfferOption[] = SUBSCRIPTION_LIVE
   ? [SINGLE_OPTION, PROTOCOL_OPTION, SUBSCRIBE_OPTION]
   : [SINGLE_OPTION, PROTOCOL_OPTION];
 
-/** The Protocol is what we sell. It is chosen for her, on every page. */
+/** The Plan is what we sell. It is chosen for her, on every page. */
 export const DEFAULT_OFFER: OfferKind = 'protocol';
 
 export const optionFor = (kind: OfferKind): OfferOption =>
   OFFER_OPTIONS.find((o) => o.kind === kind) ?? PROTOCOL_OPTION;
+
+/* -------------------------------------------------- what she gets -- */
+
+export interface StackItem {
+  /** The thing itself. */
+  what: string;
+  /** What it is worth to her, in her terms. */
+  worth: string;
+  /** Named as a bonus, because a bonus named is worth more than one folded in. */
+  bonus?: boolean;
+}
+
+/**
+ * The value stack, under the price on every surface that sells.
+ *
+ * Two of these cost nothing to give and already exist: the Starter Guide is a
+ * page we write once, and the Cheat Sheet is the gift the store already sends
+ * on orders over $40. Naming them is the whole point — an unnamed inclusion is
+ * worth nothing, and she is deciding whether $84.99 is a lot of money.
+ *
+ * Edited here and nowhere else. The offer pages and the quiz offer screen both
+ * render this array.
+ */
+export const VALUE_STACK: StackItem[] = [
+  {
+    what: 'Two bottles of Hormone Focus, 60 days',
+    worth: `${money(ONE_MONTH_PRICE * 2)} bought one at a time`,
+  },
+  { what: 'Free shipping', worth: '$7.95' },
+  {
+    what: 'The Starter Guide, personalised to your result: what to change this week, what to expect at two weeks, four, and sixty, as customers report',
+    worth: 'included',
+    bonus: true,
+  },
+  {
+    what: 'The Flat Belly Cheat Sheet for Women Over 40',
+    worth: 'included',
+    bonus: true,
+  },
+  { what: 'A note from JJ every week for the 60 days', worth: 'included' },
+  { what: 'The 60-Day Happiness Guarantee', worth: 'the risk is on JJ' },
+];
+
+/* ------------------------------------------------------- the switches -- */
+
+/**
+ * Three lines that are true today and may not be true next month. Each one is
+ * a flag rather than a paragraph somebody has to find and delete, and each
+ * renders one line or nothing at all.
+ */
+
+/** Under the price: what the Plan costs a day. */
+export const SHOW_DAILY_PRICE = true;
+
+/**
+ * Near the button: real stock, said once.
+ *
+ * This is the only scarcity on the page and it is true. There is no countdown
+ * and no timer, here or anywhere else — a fake deadline is an FTC problem in
+ * this category and this audience has seen enough of them to distrust ours.
+ * Take this line down the day it stops being true.
+ */
+export const SHOW_BATCH_LINE = true;
+export const BATCH_ON_SHELF = 2280;
+export const NEXT_BATCH = 'December';
+
+/**
+ * The Live deadline, on /live only. Null renders nothing at all.
+ *
+ * Set it to the words JJ says out loud on the broadcast, and unset it the
+ * morning after. A deadline she is given and we do not keep is worse than no
+ * deadline, so this stays null unless somebody is keeping it.
+ */
+export const LIVE_DEADLINE: string | null = null;
+
+/** $84.99 over sixty days, to the cent. */
+export const dailyPrice = (): string => money(PROTOCOL_PRICE / 60);
+
+/** 2280 reads as 2,280. */
+export const batchCount = (): string => BATCH_ON_SHELF.toLocaleString('en-US');
 
 /* --------------------------------------------------------- cart paths -- */
 

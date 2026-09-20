@@ -5,6 +5,7 @@ import {
 import { Landing } from './landing/Landing';
 import { Quiz } from './quiz/Quiz';
 import { OfferPage } from './offer/OfferPage';
+import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { captureAttribution, initClarity, pageView } from './lib/analytics';
 
@@ -65,6 +66,9 @@ export default function App() {
         <Route path="/offer" element={<OfferPage />} />
         <Route path="/offer/:slug" element={<KnownOffer><OfferPage /></KnownOffer>} />
         <Route path="/live" element={<OfferPage live />} />
+        {/* Her Starter Guide. The archetype is validated inside the page, and
+            anything we did not write a plan for goes to the front door. */}
+        <Route path="/plan/:archetype" element={<PlanPage />} />
         <Route path="/:slug" element={<KnownAngle><Landing /></KnownAngle>} />
         <Route path="/:slug/quiz" element={<KnownAngle><Quiz /></KnownAngle>} />
         <Route path="*" element={<Navigate to="/" replace />} />

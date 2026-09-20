@@ -147,6 +147,12 @@ export const track = {
     meta('ViewContent', { content_name: 'offer', content_category: outcome }, true);
   },
 
+  /** The Starter Guide page, by archetype. Her own plan, before any email. */
+  planView(archetype: string) {
+    push('view_plan', { archetype });
+    meta('ViewContent', { content_name: 'plan', content_category: archetype }, true);
+  },
+
   /** She changed which bottle count she is buying. Fired on change, not on load. */
   selectOption(offer: string, value: number) {
     push('select_option', { offer, value, currency: 'USD' });

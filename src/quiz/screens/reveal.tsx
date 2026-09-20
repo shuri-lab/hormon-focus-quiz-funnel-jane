@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import {
@@ -6,6 +7,7 @@ import {
   score, stateKey,
 } from '../../lib/logic';
 import { DOC, IMG, QUIZ_DISCLAIMER, VERDICT } from '../../lib/content';
+import { PLAN_LINK_LABEL, planHref } from '../../lib/planCopy';
 
 function displayName(name: string) {
   return name.trim() || 'you';
@@ -16,6 +18,8 @@ function displayName(name: string) {
 export function R1() {
   const { S, next } = useQuiz();
   const v = VERDICT[stateKey(S)];
+  /* Null on the doctor route, which is what keeps this link off it. */
+  const plan = planHref(S);
 
   return (
     <Screen id="r1">
@@ -43,6 +47,15 @@ export function R1() {
             your symptoms and your age instead.
           </p>
         </div>
+      )}
+
+      {/* Her plan exists now, not when an email arrives. It sits outside the
+          action bar on purpose: the primary action is still to read on, and
+          the quiz must keep exactly one button in its commit bar. */}
+      {plan && (
+        <p className="planLink">
+          <Link to={plan}>{PLAN_LINK_LABEL} &rarr;</Link>
+        </p>
       )}
 
       <ActionBar>

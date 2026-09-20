@@ -22,12 +22,13 @@
   color: #fff;
   text-align: center;
   font-family: var(--serif);
-  font-size: 14.5px;
-  line-height: 1.35;
-  padding: 9px var(--gutter);
+  font-size: 14px;
+  line-height: 1.32;
+  padding: 7px var(--gutter);
   padding-top: calc(9px + var(--safe-top));
 }
 .liveStrip b { font-family: var(--sans); font-weight: 600; }
+.liveStrip .liveBy { font-family: var(--sans); font-weight: 700; }
 
 /* ------------------------------------------------------------ the hero -- */
 
@@ -77,10 +78,10 @@
 
 .ofShot {
   background: var(--wash); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 6px; margin: 0 0 10px;
+  border-radius: var(--radius); padding: 4px; margin: 0 0 9px;
 }
 .ofShot img {
-  display: block; width: 100%; height: 96px;
+  display: block; width: 100%; height: 78px;
   object-fit: contain; object-position: center;
 }
 
@@ -88,7 +89,7 @@
 
 .buy {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 9px; box-shadow: var(--shadow);
+  border-radius: var(--radius); padding: 8px; box-shadow: var(--shadow);
 }
 
 .buyRows { display: flex; flex-direction: column; gap: 7px; }
@@ -96,7 +97,7 @@
 .buyRow {
   display: grid; grid-template-columns: 18px 1fr auto;
   gap: 9px; align-items: center; text-align: left;
-  padding: 9px 10px; min-height: 52px;
+  padding: 8px 10px; min-height: 50px;
   border: 1.5px solid var(--line); border-radius: 12px;
   background: var(--surface); color: var(--ink);
   font: inherit; cursor: pointer;
@@ -140,11 +141,48 @@
   font-size: 15.5px; border-radius: 13px;
 }
 
-.buyNote, .buyShip {
+.buyDaily, .buyBatch, .buyShip, .buyDeadline {
   margin: 5px 0 0; text-align: center;
-  font-size: 11px; color: var(--ink-3);
+  font-size: 11px; line-height: 1.35; color: var(--ink-3);
 }
+.buyDaily { font-family: var(--serif); font-size: 11.5px; color: var(--ink-2); }
 .buyShip { color: var(--good); font-weight: 600; }
+.buyDeadline { color: var(--plum); font-weight: 700; font-size: 12px; }
+
+/* True stock, said once. There is no countdown here and there never will be. */
+.buyBatch { color: var(--ink-3); }
+
+/* ------------------------------------------------------- the value stack -- */
+
+.stack { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 9px; }
+.stackH {
+  margin: 0 0 6px; font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+}
+.stack ul { list-style: none; margin: 0; padding: 0; }
+.stack li {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 4px 10px; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px dashed var(--line);
+}
+.stack li:last-child { border-bottom: 0; padding-bottom: 0; }
+.stackWhat { font-size: 12.5px; line-height: 1.34; color: var(--ink); }
+.stackWorth {
+  font-family: var(--serif); font-size: 12px; color: var(--ink-3);
+  text-align: right; white-space: nowrap;
+}
+.stackBonus {
+  display: inline-block; margin-right: 5px; padding: 0 6px;
+  border-radius: 99px; background: var(--wash-2); color: var(--plum);
+  font-size: 9.5px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; vertical-align: 1px;
+}
+
+/* The worth of a long line wraps under it rather than squeezing the words. */
+@media (max-width: 359px) {
+  .stack li { grid-template-columns: 1fr; }
+  .stackWorth { text-align: left; }
+}
 
 .guar {
   display: flex; gap: 8px; align-items: flex-start;
@@ -158,6 +196,7 @@
 }
 .guar p { margin: 0; font-size: 12.5px; line-height: 1.32; color: var(--ink); }
 .guar b { color: var(--good); font-weight: 700; }
+.guar a { color: var(--good); text-decoration: underline; }
 
 /* The same block on the quiz's own offer screen, which has its own rhythm. */
 .quizBuy { margin-top: 18px; }
@@ -319,7 +358,7 @@
   .ofBeat { font-size: 15.5px; margin-bottom: 0; }
 
   .ofShot { padding: 10px; }
-  .ofShot img { height: 210px; }
+  .ofShot img { height: 200px; }
 
   .ofSec, .ofCloser { padding: 40px 0; }
 
@@ -334,4 +373,55 @@
 
 @media (min-width: 1000px) {
   .ofH1 { font-size: 42px; }
+}
+
+/* ================================================== THE STARTER GUIDE =====
+ *
+ * /plan/<archetype>. The plan she was promised, before any email exists. It
+ * reads like a letter rather than a landing page, because that is what it is;
+ * the offer sits at the foot in the same block the offer pages use.
+ */
+
+.planTop { padding: 0 0 20px; }
+.planLead { font-size: var(--t-lead); line-height: 1.4; font-weight: 600; color: var(--ink); }
+
+.planH1 {
+  font-family: var(--sans); font-weight: 700;
+  font-size: clamp(24px, 6.4vw, 36px); line-height: 1.1;
+  letter-spacing: -.03em; margin: 2px 0 6px; text-wrap: balance;
+}
+
+.planSec { margin-top: 20px; }
+.planSec:first-of-type { margin-top: 14px; }
+
+.planH2 {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--plum); margin: 0 0 6px;
+}
+
+.planSec p {
+  font-family: var(--serif); font-size: var(--t-body); line-height: 1.5;
+  color: var(--ink-2); margin: 0 0 9px;
+}
+.planSec p:last-child { margin-bottom: 0; }
+.planSec .planLead { font-family: var(--sans); color: var(--ink); }
+
+.planDoctor {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 11px 13px; font-size: var(--t-sub) !important;
+}
+
+/* The link out of the quiz and into her plan. Not a call to action: the
+   commit bar still owns that, and this must not compete with it. */
+.planLink { margin: 16px 0 0; text-align: center; }
+.planLink a {
+  display: inline-block; padding: 10px 16px; border-radius: 12px;
+  background: var(--wash); border: 1px solid var(--line-2);
+  color: var(--plum); font-weight: 600; font-size: 14.5px; text-decoration: none;
+}
+
+@media (min-width: 760px) {
+  .plan .screen { max-width: 680px; }
+  .planTop { padding-bottom: 30px; }
+  .planSec { margin-top: 26px; }
 }

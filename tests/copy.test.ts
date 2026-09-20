@@ -10,9 +10,10 @@
  * it reads the authored copy and fails the build.
  *
  * WHAT IT READS
- *  - src/lib/offer.ts       the prices and the option rows
+ *  - src/lib/offer.ts       the prices, the option rows and the value stack
  *  - src/lib/angles.ts      every route's headline, and its offer block
  *  - src/lib/offerCopy.ts   every other word the offer pages say
+ *  - src/lib/planCopy.ts    every word the Starter Guide page says
  *
  * WHAT IT DELIBERATELY DOES NOT READ
  *  - src/lib/reviews.ts. Those are customers' words, quoted verbatim. They
@@ -27,6 +28,7 @@ import { WALL } from '../src/lib/reviews';
 import { FDA_DISCLAIMER } from '../src/lib/content';
 import * as offer from '../src/lib/offer';
 import * as copy from '../src/lib/offerCopy';
+import * as plan from '../src/lib/planCopy';
 
 /* ------------------------------------------------- collecting the copy -- */
 
@@ -49,7 +51,34 @@ const AUTHORED: [string, string][] = [
   ...strings(offer, 'offer.ts'),
   ...strings(ANGLES, 'angles.ts'),
   ...strings(copy, 'offerCopy.ts'),
+  ...strings(plan, 'planCopy.ts'),
 ];
+
+/**
+ * Strings that are identifiers rather than copy.
+ *
+ * A Shopify discount code, an analytics value and a URL path are read by
+ * machines and never by her. They are exempted BY PATH rather than by value,
+ * so exempting one cannot accidentally exempt the same word in a sentence.
+ */
+const IDENTIFIER_PATHS = [
+  'offer.ts.PROTOCOL_DISCOUNT_CODE',   // the code Shopify holds
+  'offer.ts.DEFAULT_OFFER',            // 'protocol', the analytics value
+  'offer.ts.SUBSCRIBE_PATH',
+  'offer.ts.SINGLE_VARIANT_ID',
+  'offer.ts.PROTOCOL_VARIANT_ID',
+  'offerCopy.ts.REFUND_POLICY_URL',
+];
+
+const isIdentifier = (path: string) =>
+  IDENTIFIER_PATHS.includes(path)
+  /* Every OFFER_OPTIONS[n].kind, which is the hf_offer parameter. */
+  || path.endsWith('.kind')
+  || path.startsWith('planCopy.ts.ARCHETYPE')
+  || path === 'planCopy.ts.ARCHETYPES';
+
+/** What she can actually read. Everything the gate below is really about. */
+const CUSTOMER_FACING = AUTHORED.filter(([path]) => !isIdentifier(path));
 
 test('there is authored copy to check, so a broken import cannot pass silently', () => {
   expect(AUTHORED.length).toBeGreaterThan(80);
@@ -131,9 +160,13 @@ const SYMPTOM = 'hot flash\\w*|night sweat\\w*|flashes|sweats|bloating|insomnia'
   + '|menopause|perimenopause|hormone\\w*|imbalance\\w*|anxiety|depression'
   + '|weight|belly fat|fat|pounds|lbs|symptom\\w*|cravings|mood swings|brain fog';
 
-/* Same sentence, verb first, object within a short reach of it. */
+/* Verb first, object within a short reach of it, and NO clause boundary in
+   between. A treatment claim puts the symptom straight after the verb —
+   "stops hot flashes", "fix your hormones". Reaching across a comma is how a
+   gate catches "your periods stop, when your hormones stop keeping time",
+   which is a woman's stage being described and not a promise about a pill. */
 const AIMED_AT_A_SYMPTOM = new RegExp(
-  `\\b(${CLAIM_VERB})\\b[^.?!]{0,40}?\\b(${SYMPTOM})\\b`, 'i',
+  `\\b(${CLAIM_VERB})\\b[^.?!,;:]{0,24}?\\b(${SYMPTOM})\\b`, 'i',
 );
 
 /**
@@ -192,6 +225,8 @@ test('the gate fires on the claims it exists to catch', () => {
     'the stage where the old rules stopped working',
     'Helps ease occasional hot flashes',
     'Hot flashes can start years before your periods stop.',
+    'the years before your periods stop, when your hormones stop keeping time',
+    'your periods have stopped, and your body is running on less estrogen',
   ];
   for (const s of allowed) {
     expect(AIMED_AT_A_SYMPTOM.test(s), `the gate is too blunt and caught: ${s}`).toBe(false);
@@ -210,6 +245,67 @@ test('the never-list fires, and a possessive is not a contraction', () => {
   expect(CONTRACTIONS.some((p) => p.test("you don't"))).toBe(true);
   expect(CONTRACTIONS.some((p) => p.test("it's free"))).toBe(true);
   expect(CONTRACTIONS.some((p) => p.test("you’re done"))).toBe(true);
+});
+
+/* ------------------------------------------------------------ the name -- */
+
+/**
+ * She reads "The 60-Day Plan". Protocol is a delivery vehicle, which is a
+ * thing you ship, not a thing anybody wants to buy — and it is the word we use
+ * among ourselves. It stays in constant names, in comments and in the discount
+ * code Shopify holds. It never reaches a string she can read.
+ */
+test('the customer never reads the word we use among ourselves', () => {
+  for (const [where, value] of CUSTOMER_FACING) {
+    expect(
+      /protocol/i.test(value),
+      `${where} says Protocol to the customer. She reads ${offer.PLAN_SHORT}: `
+      + JSON.stringify(value),
+    ).toBe(false);
+  }
+});
+
+test('the Plan is named the same way everywhere she sees it', () => {
+  expect(offer.PLAN_NAME).toBe('The 60-Day Plan for Women Over 40');
+  expect(offer.PLAN_SHORT).toBe('The 60-Day Plan');
+  expect(offer.optionFor('protocol').title).toContain(offer.PLAN_SHORT);
+  expect(offer.optionFor('single').title).toBe('1 bottle \u00b7 30 days');
+});
+
+/* -------------------------------------------------------- the two clocks -- */
+
+/**
+ * A timeline is only ours to state if somebody else stated it first.
+ *
+ * "Most women notice the first change inside two weeks" is a fact about what
+ * customers report, and the claims list allows it in exactly that form. The
+ * same sentence with the attribution stripped is a promise about a supplement,
+ * which is a health claim we cannot make and would not want to.
+ *
+ * So: any string naming one of the two clocks has to carry the attribution in
+ * the same breath. Not in the paragraph next to it, where an edit can separate
+ * them without anybody noticing — in the same string.
+ */
+const CLOCK = /\b(two weeks|sixty days)\b/i;
+const ATTRIBUTED = /as customers report|customers report|women tell us|women report|women notice/i;
+
+test('no timeline is stated without saying whose timeline it is', () => {
+  for (const [where, value] of CUSTOMER_FACING) {
+    if (!CLOCK.test(value)) continue;
+    expect(
+      ATTRIBUTED.test(value),
+      `${where} names ${CLOCK.exec(value)?.[0]} as though it were a promise. `
+      + 'Carry "as customers report" or "women tell us" in the same string: '
+      + JSON.stringify(value),
+    ).toBe(true);
+  }
+});
+
+test('the clock gate fires on a bare promise and not on an attributed one', () => {
+  const bare = 'You will feel the difference inside two weeks.';
+  const attributed = 'Most women tell us the first change comes inside two weeks.';
+  expect(CLOCK.test(bare) && !ATTRIBUTED.test(bare)).toBe(true);
+  expect(CLOCK.test(attributed) && ATTRIBUTED.test(attributed)).toBe(true);
 });
 
 /* ------------------------------------------- the two numbers, unmerged -- */
@@ -257,4 +353,81 @@ test('no review has been tidied into the house style', () => {
      contraction across the wall is the cheap proof that they are theirs. */
   const anyContraction = WALL.some((r) => CONTRACTIONS.some((p) => p.test(r.body)));
   expect(anyContraction, 'the reviews read as authored copy rather than as quotes').toBe(true);
+});
+
+/* ------------------------------------------------- the plan, filled in -- */
+
+test('the plan reads correctly whether or not the link carried her answers', () => {
+  const v = plan.PLANS.perimenopause;
+
+  const known = plan.fill(v.result, { name: 'Renee', signs: 4, frequency: 'most weeks' });
+  expect(known).toContain('You said yes to 4 of 14 signs, most weeks.');
+  expect(known).not.toContain('{');
+
+  /* A link with nothing on it still has to read like something a person
+     wrote, which is the whole reason every token has a neutral form. */
+  const neutral = plan.fill(v.result, { name: '', signs: null, frequency: '' });
+  expect(neutral).toContain('You said yes to several things.');
+  expect(neutral).not.toContain('{');
+
+  expect(plan.planTitle({ name: 'Renee', signs: 4, frequency: '' }))
+    .toBe('Renee, your hormone plan is here');
+  expect(plan.planTitle({ name: '', signs: null, frequency: '' }))
+    .toBe('Your hormone plan is here');
+});
+
+test('every version fills every token, in every section', () => {
+  const reader = { name: 'Renee', signs: 4, frequency: 'most weeks' };
+  for (const [key, v] of Object.entries(plan.PLANS)) {
+    const all = [v.result, v.week, v.howTo, v.expect, v.doctor, v.sixtyDays, ...v.going];
+    for (const line of all) {
+      expect(plan.fill(line, reader), `${key} leaves a token unfilled`).not.toMatch(/\{[a-z ]+\}/i);
+      expect(line.length, `${key} has an empty section`).toBeGreaterThan(20);
+    }
+  }
+});
+
+test('the doctor route has no plan to open', () => {
+  /* Outcome D is an exit. There is no archetype for it, and planHref returns
+     null, which is what makes it impossible to render the link by accident. */
+  expect(Object.keys(plan.ARCHETYPE_FOR).sort()).toEqual(['A', 'B', 'C', 'E']);
+  expect(plan.isArchetype('doctor')).toBe(false);
+  expect(plan.isArchetype('perimenopause')).toBe(true);
+});
+
+/* ---------------------------------------------------- the three switches -- */
+
+test('each switch renders one line or nothing, and the maths is right', () => {
+  /* $84.99 over sixty days. If the price moves, this line moves with it. */
+  expect(offer.dailyPrice()).toBe('$1.42');
+  expect(offer.batchCount()).toBe('2,280');
+  expect(offer.batchCount()).toBe(offer.BATCH_ON_SHELF.toLocaleString('en-US'));
+
+  /* Null is the off position and it renders nothing at all, rather than an
+     empty "Through ." that somebody has to notice in a screenshot. */
+  expect(copy.liveDeadlineLine()).toBe(offer.LIVE_DEADLINE ? `Through ${offer.LIVE_DEADLINE}.` : null);
+
+  expect(copy.batchLine('2,280', 'December'))
+    .toBe('This batch: 2,280 bottles on the shelf. The next batch lands in December.');
+});
+
+test('there is no countdown anywhere in the copy', () => {
+  /* The page never invents a deadline. The only one it may carry is the one
+     JJ says out loud, and it lives behind LIVE_DEADLINE. */
+  for (const [where, value] of CUSTOMER_FACING) {
+    expect(
+      /\b(hurry|only \d+ left|ends in|expires in|countdown|last chance)\b/i.test(value),
+      `${where} manufactures urgency: ${JSON.stringify(value)}`,
+    ).toBe(false);
+  }
+});
+
+test('the guarantee is the policy, word for word', () => {
+  const whole = copy.GUARANTEE_PRE + copy.GUARANTEE_LINK_TEXT + copy.GUARANTEE_REST;
+  expect(whole).toBe(
+    '60-Day Happiness Guarantee. Try it for two months. '
+    + 'If you are not satisfied, we refund up to two bottles within 60 days.',
+  );
+  expect(copy.REFUND_POLICY_URL)
+    .toBe('https://shop.jjsmithonline.com/policies/refund-policy');
 });

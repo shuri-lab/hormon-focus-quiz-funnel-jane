@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { score, stateKey } from '../../lib/logic';
@@ -10,13 +11,14 @@ import {
   GUARANTEE_DAYS, PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, showInternalNotes,
 } from '../../lib/offer';
 import { BuyOptions, useOfferChoice } from '../../components/BuyOptions';
+import { PLAN_LINK_LABEL, planHref } from '../../lib/planCopy';
 import type { Severity } from '../../lib/logic';
 
 function Guarantee() {
   return (
     <>
       <div className="sealWrap">
-        <span className="seal"><b>SEE<br />RESULTS</b><i>or it&rsquo;s free</i></span>
+        <span className="seal"><b>SEE<br />RESULTS</b><i>or it is free</i></span>
         <div className="sealTxt">
           <b>Sixty days. Up to two bottles.</b>
           <span>Empty or full. If you do not feel the difference, tell us and we send your money back.</span>
@@ -115,7 +117,7 @@ export function R5() {
         </div>
         <div className="step">
           <b className="n">2</b>
-          <div className="t"><b>While you wait</b><span>JJ&rsquo;s Starter Guide arrives today. One thing to change a week.</span></div>
+          <div className="t"><b>From today</b><span>Your plan is already written: what to change this week, and what customers report at two weeks, four, and sixty.</span></div>
         </div>
         <div className="step">
           <b className="n">3</b>
@@ -180,9 +182,11 @@ export function R7() {
   const v = VERDICT[outcome];
   const sc = score(S);
 
-  /* THE SAME OFFER AS /offer. The rows, the prices and the three cart modes
-     all come from BuyOptions, so the quiz cannot drift away from the pages. */
+  /* THE SAME OFFER AS /offer. The rows, the prices, the value stack and the
+     three cart modes all come from BuyOptions, so the quiz cannot drift away
+     from the pages. */
   const { chosen, choose } = useOfferChoice();
+  const plan = planHref(S);
 
   return (
     <Screen id="r7">
@@ -199,6 +203,14 @@ export function R7() {
         <img src={BOTTLE} alt="Hormone Focus" width={620} height={540} loading="lazy" decoding="async" />
       </div>
 
+      {/* The Starter Guide is a page she can open now, so the value stack is
+          not promising her an email that does not exist yet. */}
+      {plan && (
+        <p className="planLink">
+          <Link to={plan}>{PLAN_LINK_LABEL} &rarr;</Link>
+        </p>
+      )}
+
       <div className="offer quizBuy">
         <BuyOptions
           chosen={chosen}
@@ -209,18 +221,16 @@ export function R7() {
         />
       </div>
 
-      <Guarantee />
-
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
 
       {showInternalNotes() && (
         <div className="warn">
-          <b>Internal note — not shown to customers.</b> The Protocol link runs on the
+          <b>Internal note — not shown to customers.</b> The Plan link runs on the
           discount code {PROTOCOL_DISCOUNT_CODE ?? 'that is not set yet'} while
           PROTOCOL_VARIANT_ID is {PROTOCOL_VARIANT_ID ?? 'null'}, so the code has to
           exist in the store before this button is worth anything. The subscription row
           stays unrendered until there is a plan behind it. No 3 or 6-month bundle
-          exists yet, and the Starter Guide still has to be produced.
+          exists yet.
         </div>
       )}
 

@@ -32,6 +32,7 @@ unknown paths will return 404 for every ad destination except `/`.
 | `/offer` | the offer page, master angle |
 | `/offer/<angle>` | the offer page with the hero swapped for that ad angle |
 | `/live` | the offer page with the Live strip at the top |
+| `/plan/<archetype>` | her Starter Guide, personalised from the quiz link |
 
 Configuration is committed for two hosts and written out for the rest:
 
@@ -76,6 +77,23 @@ npm run preview
 without one, run `npx playwright install chromium` and remove the `channel`
 lines from `playwright.config.ts`.
 
+## Three switches, and what turns them off
+
+`src/lib/offer.ts` carries three lines that are true today and may not be true
+next month. Each is a flag, and each renders one line or nothing:
+
+| Flag | Renders | Turn it off when |
+|---|---|---|
+| `SHOW_DAILY_PRICE` | `$1.42 a day` under the price | never, unless Jane says so |
+| `SHOW_BATCH_LINE` + `BATCH_ON_SHELF` + `NEXT_BATCH` | the stock line near the button | the count stops being true |
+| `LIVE_DEADLINE` | `Through <deadline>.` on `/live` only | the morning after the deadline passes |
+
+`LIVE_DEADLINE` is null by default and renders nothing at all. Set it to the
+words JJ says out loud on the broadcast, and unset it when it has passed — a
+deadline she is given and we do not keep costs more than it earns. There is no
+countdown and no timer anywhere in this codebase, and `tests/copy.test.ts`
+fails the build if one appears in the copy.
+
 ## The offer lives in one file
 
 Prices, variant ids, the discount code and the subscription flag are all in
@@ -84,6 +102,10 @@ link from them. The offer pages and the screen at the end of the quiz render the
 same `BuyOptions` component, so there is one offer in the code rather than two.
 `tests/copy.test.ts` holds the authored copy to the claim rules and
 `e2e/offer.spec.ts` holds the cart links and the fold.
+
+She reads **The 60-Day Plan**. `Protocol` is the word the store, the discount
+code and the analytics use, and it stays in constant names and comments; the
+copy gate fails the build if it reaches a string she can read.
 
 ## Adding an ad angle
 
