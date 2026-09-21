@@ -8,11 +8,6 @@ import { Stars } from '../../components/icons';
 import { RATING, REVIEW_COUNT } from '../../lib/reviews';
 import {
   GUARANTEE_DAYS,
-  PROTOCOL_DISCOUNT_CODE,
-  PROTOCOL_VARIANT_ID,
-  SINGLE_VARIANT_ID,
-  SUBSCRIBE_SELLING_PLAN_ID,
-  showInternalNotes,
 } from '../../lib/offer';
 import { BuyOptions, GuideCard, useOfferChoice } from '../../components/BuyOptions';
 import {
@@ -230,17 +225,6 @@ export function R7() {
       </div>
 
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
-
-      {showInternalNotes() && (
-        <div className="warn">
-          <b>Internal note — not shown to customers.</b> All three rows now point at
-          real Shopify destinations: one bottle {SINGLE_VARIANT_ID}, the Plan as its own
-          bundle variant {PROTOCOL_VARIANT_ID ?? 'null'}, and the subscription through
-          /cart/add on selling plan {SUBSCRIBE_SELLING_PLAN_ID}. The Plan no longer
-          depends on the {PROTOCOL_DISCOUNT_CODE ?? 'unset'} code, which is now only a
-          fallback. No 3 or 6-month bundle exists yet.
-        </div>
-      )}
 
       <p className="fine">{OFFER_DISCLAIMER}</p>
     </Screen>
