@@ -156,6 +156,13 @@ test.describe('the quiz', () => {
     /* The guarantee is said once, under all three, with the seal beside it. */
     await expect(page.locator('.ocGuard')).toBeVisible();
     await expect(page.locator('.ocSeal')).toBeVisible();
+
+    /* THE VALUE STACK IS DELIBERATELY ABSENT HERE. By this screen the cards
+       have already named the price, the bonus and the guarantee, and she has
+       read the whole reveal to get here. It stays on the offer pages, where
+       she may have arrived cold from an ad. */
+    await expect(page.locator('.stack')).toHaveCount(0);
+    await expect(page.getByText('What is in it')).toHaveCount(0);
     const quizHrefs = await page.locator('a[href]').evaluateAll(
       (as) => as.map((a) => a.getAttribute('href') ?? ''),
     );

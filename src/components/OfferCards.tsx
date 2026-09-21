@@ -172,10 +172,20 @@ interface Props {
   angle: string;
   /** Jane's rule: the Live sells the two-bottle plan and nothing else. */
   live?: boolean;
+  /**
+   * The "What is in it" stack under the guarantee.
+   *
+   * Off on the quiz result screen at David's request: by the time she
+   * reaches it the cards have already named the price, the bonus and the
+   * guarantee, so the stack was repeating the screen back to her. The offer
+   * pages keep it, because there she may have arrived cold from an ad and
+   * has read none of it yet.
+   */
+  stack?: boolean;
 }
 
 /** The offers, side by side on a desktop and stacked on a phone. */
-export function OfferCards({ outcome, angle, live = false }: Props) {
+export function OfferCards({ outcome, angle, live = false, stack = true }: Props) {
   const cards = offerCards().filter((c) => !(live && c.kind === 'subscribe'));
   const deadline = live ? liveDeadlineLine() : null;
 
@@ -213,10 +223,9 @@ export function OfferCards({ outcome, angle, live = false }: Props) {
 
       <GuaranteePanel />
 
-      {/* What she gets, named line by line. The cards carry the prices; this
-          carries the argument for them, and it is the Plan's because the
-          Plan is what the page sells. */}
-      <ValueStack kind={DEFAULT_OFFER} />
+      {/* What she gets, named line by line, for anyone who has not just read
+          it on the way here. */}
+      {stack && <ValueStack kind={DEFAULT_OFFER} />}
     </div>
   );
 }

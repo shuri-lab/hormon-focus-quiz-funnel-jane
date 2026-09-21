@@ -208,7 +208,7 @@ export function R7() {
           largest thing on the screen while saying the least. The Starter
           Guide rides inside the two-bottle card as the bonus it is, rather
           than as a block of its own. */}
-      <OfferCards outcome={outcome} angle={angle.slug} />
+      <OfferCards outcome={outcome} angle={angle.slug} stack={false} />
 
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
 
