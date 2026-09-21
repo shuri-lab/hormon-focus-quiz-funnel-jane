@@ -192,37 +192,46 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 /* Symptom tiles. Two up on a phone, three up once there is room. */
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(clamp(132px, 40vw, 168px), 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(142px, 42vw, 180px), 1fr));
+  gap: 12px;
   margin-top: 18px;
 }
 .tile {
-  padding: 0; border-radius: var(--radius); overflow: hidden; cursor: pointer;
-  background: var(--surface); border: 2px solid var(--line);
+  padding: 0; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+  background: var(--surface); border: 2px solid var(--line-2);
   text-align: left; color: var(--ink); font-family: var(--sans);
   display: flex; flex-direction: column;
+  box-shadow: var(--shadow);
   transition: border-color .15s, transform .12s, box-shadow .15s;
   position: relative;
 }
+.tile:active { transform: scale(.985); }
 .tile img {
   width: 100%; aspect-ratio: 4 / 3; height: auto;
   object-fit: cover; display: block; background: var(--wash);
 }
-.tile span {
-  display: block; padding: 11px 12px 13px; font-size: var(--t-small);
-  font-weight: 600; line-height: 1.3; color: var(--ink); flex: 1;
+/* The label is the answer, so it is set at body size rather than caption
+   size. It was the smallest type on the most important screen. */
+.tile span:not(.tileCheck) {
+  display: flex; align-items: center; min-height: 58px;
+  padding: 12px 14px 14px; font-size: var(--t-sub);
+  font-weight: 700; line-height: 1.3; color: var(--ink); flex: 1;
 }
+/* Bigger, and solid rather than translucent: at 24px over a photograph the
+   empty state was easy to miss, which made a tile look like a picture
+   instead of a choice. */
 .tile .tileCheck {
-  position: absolute; top: 9px; right: 9px;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255, 255, 255, .86);
-  border: 2px solid var(--line-2);
+  position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface);
+  border: 2.5px solid var(--line-2);
+  box-shadow: 0 2px 8px -2px rgba(36, 31, 46, .35);
   display: grid; place-items: center;
   transition: background .15s, border-color .15s, transform .15s;
 }
-.tile .tileCheck svg { width: 12px; height: 12px; opacity: 0; transition: opacity .13s; }
+.tile .tileCheck svg { width: 16px; height: 16px; opacity: 0; transition: opacity .13s; }
 .tile[aria-pressed='true'] { border-color: var(--plum); box-shadow: var(--lift); }
-.tile[aria-pressed='true'] span { background: var(--wash); color: var(--plum); }
+.tile[aria-pressed='true'] span:not(.tileCheck) { background: var(--wash); color: var(--plum); }
 .tile[aria-pressed='true'] .tileCheck {
   background: var(--plum); border-color: var(--plum); transform: scale(1.06);
 }
@@ -232,19 +241,27 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 }
 
 /* Option rows */
-.opts { display: flex; flex-direction: column; gap: 9px; margin-top: 18px; }
+.opts { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+/* AN ANSWER IS A BUTTON, and has to look like one before it is read. A flat
+   outlined rectangle reads as a text field to somebody who is not fluent in
+   app conventions; a raised card with a real edge reads as a thing to press.
+   Hence the shadow and the heavier weight, not just the larger target. */
 .opt {
-  display: flex; align-items: flex-start; gap: 12px; width: 100%;
-  text-align: left; padding: 15px 16px; border-radius: 14px; cursor: pointer;
-  min-height: 56px;                     /* comfortable thumb target */
-  background: var(--surface); border: 2px solid var(--line); color: var(--ink);
-  font-size: var(--t-body); font-weight: 500; line-height: 1.34;
-  transition: border-color .15s, background .15s, transform .12s;
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  text-align: left; padding: 18px 18px; border-radius: 16px; cursor: pointer;
+  min-height: var(--tap);
+  background: var(--surface); border: 2px solid var(--line-2); color: var(--ink);
+  font-size: var(--t-body); font-weight: 600; line-height: 1.35;
+  box-shadow: var(--shadow);
+  transition: border-color .15s, background .15s, transform .12s, box-shadow .15s;
 }
+.opt:hover { border-color: var(--lilac); }
+.opt:active { transform: scale(.985); }
 .opt .tick {
-  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid var(--line-2); background: var(--surface-2);
-  display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  border: 2.5px solid var(--line-2); background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center; margin-top: 0;
   transition: background .15s, border-color .15s;
 }
 .opt.multi .tick { border-radius: 6px; }
@@ -259,10 +276,10 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 /* Calls to action */
 .cta {
   display: block; width: 100%; margin-top: 18px;
-  padding: 17px 20px; min-height: 54px;
-  border: none; border-radius: 15px; cursor: pointer; color: #fff;
-  background: linear-gradient(180deg, var(--plum-2), var(--plum));
-  font-size: 16px; font-weight: 600; box-shadow: var(--lift);
+  padding: 19px 20px; min-height: var(--tap);
+  border: none; border-radius: 16px; cursor: pointer; color: #fff;
+  background: linear-gradient(90deg, var(--plum) 0%, var(--plum-2) 100%);
+  font-size: clamp(16.5px, 4.4vw, 19px); font-weight: 800; box-shadow: var(--lift);
   transition: transform .13s, filter .13s, opacity .2s;
   text-align: center; text-decoration: none;
 }
@@ -698,7 +715,7 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 
 .lpHero { padding: 22px 0 0; }
 .lpLogo { text-align: center; margin: 4px 0 15px; }
-.lpLogo b { display: block; font-size: 15px; font-weight: 800; letter-spacing: .16em; color: var(--ink); }
+.lpLogo b { display: block; font-size: var(--t-body); font-weight: 800; letter-spacing: .16em; color: var(--ink); }
 .lpLogo b i { font-style: normal; font-weight: 500; }
 .landing .lpLogo span {
   display: block; font-size: 10.5px; letter-spacing: .14em;
@@ -720,12 +737,12 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 .faces i:first-child { margin-left: 0; }
 
 .landing .lpH1 {
-  font-size: clamp(27px, 7.6vw, 34px); line-height: 1.1; font-weight: 800;
+  font-size: clamp(30px, 8.2vw, 38px); line-height: 1.1; font-weight: 800;
   letter-spacing: -.032em; margin: 18px 0 0; text-wrap: balance;
 }
 .lpH1 em { font-style: normal; color: var(--plum); }
 .landing .lpSub {
-  font-size: clamp(15.5px, 4.3vw, 17.5px); line-height: 1.28; font-weight: 700;
+  font-size: clamp(17.5px, 4.7vw, 20px); line-height: 1.3; font-weight: 700;
   color: var(--plum); margin: 11px 0 0; letter-spacing: -.012em;
 }
 
@@ -739,15 +756,18 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 }
 
 .landing .cta {
-  width: 100%; max-width: none; margin-top: 16px;
-  font-size: 13.5px; font-weight: 700; letter-spacing: .05em;
+  width: 100%; max-width: none; margin-top: 18px;
+  /* Was 13.5px — smaller than the body text it was asking her to act on.
+     It inherits the global size now; the label is set in capitals in the
+     copy, so the tracking stays loose enough to keep caps legible. */
+  letter-spacing: .04em;
 }
 .landing .heroCta { max-width: none; }
 
 .rate { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 11px 0 0; }
-.rate svg { width: 14px; height: 14px; }
-.rate b { font-size: 13.5px; font-weight: 700; color: var(--ink); }
-.priv { margin: 7px 0 0; text-align: center; font-size: 11px; color: var(--ink-3); }
+.rate svg { width: 17px; height: 17px; }
+.rate b { font-size: var(--t-sub); font-weight: 800; color: var(--ink); }
+.priv { margin: 9px 0 0; text-align: center; font-size: var(--t-small); color: var(--ink-3); }
 
 .heroimg { margin-top: 16px; }
 .landing .heroimg img {
@@ -761,11 +781,11 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 }
 .landing .lpSec.first { border-top: 0; margin-top: 22px; padding-top: 0; }
 .landing .eyebrow {
-  font-size: 10.5px; font-weight: 700; letter-spacing: .11em;
+  font-size: var(--t-small); font-weight: 800; letter-spacing: .11em;
   text-transform: uppercase; color: var(--plum); margin: 0 0 8px;
 }
 .landing .sech {
-  font-size: clamp(21px, 5.6vw, 25px); font-weight: 800; line-height: 1.16;
+  font-size: clamp(23px, 6vw, 28px); font-weight: 800; line-height: 1.18;
   letter-spacing: -.025em; margin: 0 0 10px; text-wrap: balance;
 }
 .sech em { font-style: normal; color: var(--plum); }

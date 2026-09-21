@@ -6,8 +6,8 @@ import { shopUrl, track } from '../lib/analytics';
 import { SHOP_BASE } from '../lib/logic';
 import { BOTTLE, CHIP_PROGRAMS, CUSTOMERS } from '../lib/content';
 import { RATING, REVIEW_COUNT, SCALE_QUOTE } from '../lib/reviews';
-import { money, optionFor } from '../lib/offer';
-import { BuyOptions, useOfferChoice } from '../components/BuyOptions';
+import { DEFAULT_OFFER, money, optionFor } from '../lib/offer';
+import { OfferCards } from '../components/OfferCards';
 import { ReviewWall } from '../components/ReviewWall';
 import { Stars } from '../components/icons';
 import {
@@ -82,8 +82,9 @@ export function OfferPage({ live = false }: Props) {
      here; a page that never asked her anything sends the route instead. */
   const outcome = live ? 'live' : `offer_${angle.slug || 'master'}`;
 
-  const { chosen, choose } = useOfferChoice();
-  const option = optionFor(chosen);
+  /* The sticky bar carries the Plan. With three self-contained cards there
+     is no selection for it to follow, and the Plan is what the page sells. */
+  const option = optionFor(DEFAULT_OFFER);
 
   usePageMeta({ title: hero.title, description: hero.description, image: BOTTLE });
 
@@ -106,15 +107,10 @@ export function OfferPage({ live = false }: Props) {
 
   const deadline = live ? liveDeadlineLine() : null;
 
-  const buy = (name: string) => (
-    <BuyOptions
-      chosen={chosen}
-      onChoose={choose}
-      outcome={outcome}
-      angle={angle.slug}
-      name={name}
-      live={live}
-    />
+  /* The cards are self-contained, so the block no longer needs a name to
+     keep two radio groups apart. The argument is kept for the call sites. */
+  const buy = (_name: string) => (
+    <OfferCards outcome={outcome} angle={angle.slug} live={live} />
   );
 
   return (
@@ -284,8 +280,8 @@ export function OfferPage({ live = false }: Props) {
           </span>
           <a
             className="cta buyBtn"
-            data-offer={chosen}
-            href={shopUrl(SHOP_BASE, outcome, angle.slug, chosen)}
+            data-offer={DEFAULT_OFFER}
+            href={shopUrl(SHOP_BASE, outcome, angle.slug, DEFAULT_OFFER)}
             onClick={() => track.checkout(outcome, option.price)}
           >
             {option.ctaShort} &nbsp;&rarr;

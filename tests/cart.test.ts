@@ -129,6 +129,17 @@ test('all three rows are offered, and the Live still withholds the subscription'
    flat array it argued for two bottles no matter which row was selected —
    the bug these tests exist to keep fixed. */
 
+test('every card is titled with the copy its own row already used', () => {
+  for (const c of offerCards()) {
+    expect(c.kicker, c.kind).toBe(optionFor(c.kind).title);
+    expect(c.supply, c.kind).toBe(optionFor(c.kind).detail);
+    expect(c.cta, c.kind).toBe(optionFor(c.kind).cta);
+    expect(c.terms, c.kind).toBe(optionFor(c.kind).priceNote);
+  }
+  /* The Plan keeps its name. A redesign that renames the offer is a rewrite. */
+  expect(offerCards()[1].kicker).toContain('The 60-Day Plan');
+});
+
 test('the stack describes the row she is actually on', () => {
   const head = (k: Parameters<typeof valueStackFor>[0]) => valueStackFor(k)[0].what;
   expect(head('single')).toBe('One bottle of Hormone Focus, 30 days');
@@ -209,16 +220,20 @@ test('a struck price is only shown where there is a real saving behind it', () =
 test('the saving on the plan is the two singles minus the plan', () => {
   const plan = offerCards()[1];
   const saving = (ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE).toFixed(2);
-  expect(plan.terms).toContain(`$${saving}`);
+  expect(plan.saving).toBe(`$${saving}`);
   expect(saving).toBe('14.99');
+  /* And only the Plan names one. */
+  expect(offerCards().filter((c) => c.saving)).toHaveLength(1);
 });
 
 test('free shipping is claimed on exactly the two rows that have it', () => {
   const [single, plan, sub] = offerCards();
-  expect(single.freeShipping, 'the single is plus shipping').toBe(false);
-  expect(single.terms).toMatch(/shipping charged separately/i);
-  expect(plan.freeShipping).toBe(true);
-  expect(sub.freeShipping).toBe(true);
+  /* The card's terms line IS the option's priceNote, so the card cannot
+     disagree with the row it was built from. */
+  expect(single.terms, 'the single is plus shipping').toMatch(/plus shipping/i);
+  expect(single.terms).not.toMatch(/free shipping/i);
+  expect(plan.terms).toMatch(/free shipping/i);
+  expect(sub.terms).toMatch(/free shipping/i);
 });
 
 test('the Starter Guide rides on the plan, and only the plan', () => {
@@ -228,9 +243,13 @@ test('the Starter Guide rides on the plan, and only the plan', () => {
   expect(withBonus[0].shotGuide, 'the bonus is pictured, not just named').toBeTruthy();
 });
 
-test('only one card is badged, or the badge means nothing', () => {
-  expect(offerCards().filter((c) => c.badge)).toHaveLength(1);
-  expect(offerCards().find((c) => c.badge)!.kind).toBe('protocol');
+test('the badges are the ones the copy already carried', () => {
+  /* Two, not one: "Best Seller" on the Plan and "Best value" on the
+     subscription were both in OFFER_OPTIONS before the cards existed, and a
+     redesign does not get to retire a label. */
+  for (const c of offerCards()) expect(c.badge, c.kind).toBe(optionFor(c.kind).badge);
+  expect(offerCards().filter((c) => c.badge).map((c) => c.kind))
+    .toEqual(['protocol', 'subscribe']);
 });
 
 test('every card carries a product shot, which is why the screen needs none', () => {

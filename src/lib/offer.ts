@@ -217,8 +217,10 @@ export interface OfferCard {
   was?: string;
   now: string;
   perDay: string;
+  /** The small line under the price — OFFER_OPTIONS' own priceNote. */
   terms: string;
-  freeShipping: boolean;
+  /** Shown on the Plan only, where there is a real saving to name. */
+  saving?: string;
   /** Named, pictured, and never handed over before she has bought. */
   bonus?: string;
   cta: string;
@@ -239,45 +241,36 @@ export interface OfferCard {
 export function offerCards(): OfferCard[] {
   const saving = ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE;
 
-  return [
-    {
-      kind: 'single',
-      kicker: '1 bottle',
-      supply: '30-day supply',
-      now: money(ONE_MONTH_PRICE),
-      perDay: perDay('single'),
-      terms: 'One-time · shipping charged separately',
-      freeShipping: false,
-      cta: 'Get 1 bottle',
+  /* THE WORDS ARE THE ONES WE ALREADY HAD. The card layout comes from Jane's
+     landing page; the copy inside it comes from OFFER_OPTIONS, unchanged, so
+     the redesign cannot quietly rename the Plan or drop a price note. The
+     day rate is the one line the cards add, and it is arithmetic. */
+  const card = (kind: OfferKind, extra: Partial<OfferCard>): OfferCard => {
+    const o = optionFor(kind);
+    return {
+      kind,
+      kicker: o.title,
+      supply: o.detail,
+      now: money(o.price),
+      perDay: perDay(kind),
+      terms: o.priceNote,
+      badge: o.badge,
+      cta: o.cta,
       shot: SHOT_ONE,
-    },
-    {
-      kind: 'protocol',
-      kicker: '2 bottles',
-      supply: '60-day supply',
+      ...extra,
+    };
+  };
+
+  return [
+    card('single', {}),
+    card('protocol', {
       was: money(ONE_MONTH_PRICE * 2),
-      now: money(PROTOCOL_PRICE),
-      perDay: perDay('protocol'),
-      terms: `One-time · save ${money(saving)}`,
-      freeShipping: true,
+      saving: money(saving),
       bonus: 'Hormone Focus Starter Guide',
-      cta: 'Get 2 bottles',
-      badge: 'Best seller',
       shot: SHOT_TWO,
       shotGuide: SHOT_GUIDE,
-    },
-    {
-      kind: 'subscribe',
-      kicker: 'Subscribe and save',
-      supply: 'One bottle every 4 weeks',
-      was: money(ONE_MONTH_PRICE),
-      now: money(SUBSCRIBE_PRICE),
-      perDay: perDay('subscribe'),
-      terms: `Save ${SUBSCRIBE_SAVING} · cancel any time`,
-      freeShipping: true,
-      cta: 'Subscribe and save',
-      shot: SHOT_ONE,
-    },
+    }),
+    card('subscribe', { was: money(ONE_MONTH_PRICE) }),
   ];
 }
 

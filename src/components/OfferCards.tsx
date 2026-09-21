@@ -1,11 +1,13 @@
 import { SHOP_BASE } from '../lib/logic';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  GUARANTEE_SEAL, GUARANTEE_DAYS, type OfferCard, offerCards, optionFor,
+  DEFAULT_OFFER, GUARANTEE_SEAL, GUARANTEE_DAYS, NEXT_BATCH, SHOW_BATCH_LINE,
+  SHOW_DAILY_PRICE, type OfferCard, batchCount, dailyPrice, offerCards, optionFor,
 } from '../lib/offer';
+import { ValueStack } from './BuyOptions';
 import {
   GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE, GUARANTEE_SUB_REST,
-  REFUND_POLICY_URL,
+  REFUND_POLICY_URL, batchLine, liveDeadlineLine,
 } from '../lib/offerCopy';
 
 /* Two glyphs, inline, because two icons do not earn a sprite request. */
@@ -91,8 +93,8 @@ function Card({ card, outcome, angle }: CardProps) {
         <p className="ocDay">{card.perDay} a day</p>
         <p className="ocTerms">{card.terms}</p>
 
-        {card.freeShipping && (
-          <p className="ocShip"><TruckIcon /> Free shipping</p>
+        {card.saving && (
+          <p className="ocShip"><TruckIcon /> Save {card.saving}</p>
         )}
 
         {/* Pushes the button to the bottom so three cards of different
@@ -134,7 +136,7 @@ function Card({ card, outcome, angle }: CardProps) {
  */
 export function GuaranteePanel() {
   return (
-    <div className="ocGuard">
+    <div className="ocGuard" data-af="guarantee">
       <img
         className="ocSeal" src={GUARANTEE_SEAL} alt=""
         width={180} height={170} loading="lazy" decoding="async"
@@ -160,15 +162,22 @@ interface Props {
   outcome: string;
   /** Carried to the cart as utm_term, unless the ad sent one. */
   angle: string;
+  /** Jane's rule: the Live sells the two-bottle plan and nothing else. */
+  live?: boolean;
 }
 
-/** The three offers, side by side on a desktop and stacked on a phone. */
-export function OfferCards({ outcome, angle }: Props) {
-  const cards = offerCards();
+/** The offers, side by side on a desktop and stacked on a phone. */
+export function OfferCards({ outcome, angle, live = false }: Props) {
+  const cards = offerCards().filter((c) => !(live && c.kind === 'subscribe'));
+  const deadline = live ? liveDeadlineLine() : null;
 
   return (
     <div className="ocWrap">
-      <div className="ocGrid">
+      {/* data-af="cta" marks where the offer begins. The fold budget asks
+          that she can SEE it start without scrolling; three stacked cards
+          cannot fit a 390px phone entirely, and Jane's own landing page does
+          not try — its offers are a band partway down. */}
+      <div className="ocGrid" data-af="cta">
         {cards.map((card, i) => (
           <div className="ocSlot" key={card.kind}>
             {i > 0 && <p className="ocOr"><span>or</span></p>}
@@ -176,7 +185,30 @@ export function OfferCards({ outcome, angle }: Props) {
           </div>
         ))}
       </div>
+      {/* The Plan's day rate, said in her terms. The cards carry the number;
+          this is the sentence that makes the number mean something, and it
+          was on the page before the cards were. */}
+      {SHOW_DAILY_PRICE && !live && (
+        <p className="buyDaily ocLine">
+          {dailyPrice()} a day. Less than the coffee that stopped helping.
+        </p>
+      )}
+
+      {deadline && <p className="buyDeadline ocLine">{deadline}</p>}
+
+      {/* True scarcity, said once, and never a countdown. On a Live the
+          deadline IS the scarcity, so the batch line stands down rather than
+          stacking a second reason to hurry under the first. */}
+      {SHOW_BATCH_LINE && !deadline && (
+        <p className="buyBatch ocLine">{batchLine(batchCount(), NEXT_BATCH)}</p>
+      )}
+
       <GuaranteePanel />
+
+      {/* What she gets, named line by line. The cards carry the prices; this
+          carries the argument for them, and it is the Plan's because the
+          Plan is what the page sells. */}
+      <ValueStack kind={DEFAULT_OFFER} />
     </div>
   );
 }

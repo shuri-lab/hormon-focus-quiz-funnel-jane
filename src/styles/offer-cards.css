@@ -60,6 +60,11 @@
 
 /* ------------------------------------------------------------ the shots -- */
 
+.oc-subscribe .ocBadge {
+  background: linear-gradient(90deg, var(--good) 0%, var(--good-2) 100%);
+  box-shadow: 0 10px 22px -10px rgba(30, 122, 79, .6);
+}
+
 .ocShots {
   display: flex;
   align-items: flex-end;
@@ -305,10 +310,12 @@
 /* ------------------------------------------------------------- desktop -- */
 
 @media (min-width: 900px) {
-  /* Three cards will not fit in a 640px reading column, so the wrap steps
-     out of it. 92vw rather than 100vw leaves the scrollbar its width and
-     keeps the page from scrolling sideways. */
-  .ocWrap {
+  /* Three cards will not fit in the quiz's 640px reading column, so inside
+     the quiz the wrap steps out of it. ONLY inside the quiz: the offer pages
+     lay their hero out in columns that are already wide, and a breakout
+     there widens the column instead of escaping it, which pushes the page
+     sideways. 92vw rather than 100vw leaves the scrollbar its width. */
+  .rise .ocWrap {
     width: min(var(--col-wide), 92vw);
     margin-left: 50%;
     transform: translateX(-50%);
@@ -325,4 +332,14 @@
 
   /* Side by side, the gap says "or" without a word in it. */
   .ocOr { display: none; }
+}
+
+/* The lines under the cards: day rate, deadline, batch. Centred under three
+   centred cards, and set at body size rather than caption size because they
+   are read, not skimmed. */
+.ocLine {
+  margin: clamp(16px, 4vw, 20px) 0 0;
+  text-align: center;
+  font-size: var(--t-sub);
+  line-height: 1.45;
 }

@@ -33,8 +33,8 @@ const ROUTES = ['/offer', '/offer/body-at-40', '/live'];
  */
 const ABOVE_THE_FOLD = ['proof', 'headline', 'sub', 'image', 'cta'];
 
-/** The guarantee must still land within one short scroll of the fold. */
-const GUARANTEE_REACH = 200;
+/** Every card says it, under its own price. */
+const GUARANTEE_DAYS = 60;
 
 const phone390 = (page: Page) => page.viewportSize()?.width === 390;
 
@@ -52,12 +52,14 @@ test.describe('the offer pages', () => {
       await expectNoHorizontalOverflow(page, route);
       await expectTapTargets(page, route);
 
-      /* The Plan is the offer. It arrives chosen, on every route and at every
-         width, and it is the only row that is. */
-      const chosen = page.locator('.ofHeroBuy .buyRow[aria-checked="true"]');
-      await expect(chosen).toHaveCount(1);
-      await expect(chosen).toContainText(PLAN_SHORT);
-      await expect(chosen).toContainText('Best Seller');
+      /* The Plan is the offer. With three self-contained cards there is no
+         selection to make, so the Plan is the one carrying the badge and the
+         only filled button on the page — and it is the only one that is. */
+      const plan = page.locator('.ofHeroBuy .oc-protocol');
+      await expect(plan).toHaveCount(1);
+      await expect(plan).toContainText(PLAN_SHORT);
+      await expect(plan.locator('.ocBadge')).toHaveText('Best Seller');
+      await expect(page.locator('.ofHeroBuy .ocCta:not(.ocCtaSoft)')).toHaveCount(1);
 
       /* The word we use among ourselves never reaches her. */
       expect(
@@ -127,8 +129,20 @@ test.describe('above the fold', () => {
       for (const af of ABOVE_THE_FOLD) {
         const el = page.locator(`.ofHero [data-af="${af}"]`).first();
         await expect(el, `${af} is missing from ${route}`).toBeVisible();
-
         const box = (await el.boundingBox())!;
+
+        if (af === 'cta') {
+          /* The offer block is three cards tall on a phone and cannot fit
+             whole. What matters is that she can see it has started without
+             scrolling, so the rule is on its top edge, not its bottom. */
+          expect(
+            Math.round(box.y),
+            `the offer block starts below the fold on ${route}: ${Math.round(box.y)}px `
+            + `in a ${height}px viewport`,
+          ).toBeLessThanOrEqual(height - 40);
+          continue;
+        }
+
         expect(
           Math.round(box.y + box.height),
           `"${af}" runs past the fold on ${route}: it ends at `
@@ -139,14 +153,19 @@ test.describe('above the fold', () => {
       /* And nothing was scrolled to get there. */
       expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
-      /* The guarantee sits below the fold now, but only just. */
-      const g = (await page.locator('.ofHero [data-af="guarantee"]').first().boundingBox())!;
-      const ends = Math.round(g.y + g.height);
-      expect(
-        ends,
-        `the guarantee has drifted down ${route}: it ends at ${ends}px, more than `
-        + `${GUARANTEE_REACH}px past a ${height}px fold`,
-      ).toBeLessThanOrEqual(height + GUARANTEE_REACH);
+      /* THE GUARANTEE MOVED, AND IMPROVED. It used to be one block she had
+         to reach; every card now carries its own line under it, so the
+         reassurance sits beside each price rather than below all of them.
+         That is worth more than the old within-200px-of-the-fold rule, and
+         it is what is asserted instead. */
+      const cards = page.locator('.ofHeroBuy .ocCol');
+      const n = await cards.count();
+      expect(n, `${route} has no offer cards`).toBeGreaterThan(0);
+      for (let i = 0; i < n; i += 1) {
+        await expect(
+          cards.nth(i).locator('.ocGuarantee'), `${route} card ${i} has no guarantee`,
+        ).toHaveText(`${GUARANTEE_DAYS}-day money-back guarantee`);
+      }
     });
   }
 });
@@ -170,7 +189,7 @@ test.describe('the cart link', () => {
   test('the Protocol button opens the right cart for the current mode', async ({ page }) => {
     await page.goto('/offer');
 
-    const buy = page.locator('.ofHeroBuy .buyBtn');
+    const buy = page.locator('.ofHeroBuy .ocCta[data-offer="protocol"]');
     const href = (await buy.getAttribute('href'))!;
     const url = new URL(href);
 
@@ -195,41 +214,39 @@ test.describe('the cart link', () => {
     expect(await buy.getAttribute('rel')).toBeNull();
   });
 
-  test('choosing the single bottle switches the link to one bottle', async ({ page }) => {
+  test('the single bottle card carries its own cart, not the Plan\'s', async ({ page }) => {
     await page.goto('/offer');
 
-    await page.locator('.ofHeroBuy .buyRow').first().click();
-    await expect(page.locator('.ofHeroBuy .buyRow[aria-checked="true"]')).toContainText('1 bottle');
-
-    const url = new URL((await page.locator('.ofHeroBuy .buyBtn').getAttribute('href'))!);
+    /* Nothing is selected and nothing needs to be: the card she presses is
+       the thing she buys. That is the whole point of the layout. */
+    const single = page.locator('.ofHeroBuy .ocCta[data-offer="single"]');
+    const url = new URL((await single.getAttribute('href'))!);
     expect(url.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
     expect(url.searchParams.get('discount')).toBeNull();
     expect(url.searchParams.get('hf_offer')).toBe('single');
     expect(url.searchParams.get('storefront')).toBe('true');
 
-    await expect(page.locator('.ofHeroBuy .buyBtn')).toContainText('Get one bottle');
+    await expect(single).toContainText('Get one bottle');
   });
 
-  test('the closer block follows the choice made in the hero', async ({ page }) => {
+  test('the closer offers the same three carts as the hero', async ({ page }) => {
     await page.goto('/offer');
 
-    await page.locator('.ofHeroBuy .buyRow').first().click();
-
-    /* One choice per page. A woman who picked the single bottle at the top
-       must not find the Protocol re-selected at the bottom. */
-    const closer = page.locator('.ofCloser .buyRow[aria-checked="true"]');
-    await expect(closer).toContainText('1 bottle');
-
-    const hrefs = await page.locator('.buyBtn').evaluateAll(
-      (as) => as.map((a) => (a as HTMLAnchorElement).href),
-    );
-    expect(new Set(hrefs).size, 'every buy button on the page opens the same cart').toBe(1);
+    /* Both blocks are the same offer, so a given card opens the same cart
+       wherever on the page she happens to reach it. */
+    for (const kind of ['single', 'protocol', 'subscribe']) {
+      const hrefs = await page.locator(`.ocCta[data-offer="${kind}"]`).evaluateAll(
+        (as) => as.map((a) => (a as HTMLAnchorElement).href),
+      );
+      expect(hrefs.length, `${kind} appears in both blocks`).toBe(2);
+      expect(new Set(hrefs).size, `${kind} opens two different carts`).toBe(1);
+    }
   });
 
   test('every buy button on every route lands on the shop with its tags', async ({ page }) => {
     for (const route of ROUTES) {
       await page.goto(route);
-      const hrefs = await page.locator('.buyBtn').evaluateAll(
+      const hrefs = await page.locator('.ocCta, .buyBtn').evaluateAll(
         (as) => as.map((a) => (a as HTMLAnchorElement).href),
       );
       expect(hrefs.length, `${route} has no buy button`).toBeGreaterThan(0);
@@ -284,11 +301,10 @@ test.describe('what she gets for the money', () => {
 
     const daily = page.locator('.ofHeroBuy .buyDaily');
     if (SHOW_DAILY_PRICE) {
+      /* It is the Plan that sixty days divides, and the Plan is what the
+         page sells, so the line stands under all three cards. */
       await expect(daily).toContainText(`${dailyPrice()} a day`);
-      /* It is the Plan that sixty days divides, so the line goes when the
-         single bottle is chosen. */
-      await page.locator('.ofHeroBuy .buyRow').first().click();
-      await expect(daily).toHaveCount(0);
+      await expect(daily).toContainText('Less than the coffee that stopped helping');
     } else {
       await expect(daily).toHaveCount(0);
     }
@@ -299,10 +315,11 @@ test.describe('what she gets for the money', () => {
       await expect(batch).toContainText(BATCH_ON_SHELF.toLocaleString('en-US'));
       await expect(batch).toContainText('The next batch lands in');
 
-      /* Near the button, which is what makes it scarcity rather than trivia. */
-      const btn = (await page.locator('.ofHeroBuy .buyBtn').boundingBox())!;
+      /* Under the cards rather than adrift: scarcity beside the price is
+         scarcity, and scarcity three screens away is trivia. */
+      const cards = (await page.locator('.ofHeroBuy .ocGrid').boundingBox())!;
       const line = (await batch.boundingBox())!;
-      expect(line.y - (btn.y + btn.height)).toBeLessThan(60);
+      expect(line.y - (cards.y + cards.height)).toBeLessThan(140);
     } else {
       await expect(batch).toHaveCount(0);
     }
@@ -312,18 +329,20 @@ test.describe('what she gets for the money', () => {
     async ({ page }) => {
       await page.goto('/offer');
 
-      const guarantee = page.locator('.guar');
+      /* Same words as before the redesign, now beside the seal. */
+      const guarantee = page.locator('.ocGuard');
       await expect(guarantee).toHaveCount(2);
 
       for (let i = 0; i < 2; i += 1) {
-        await expect(guarantee.nth(i).locator('.guarBig'))
+        await expect(guarantee.nth(i).locator('.ocGuardLead'))
           .toHaveText('See results in 60 days, or it is free.');
-        await expect(guarantee.nth(i).locator('.guarSmall'))
+        await expect(guarantee.nth(i).locator('.ocGuardBody'))
           .toHaveText('The 60-Day Happiness Guarantee: money back, up to two bottles.');
         await expect(guarantee.nth(i).locator('a')).toHaveAttribute(
           'href', 'https://shop.jjsmithonline.com/policies/refund-policy',
         );
         await expect(guarantee.nth(i).locator('a')).toHaveText('Happiness Guarantee');
+        await expect(guarantee.nth(i).locator('.ocSeal')).toBeVisible();
       }
     });
 });
@@ -470,10 +489,10 @@ test.describe('the page says what it has to say', () => {
     await expect(first.locator('p')).toBeVisible();
   });
 
-  test('all three rows render now there is a plan behind the third', async ({ page }) => {
+  test('all three cards render now there is a plan behind the third', async ({ page }) => {
     await page.goto('/offer');
-    await expect(page.locator('.buyRow')).toHaveCount(6);           // two blocks, three rows each
-    await expect(page.getByText('Monthly delivery').first()).toBeVisible();
+    await expect(page.locator('.oc')).toHaveCount(6);               // two blocks, three cards each
+    await expect(page.locator('.ocCta[data-offer="subscribe"]').first()).toBeVisible();
   });
 
   test('the sticky bar arrives on a phone once the hero button has gone', async ({ page }) => {
@@ -516,13 +535,24 @@ test.describe('the review wall', () => {
 });
 
 test.describe('the buttons and the subscription', () => {
-  test('the button names the bottles, in the block and on the sticky bar',
+  test('every button names what it buys, and the sticky bar names the Plan',
     async ({ page }) => {
       await page.goto('/offer');
-      await expect(page.locator('.ofHeroBuy .buyBtn')).toContainText('Get my two bottles');
 
-      await page.locator('.ofHeroBuy .buyRow').first().click();
-      await expect(page.locator('.ofHeroBuy .buyBtn')).toContainText('Get one bottle');
+      /* Each card says what pressing it gets her, in her words, not ours. */
+      await expect(page.locator('.ofHeroBuy .ocCta[data-offer="single"]'))
+        .toContainText('Get one bottle');
+      await expect(page.locator('.ofHeroBuy .ocCta[data-offer="protocol"]'))
+        .toContainText('Get my two bottles');
+      await expect(page.locator('.ofHeroBuy .ocCta[data-offer="subscribe"]'))
+        .toContainText('Start the subscription');
+
+      /* The sticky bar has room for one offer and carries the Plan, which is
+         what the page sells; there is no selection for it to follow. */
+      await page.locator('.ofCloser').scrollIntoViewIfNeeded();
+      const sticky = page.locator('.ofSticky .buyBtn');
+      await expect(sticky).toHaveAttribute('data-offer', 'protocol');
+      await expect(sticky).toContainText('Get my two bottles');
     });
 
   test('the subscription never appears on the Live, but does on the offer pages', async ({ page }) => {
@@ -530,14 +560,14 @@ test.describe('the buttons and the subscription', () => {
        holds whatever SUBSCRIPTION_LIVE says, so it is asserted separately
        from the offer pages rather than in one loop over both. */
     await page.goto('/live');
-    expect(await page.locator('.buyRow').count(), 'the Live renders a half-built block').toBe(4);
-    await expect(page.getByText('Monthly delivery'), '/live').toHaveCount(0);
+    expect(await page.locator('.oc').count(), 'the Live renders a half-built block').toBe(4);
+    await expect(page.locator('.ocCta[data-offer="subscribe"]'), '/live').toHaveCount(0);
 
     for (const route of ROUTES.filter((r) => r !== '/live')) {
       await page.goto(route);
-      const rows = await page.locator('.buyRow').count();
-      expect(rows % 3, `${route} renders a half-built block`).toBe(0);
-      await expect(page.getByText('Monthly delivery').first(), route).toBeVisible();
+      const cards = await page.locator('.oc').count();
+      expect(cards % 3, `${route} renders a half-built block`).toBe(0);
+      await expect(page.locator('.ocCta[data-offer="subscribe"]').first(), route).toBeVisible();
     }
   });
 });

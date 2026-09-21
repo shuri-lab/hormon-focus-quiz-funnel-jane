@@ -35,13 +35,19 @@
   --star: #C9922E;
 
   /* Fluid type. The middle term is the phone behaviour, the clamps stop it
-     collapsing at 320px or ballooning on a desktop monitor. */
-  --t-display: clamp(28px, 8vw, 38px);
-  --t-title: clamp(21px, 5.9vw, 28px);
-  --t-lead: clamp(17px, 4.6vw, 20px);
-  --t-body: clamp(15.5px, 4.1vw, 17px);
-  --t-sub: clamp(14.5px, 3.8vw, 16px);
-  --t-small: clamp(12.5px, 3.4vw, 14px);
+     collapsing at 320px or ballooning on a desktop monitor.
+   *
+   * RAISED TO JANE'S LANDING SCALE. Every floor moved up: body 15.5 -> 17,
+   * sub 14.5 -> 16, small 12.5 -> 14. This funnel is read by women over 40
+   * on a phone, often outdoors, and the old floors were set for a designer
+   * looking at a 5x retina mock. The ceilings moved far less, because the
+   * problem was never the desktop. */
+  --t-display: clamp(30px, 8vw, 42px);
+  --t-title: clamp(24px, 6.2vw, 32px);
+  --t-lead: clamp(18px, 4.8vw, 22px);
+  --t-body: clamp(17px, 4.3vw, 18.5px);
+  --t-sub: clamp(16px, 4vw, 17px);
+  --t-small: clamp(14px, 3.6vw, 15px);
 
   /* rhythm */
   --gutter: clamp(16px, 5vw, 24px);
@@ -50,6 +56,11 @@
 
   --radius: 16px;
   --radius-lg: 20px;
+
+  /* Every tappable thing in the funnel is at least this tall. Jane's landing
+     buttons are 64px and they are the reason her page feels confident; 44px
+     is the accessibility floor, not a target to design to. */
+  --tap: 64px;
 
   --shadow: 0 14px 36px -26px rgba(36, 31, 46, .5);
   --lift: 0 20px 46px -26px rgba(123, 62, 157, .5);
