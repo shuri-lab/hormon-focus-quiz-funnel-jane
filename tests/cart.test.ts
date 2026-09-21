@@ -12,7 +12,7 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
 import {
   PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, SUBSCRIBE_SELLING_PLAN_ID,
-  ONE_MONTH_PRICE, PROTOCOL_PRICE, SUBSCRIBE_PRICE,
+  ONE_MONTH_PRICE, PROTOCOL_PRICE, SUBSCRIBE_PRICE, SUBSCRIBE_SAVING,
   SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
@@ -294,4 +294,20 @@ test('the badges are the ones the copy already carried', () => {
 
 test('every card carries a product shot, which is why the screen needs none', () => {
   for (const card of offerCards()) expect(card.shot, card.kind).toMatch(/^\/img\/offer-/);
+});
+
+/* ------------------------------------------------- the saving and the price */
+
+test('the advertised saving is the arithmetic of the price beside it', () => {
+  /* These two have contradicted each other once already. A test is cheaper
+     than noticing it on a live page. */
+  const pct = Math.round((1 - SUBSCRIBE_PRICE / ONE_MONTH_PRICE) * 100);
+  expect(`${pct}%`).toBe(SUBSCRIBE_SAVING);
+  expect(SUBSCRIBE_PRICE).toBe(39.99);
+});
+
+test('the subscription card shows the price the plan charges', () => {
+  expect(offerCards()[2].now).toBe('$39.99');
+  expect(offerCards()[2].was).toBe('$49.99');
+  expect(perDay('subscribe')).toBe('$1.43');
 });

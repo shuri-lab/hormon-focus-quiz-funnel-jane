@@ -30,14 +30,14 @@ export const PROTOCOL_PRICE = 84.99;
 /**
  * Per bottle every four weeks, free shipping.
  *
- * 44.99 is what selling plan 3665428591 actually charges. The 39.99 that
- * stood here was a placeholder, and it contradicted the line beside it:
- * SUBSCRIBE_SAVING reads 10%, which is 44.99 against a 49.99 bottle exactly
- * — 39.99 would have to say 20%. The row was unrendered until now, so the
- * inconsistency never reached a page. It would have on the first paint.
+ * 39.99, confirmed by David. It was 44.99 here, which he had confirmed
+ * earlier on the reasoning that it was 10% off a 49.99 bottle — and 44.99 is
+ * exactly that. 39.99 is 20% off, so SUBSCRIBE_SAVING moves with the price
+ * rather than being left to contradict it. The two are only ever right or
+ * wrong together, which is why they sit in the same comment.
  */
-export const SUBSCRIBE_PRICE = 44.99;
-export const SUBSCRIBE_SAVING = '10%';
+export const SUBSCRIBE_PRICE = 39.99;
+export const SUBSCRIBE_SAVING = '20%';
 export const GUARANTEE_DAYS = 60;
 
 export const money = (n: number) => `$${n.toFixed(2)}`;
