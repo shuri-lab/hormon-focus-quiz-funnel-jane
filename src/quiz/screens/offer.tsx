@@ -7,7 +7,12 @@ import {
 import { Stars } from '../../components/icons';
 import { RATING, REVIEW_COUNT } from '../../lib/reviews';
 import {
-  GUARANTEE_DAYS, PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, showInternalNotes,
+  GUARANTEE_DAYS,
+  PROTOCOL_DISCOUNT_CODE,
+  PROTOCOL_VARIANT_ID,
+  SINGLE_VARIANT_ID,
+  SUBSCRIBE_SELLING_PLAN_ID,
+  showInternalNotes,
 } from '../../lib/offer';
 import { BuyOptions, GuideCard, useOfferChoice } from '../../components/BuyOptions';
 import {
@@ -228,12 +233,12 @@ export function R7() {
 
       {showInternalNotes() && (
         <div className="warn">
-          <b>Internal note — not shown to customers.</b> The Plan link runs on the
-          discount code {PROTOCOL_DISCOUNT_CODE ?? 'that is not set yet'} while
-          PROTOCOL_VARIANT_ID is {PROTOCOL_VARIANT_ID ?? 'null'}, so the code has to
-          exist in the store before this button is worth anything. The subscription row
-          stays unrendered until there is a plan behind it. No 3 or 6-month bundle
-          exists yet.
+          <b>Internal note — not shown to customers.</b> All three rows now point at
+          real Shopify destinations: one bottle {SINGLE_VARIANT_ID}, the Plan as its own
+          bundle variant {PROTOCOL_VARIANT_ID ?? 'null'}, and the subscription through
+          /cart/add on selling plan {SUBSCRIBE_SELLING_PLAN_ID}. The Plan no longer
+          depends on the {PROTOCOL_DISCOUNT_CODE ?? 'unset'} code, which is now only a
+          fallback. No 3 or 6-month bundle exists yet.
         </div>
       )}
 

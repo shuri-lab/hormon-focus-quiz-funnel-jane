@@ -27,8 +27,16 @@
 export const ONE_MONTH_PRICE = 49.99;
 /** Two bottles, sixty days, free shipping. */
 export const PROTOCOL_PRICE = 84.99;
-/** Per bottle every thirty days, free shipping. Not live yet. */
-export const SUBSCRIBE_PRICE = 39.99;
+/**
+ * Per bottle every four weeks, free shipping.
+ *
+ * 44.99 is what selling plan 3665428591 actually charges. The 39.99 that
+ * stood here was a placeholder, and it contradicted the line beside it:
+ * SUBSCRIBE_SAVING reads 10%, which is 44.99 against a 49.99 bottle exactly
+ * — 39.99 would have to say 20%. The row was unrendered until now, so the
+ * inconsistency never reached a page. It would have on the first paint.
+ */
+export const SUBSCRIBE_PRICE = 44.99;
 export const SUBSCRIBE_SAVING = '10%';
 export const GUARANTEE_DAYS = 60;
 
@@ -58,13 +66,14 @@ export const planShortInline = (): string => PLAN_SHORT.replace(/^The /, 'the ')
 export const SINGLE_VARIANT_ID = '41200079175791';
 
 /**
- * A dedicated two-bottle variant. Null until it exists in Shopify.
+ * The dedicated two-bottle variant — "Hormone Focus Bundle - 2 Bottles".
  *
- * Set this and the Protocol button switches from the discount-code link to a
- * single-variant link on the next deploy. Nothing else has to change, and the
- * discount code below becomes the backup rather than the mechanism.
+ * This is now the mechanism. One bundle, quantity 1, priced in Shopify, so
+ * the Protocol link no longer depends on a discount code existing: the cart
+ * shows PROTOCOL_PRICE because the variant costs that, not because a code
+ * was applied on arrival. The code below is the backup it was designed to be.
  */
-export const PROTOCOL_VARIANT_ID: string | null = null;
+export const PROTOCOL_VARIANT_ID: string | null = '54330638663791';
 
 /**
  * The discount code that makes two bottles cost PROTOCOL_PRICE while there is
@@ -76,10 +85,25 @@ export const PROTOCOL_VARIANT_ID: string | null = null;
 export const PROTOCOL_DISCOUNT_CODE: string | null = 'PROTOCOL';
 
 /** True when the subscription plan exists. False keeps the option unrendered. */
-export const SUBSCRIPTION_LIVE = false;
+export const SUBSCRIPTION_LIVE = true;
 
-/** Where a subscription would be bought, once there is a plan to buy. */
-export const SUBSCRIBE_PATH = '/products/hormonal-imbalance';
+/** The Shopify selling plan: one bottle, delivered every four weeks. */
+export const SUBSCRIBE_SELLING_PLAN_ID = '3665428591';
+
+/**
+ * Where the subscription is bought.
+ *
+ * NOT a cart permalink. A selling plan cannot be expressed in the
+ * /cart/<variant>:<qty> form, so this is the /cart/add form instead, which
+ * Shopify accepts over GET: it adds the line with its plan attached and
+ * redirects to the cart — the same place the other two land, by a different
+ * door. `storefront=true` is meaningless on this endpoint and is ignored;
+ * what must survive is `selling_plan`, and cartUrlRequirements() below is
+ * what a test holds it to.
+ */
+export const SUBSCRIBE_PATH =
+  `/cart/add?id=${SINGLE_VARIANT_ID}&quantity=1` +
+  `&selling_plan=${SUBSCRIBE_SELLING_PLAN_ID}`;
 
 /* ------------------------------------------------------- the options -- */
 
@@ -130,7 +154,7 @@ const PROTOCOL_OPTION: OfferOption = {
 const SUBSCRIBE_OPTION: OfferOption = {
   kind: 'subscribe',
   title: 'Monthly delivery',
-  detail: 'One bottle every 30 days · skip, pause or cancel any time',
+  detail: 'One bottle every 4 weeks · skip, pause or cancel any time',
   cta: 'Start the subscription',
   ctaShort: 'Subscribe',
   price: SUBSCRIBE_PRICE,
