@@ -203,12 +203,13 @@ export interface StackItem {
  * Edited here and nowhere else. The offer pages and the quiz offer screen both
  * render this array.
  */
-export const VALUE_STACK: StackItem[] = [
-  {
-    what: 'Two bottles of Hormone Focus, 60 days',
-    worth: `${money(ONE_MONTH_PRICE * 2)} bought one at a time`,
-  },
-  { what: 'Free shipping', worth: '$7.95' },
+/** Free shipping is worth this, and only two of the three rows get it. */
+const SHIPPING_WORTH = '$7.95';
+
+/* The two bonuses and the guarantee are the same whichever row she is on:
+   both bonuses are things we already own, and the guarantee is store policy
+   rather than a property of the order. Only the top of the stack changes. */
+const BONUSES: StackItem[] = [
   {
     what: 'The Starter Guide, personalised to your result: what to change this week, what to expect at two weeks, four, and sixty, as customers report',
     worth: 'included',
@@ -219,9 +220,65 @@ export const VALUE_STACK: StackItem[] = [
     worth: 'included',
     bonus: true,
   },
-  { what: 'A note from JJ every week for the 60 days', worth: 'included' },
-  { what: 'The 60-Day Happiness Guarantee', worth: 'or it is free' },
 ];
+
+const GUARANTEE_ITEM: StackItem = {
+  what: 'The 60-Day Happiness Guarantee',
+  worth: 'or it is free',
+};
+
+/**
+ * What she gets, for the row she is actually on.
+ *
+ * This used to be one flat array, which meant the stack sold two bottles and
+ * free shipping while she had one bottle selected and the row beside it said
+ * "plus shipping". The stack is the argument for the price directly above it,
+ * so it has to be the argument for HER price.
+ *
+ * The single has no free-shipping line at all rather than a crossed-out one:
+ * shipping is not in it, and listing what she is not getting under a heading
+ * reading "What is in it" is the kind of thing that loses an order.
+ */
+export function valueStackFor(kind: OfferKind): StackItem[] {
+  if (kind === 'single') {
+    return [
+      {
+        what: 'One bottle of Hormone Focus, 30 days',
+        worth: money(ONE_MONTH_PRICE),
+      },
+      ...BONUSES,
+      { what: 'A note from JJ every week', worth: 'included' },
+      GUARANTEE_ITEM,
+    ];
+  }
+
+  if (kind === 'subscribe') {
+    return [
+      {
+        what: 'One bottle of Hormone Focus, every 4 weeks',
+        worth: `${money(ONE_MONTH_PRICE)} bought one at a time`,
+      },
+      { what: 'Free shipping, every delivery', worth: SHIPPING_WORTH },
+      ...BONUSES,
+      { what: 'A note from JJ every week', worth: 'included' },
+      GUARANTEE_ITEM,
+    ];
+  }
+
+  return [
+    {
+      what: 'Two bottles of Hormone Focus, 60 days',
+      worth: `${money(ONE_MONTH_PRICE * 2)} bought one at a time`,
+    },
+    { what: 'Free shipping', worth: SHIPPING_WORTH },
+    ...BONUSES,
+    { what: 'A note from JJ every week for the 60 days', worth: 'included' },
+    GUARANTEE_ITEM,
+  ];
+}
+
+/** The Plan's stack, which is what a page shows before she touches anything. */
+export const VALUE_STACK: StackItem[] = valueStackFor(DEFAULT_OFFER);
 
 /* ------------------------------------------------------- the switches -- */
 

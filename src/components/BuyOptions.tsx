@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SHOP_BASE } from '../lib/logic';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  DEFAULT_OFFER, NEXT_BATCH, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, VALUE_STACK,
+  DEFAULT_OFFER, NEXT_BATCH, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, valueStackFor,
   batchCount, dailyPrice, money, optionFor, optionsFor, type OfferKind,
 } from '../lib/offer';
 import {
@@ -16,7 +16,7 @@ import {
  *
  * The offer pages, the Starter Guide page and the screen at the end of the
  * quiz render this same component, so a price, a bundle or a cart rule changes
- * in one place. The rows come from OFFER_OPTIONS, the stack from VALUE_STACK
+ * in one place. The rows come from OFFER_OPTIONS, the stack from valueStackFor
  * and the links from shopUrl(), which is where the three cart modes live.
  *
  * The Plan arrives chosen. That is the offer; the single bottle is the honest
@@ -91,13 +91,19 @@ export function GuideCard() {
   );
 }
 
-/** What she gets for the money, named line by line. */
-export function ValueStack() {
+/**
+ * What she gets for the money, named line by line.
+ *
+ * `kind` is not optional on purpose. The stack argues for the price directly
+ * above it, so a caller that does not say which row is selected is a caller
+ * about to sell two bottles to somebody buying one.
+ */
+export function ValueStack({ kind }: { kind: OfferKind }) {
   return (
     <div className="stack" data-af="stack">
       <p className="stackH">{STACK_HEADING}</p>
       <ul>
-        {VALUE_STACK.map((item) => (
+        {valueStackFor(kind).map((item) => (
           <li key={item.what}>
             <span className="stackWhat">
               {item.bonus && <span className="stackBonus">Bonus</span>}
@@ -197,7 +203,7 @@ export function BuyOptions({ chosen, onChoose, outcome, angle, name, live = fals
       {chosen === 'single' && <p className="buyShip">{SHIPPING_LINE}</p>}
 
       <Guarantee />
-      <ValueStack />
+      <ValueStack kind={chosen} />
     </div>
   );
 }

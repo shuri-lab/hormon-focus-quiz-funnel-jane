@@ -12,7 +12,7 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
 import {
   PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, SUBSCRIBE_SELLING_PLAN_ID,
-  cartPath, optionsFor,
+  cartPath, optionFor, optionsFor, valueStackFor,
 } from '../src/lib/offer';
 import { shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE } from '../src/lib/logic';
@@ -120,4 +120,56 @@ test('organic traffic falls back to the quiz own values, not to nothing', () => 
 test('all three rows are offered, and the Live still withholds the subscription', () => {
   expect(optionsFor(false).map((o) => o.kind)).toEqual(['single', 'protocol', 'subscribe']);
   expect(optionsFor(true).map((o) => o.kind)).toEqual(['single', 'protocol']);
+});
+
+/* ------------------------------------------------------- the value stack -- */
+
+/* The stack sits directly under the price and argues for it. When it was one
+   flat array it argued for two bottles no matter which row was selected —
+   the bug these tests exist to keep fixed. */
+
+test('the stack describes the row she is actually on', () => {
+  const head = (k: Parameters<typeof valueStackFor>[0]) => valueStackFor(k)[0].what;
+  expect(head('single')).toBe('One bottle of Hormone Focus, 30 days');
+  expect(head('protocol')).toBe('Two bottles of Hormone Focus, 60 days');
+  expect(head('subscribe')).toBe('One bottle of Hormone Focus, every 4 weeks');
+});
+
+test('only the Plan and the subscription claim free shipping', () => {
+  const ships = (k: Parameters<typeof valueStackFor>[0]) =>
+    valueStackFor(k).some((i) => /free shipping/i.test(i.what));
+  /* The single row reads "plus shipping", so the stack must not contradict it. */
+  expect(ships('single'), 'the single must not claim free shipping').toBe(false);
+  expect(ships('protocol')).toBe(true);
+  expect(ships('subscribe')).toBe(true);
+});
+
+test('no stack sells two bottles to somebody buying one', () => {
+  for (const k of ['single', 'subscribe'] as const) {
+    for (const item of valueStackFor(k)) {
+      expect(item.what, `${k} stack mentions two bottles`).not.toMatch(/two bottles/i);
+    }
+  }
+});
+
+test('the headline worth matches what that row actually costs', () => {
+  expect(valueStackFor('single')[0].worth).toBe('$49.99');
+  expect(valueStackFor('protocol')[0].worth).toBe('$99.98 bought one at a time');
+  expect(valueStackFor('subscribe')[0].worth).toBe('$49.99 bought one at a time');
+});
+
+test('every row keeps both bonuses and the guarantee', () => {
+  for (const k of ['single', 'protocol', 'subscribe'] as const) {
+    const stack = valueStackFor(k);
+    expect(stack.filter((i) => i.bonus), k).toHaveLength(2);
+    expect(stack.at(-1)!.what, k).toBe('The 60-Day Happiness Guarantee');
+  }
+});
+
+test('the button and the stack always name the same purchase', () => {
+  /* One bottle in the button, one bottle at the top of the stack. */
+  expect(optionFor('single').cta).toMatch(/one bottle/i);
+  expect(valueStackFor('single')[0].what).toMatch(/one bottle/i);
+  expect(optionFor('protocol').cta).toMatch(/two bottles/i);
+  expect(valueStackFor('protocol')[0].what).toMatch(/two bottles/i);
 });
