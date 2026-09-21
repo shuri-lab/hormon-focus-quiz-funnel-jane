@@ -73,29 +73,37 @@ function Card({ card, outcome, angle }: CardProps) {
       <div className={`oc oc-${card.kind}`}>
         {card.badge && <div className="ocBadge">{card.badge}</div>}
 
-        <div className="ocShots">
-          <img src={card.shot} alt="" width={300} height={380} loading="lazy" decoding="async" />
-          {card.shotGuide && (
-            <img
-              className="ocShotGuide" src={card.shotGuide} alt=""
-              width={220} height={280} loading="lazy" decoding="async"
-            />
-          )}
+        {/* Shots and words are one unit, so they can sit as a column on a
+            desktop and as a row on a phone — picture left, price right —
+            without either one moving independently. Jane's page does the
+            same, with the same two wrappers. */}
+        <div className="ocHead">
+          <div className="ocShots">
+            <img src={card.shot} alt="" width={300} height={380} loading="lazy" decoding="async" />
+            {card.shotGuide && (
+              <img
+                className="ocShotGuide" src={card.shotGuide} alt=""
+                width={220} height={280} loading="lazy" decoding="async"
+              />
+            )}
+          </div>
+
+          <div className="ocMain">
+            <p className="ocKicker">{card.kicker}</p>
+            <p className="ocSupply">{card.supply}</p>
+
+            <p className="ocPrice">
+              {card.was && <span className="ocWas">{card.was}</span>}
+              <span className="ocNow">{card.now}</span>
+            </p>
+            <p className="ocDay">{card.perDay} a day</p>
+            <p className="ocTerms">{card.terms}</p>
+
+            {card.saving && (
+              <p className="ocShip"><TruckIcon /> Save {card.saving}</p>
+            )}
+          </div>
         </div>
-
-        <p className="ocKicker">{card.kicker}</p>
-        <p className="ocSupply">{card.supply}</p>
-
-        <p className="ocPrice">
-          {card.was && <span className="ocWas">{card.was}</span>}
-          <span className="ocNow">{card.now}</span>
-        </p>
-        <p className="ocDay">{card.perDay} a day</p>
-        <p className="ocTerms">{card.terms}</p>
-
-        {card.saving && (
-          <p className="ocShip"><TruckIcon /> Save {card.saving}</p>
-        )}
 
         {/* Pushes the button to the bottom so three cards of different
             heights still line their buttons up on a desktop. */}

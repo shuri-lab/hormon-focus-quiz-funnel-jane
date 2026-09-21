@@ -27,15 +27,15 @@
   text-align: center;
   background: var(--surface);
   border: 1.5px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: clamp(24px, 6vw, 30px) clamp(18px, 5vw, 24px);
+  border-radius: 18px;
+  padding: 18px 16px;
 }
 
 /* The one we sell. A second border weight and a wash, not a third colour. */
 .oc-protocol {
   background: linear-gradient(165deg, var(--surface) 0%, var(--wash) 100%);
   border: 2px solid var(--plum);
-  padding-top: clamp(32px, 7vw, 38px);
+  padding-top: 28px;
   box-shadow: var(--lift);
 }
 
@@ -65,13 +65,36 @@
   box-shadow: 0 10px 22px -10px rgba(30, 122, 79, .6);
 }
 
+/* MOBILE FIRST, AND THE PHONE IS THE ROW. A stacked card puts a 168px
+   photograph between her and the price on the screen where she has least
+   room. Side by side she sees the bottle and what it costs in one glance,
+   and three offers fit in the space two used to. Jane's page is laid out
+   the same way, from the same two wrappers. */
+.ocHead {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.ocMain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+
 .ocShots {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 10px;
-  height: clamp(138px, 34vw, 168px);
-  margin-bottom: 16px;
+  gap: 6px;
+  height: 104px;
+  flex: 0 0 auto;
+  margin-bottom: 0;
 }
 
 .ocShots img {
@@ -80,7 +103,7 @@
   filter: drop-shadow(0 14px 16px rgba(36, 31, 46, .2));
 }
 
-.ocShots .ocShotGuide { height: 72%; }
+.ocShots .ocShotGuide { height: 64%; }
 
 /* ------------------------------------------------------------ the price -- */
 
@@ -95,9 +118,13 @@
 
 .oc-subscribe .ocKicker { color: var(--good); }
 
+/* Our detail line is longer than Jane's "30-day supply" — it carries the
+   per-bottle price and the terms — so it is set a size down. At body size
+   it out-weighed the number it was describing. The copy is untouched. */
 .ocSupply {
-  margin: 6px 0 0;
-  font-size: var(--t-body);
+  margin: 2px 0 0;
+  font-size: var(--t-small);
+  line-height: 1.34;
   font-weight: 600;
   color: var(--ink-2);
 }
@@ -105,14 +132,14 @@
 .ocPrice {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 14px 0 0;
+  gap: 9px;
+  margin: 6px 0 0;
 }
 
 .ocNow {
-  font-size: clamp(40px, 11vw, 52px);
+  font-size: clamp(34px, 9.4vw, 52px);
   line-height: 1;
   font-weight: 800;
   letter-spacing: -.03em;
@@ -143,7 +170,7 @@
 }
 
 .ocDay {
-  margin: 9px 0 0;
+  margin: 5px 0 0;
   font-size: var(--t-sub);
   font-weight: 800;
   color: var(--plum);
@@ -152,7 +179,7 @@
 .oc-subscribe .ocDay { color: var(--good); }
 
 .ocTerms {
-  margin: 5px 0 0;
+  margin: 2px 0 0;
   font-size: var(--t-small);
   font-weight: 600;
   color: var(--ink-3);
@@ -161,9 +188,9 @@
 .ocShip {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   font-size: var(--t-small);
   font-weight: 800;
   letter-spacing: .06em;
@@ -171,17 +198,17 @@
   color: var(--good);
 }
 
-.ocFill { flex: 1; min-height: 16px; }
+.ocFill { display: none; }
 
 /* ------------------------------------------------------------ the bonus -- */
 
 .ocBonus {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   width: 100%;
-  margin: 0 0 14px;
+  margin: 14px 0 0;
   padding: 9px 12px;
   border: 1.5px dashed var(--lilac);
   border-radius: 13px;
@@ -329,6 +356,22 @@
 
   .ocSlot { display: flex; }
   .ocSlot > .ocCol { flex: 1; }
+
+  /* Three across, and each card goes back to a column: there is width for
+     the photograph above the price once the cards are side by side. */
+  .ocHead { flex-direction: column; align-items: center; gap: 0; }
+  .ocMain { align-items: center; text-align: center; width: 100%; flex: none; }
+  .ocShots { height: clamp(138px, 13vw, 168px); gap: 10px; margin-bottom: 16px; }
+  .ocShots .ocShotGuide { height: 72%; }
+  .oc { padding: clamp(24px, 2.6vw, 30px) clamp(20px, 2.2vw, 24px); border-radius: 22px; }
+  .oc-protocol { padding-top: clamp(30px, 3vw, 36px); }
+  .ocPrice { justify-content: center; gap: 12px; margin-top: 14px; }
+  .ocSupply { margin-top: 6px; }
+  .ocDay { margin-top: 9px; }
+  .ocTerms { margin-top: 5px; }
+  .ocShip { justify-content: center; margin-top: 10px; }
+  .ocBonus { justify-content: center; margin: 0 0 14px; }
+  .ocFill { display: block; flex: 1; min-height: 18px; }
 
   /* Side by side, the gap says "or" without a word in it. */
   .ocOr { display: none; }
