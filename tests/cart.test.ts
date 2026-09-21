@@ -12,7 +12,8 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
 import {
   PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, SUBSCRIBE_SELLING_PLAN_ID,
-  cartPath, optionFor, optionsFor, valueStackFor,
+  ONE_MONTH_PRICE, PROTOCOL_PRICE, SUBSCRIBE_PRICE,
+  cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
 import { shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE } from '../src/lib/logic';
@@ -172,4 +173,66 @@ test('the button and the stack always name the same purchase', () => {
   expect(valueStackFor('single')[0].what).toMatch(/one bottle/i);
   expect(optionFor('protocol').cta).toMatch(/two bottles/i);
   expect(valueStackFor('protocol')[0].what).toMatch(/two bottles/i);
+});
+
+/* ------------------------------------------------------- the offer cards -- */
+
+/* The cards replaced a radio group. Every number on them is derived, so these
+   tests are really asking one thing: does the card still agree with the price
+   it is selling? A card that disagrees is worse than no card. */
+
+test('there are three cards, in the order she reads them', () => {
+  expect(offerCards().map((c) => c.kind)).toEqual(['single', 'protocol', 'subscribe']);
+});
+
+test('every card names the price its own row charges', () => {
+  for (const card of offerCards()) {
+    expect(card.now, card.kind).toBe(`$${optionFor(card.kind).price.toFixed(2)}`);
+  }
+});
+
+test('the day rate divides the price by the days it actually buys', () => {
+  /* 30, 60 and 28 — four weeks is not a month. */
+  expect(perDay('single')).toBe(`$${(ONE_MONTH_PRICE / 30).toFixed(2)}`);
+  expect(perDay('protocol')).toBe(`$${(PROTOCOL_PRICE / 60).toFixed(2)}`);
+  expect(perDay('subscribe')).toBe(`$${(SUBSCRIBE_PRICE / 28).toFixed(2)}`);
+});
+
+test('a struck price is only shown where there is a real saving behind it', () => {
+  const [single, plan, sub] = offerCards();
+  /* Nothing is discounted off one bottle, so nothing is struck through. */
+  expect(single.was).toBeUndefined();
+  expect(plan.was).toBe('$99.98');
+  expect(sub.was).toBe('$49.99');
+});
+
+test('the saving on the plan is the two singles minus the plan', () => {
+  const plan = offerCards()[1];
+  const saving = (ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE).toFixed(2);
+  expect(plan.terms).toContain(`$${saving}`);
+  expect(saving).toBe('14.99');
+});
+
+test('free shipping is claimed on exactly the two rows that have it', () => {
+  const [single, plan, sub] = offerCards();
+  expect(single.freeShipping, 'the single is plus shipping').toBe(false);
+  expect(single.terms).toMatch(/shipping charged separately/i);
+  expect(plan.freeShipping).toBe(true);
+  expect(sub.freeShipping).toBe(true);
+});
+
+test('the Starter Guide rides on the plan, and only the plan', () => {
+  const withBonus = offerCards().filter((c) => c.bonus);
+  expect(withBonus).toHaveLength(1);
+  expect(withBonus[0].kind).toBe('protocol');
+  expect(withBonus[0].shotGuide, 'the bonus is pictured, not just named').toBeTruthy();
+});
+
+test('only one card is badged, or the badge means nothing', () => {
+  expect(offerCards().filter((c) => c.badge)).toHaveLength(1);
+  expect(offerCards().find((c) => c.badge)!.kind).toBe('protocol');
+});
+
+test('every card carries a product shot, which is why the screen needs none', () => {
+  for (const card of offerCards()) expect(card.shot, card.kind).toMatch(/^\/img\/offer-/);
 });

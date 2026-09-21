@@ -134,14 +134,28 @@ test.describe('the quiz', () => {
 
     await expect(heading(page)).toContainText('where I would start you, Renee');
     await expectNoHorizontalOverflow(page, 'r7 offer');
-    /* The offer screen now renders the shared options component, so the buy
-       button is .buyBtn rather than the screen's own action bar. */
-    await expect(page.locator('.buyBtn')).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
+    /* Three complete offers, each ending in its own cart link, rather than
+       three rows feeding one button. */
+    await expect(page.locator('.ocCta')).toHaveCount(3);
+    for (const kind of ['single', 'protocol', 'subscribe']) {
+      await expect(
+        page.locator(`.ocCta[data-offer="${kind}"]`), kind,
+      ).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
+    }
 
-    /* The Starter Guide is named as a bonus she receives with the bottles,
-       and never handed over as a link before she has bought anything. */
-    await expect(page.locator('.guideCard')).toBeVisible();
-    await expect(page.locator('.guideCard')).toContainText('comes with your two bottles');
+    /* One product photograph per card and none above them: a fourth picture
+       of the same bottle was the biggest thing on the screen. */
+    await expect(page.locator('.shot')).toHaveCount(0);
+
+    /* The Starter Guide is named as a bonus inside the two-bottle card, and
+       never handed over as a link before she has bought anything. */
+    await expect(page.locator('.ocBonus')).toBeVisible();
+    await expect(page.locator('.ocBonus')).toContainText('Starter Guide');
+    await expect(page.locator('.ocBonus a')).toHaveCount(0);
+
+    /* The guarantee is said once, under all three, with the seal beside it. */
+    await expect(page.locator('.ocGuard')).toBeVisible();
+    await expect(page.locator('.ocSeal')).toBeVisible();
     const quizHrefs = await page.locator('a[href]').evaluateAll(
       (as) => as.map((a) => a.getAttribute('href') ?? ''),
     );

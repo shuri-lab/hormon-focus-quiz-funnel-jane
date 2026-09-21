@@ -9,7 +9,7 @@ import { RATING, REVIEW_COUNT } from '../../lib/reviews';
 import {
   GUARANTEE_DAYS,
 } from '../../lib/offer';
-import { BuyOptions, GuideCard, useOfferChoice } from '../../components/BuyOptions';
+import { OfferCards } from '../../components/OfferCards';
 import {
   GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE, GUARANTEE_SUB_REST,
   REFUND_POLICY_URL,
@@ -192,11 +192,6 @@ export function R7() {
   const v = VERDICT[outcome];
   const sc = score(S);
 
-  /* THE SAME OFFER AS /offer. The rows, the prices, the value stack and the
-     three cart modes all come from BuyOptions, so the quiz cannot drift away
-     from the pages. */
-  const { chosen, choose } = useOfferChoice();
-
   return (
     <Screen id="r7">
       <p className="eyebrow">Based on your answers</p>
@@ -208,21 +203,12 @@ export function R7() {
         {S.sev && ` · ${SEV_PHRASE[S.sev as Severity]}`}
       </p>
 
-      <div className="shot">
-        <img src={BOTTLE} alt="Hormone Focus" width={620} height={540} loading="lazy" decoding="async" />
-      </div>
-
-      <GuideCard />
-
-      <div className="offer quizBuy">
-        <BuyOptions
-          chosen={chosen}
-          onChoose={choose}
-          outcome={outcome}
-          angle={angle.slug}
-          name="quiz"
-        />
-      </div>
+      {/* No bottle photograph above the cards: each card carries its own
+          product shot, and a fourth picture of the same bottle was the
+          largest thing on the screen while saying the least. The Starter
+          Guide rides inside the two-bottle card as the bonus it is, rather
+          than as a block of its own. */}
+      <OfferCards outcome={outcome} angle={angle.slug} />
 
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
 

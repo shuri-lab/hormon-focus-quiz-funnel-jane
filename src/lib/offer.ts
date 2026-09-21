@@ -181,6 +181,106 @@ export const optionsFor = (live: boolean): OfferOption[] =>
 export const optionFor = (kind: OfferKind): OfferOption =>
   OFFER_OPTIONS.find((o) => o.kind === kind) ?? PROTOCOL_OPTION;
 
+/* ------------------------------------------------------- the offer cards -- */
+
+/** The product shots. The cards carry these, which is why the quiz result
+    screen no longer needs a bottle photograph of its own above them. */
+export const SHOT_ONE = '/img/offer-1-bottle.png';
+export const SHOT_TWO = '/img/offer-2-bottles.png';
+export const SHOT_GUIDE = '/img/offer-starter-guide.png';
+/** The seal, which is the guarantee said in one glance. */
+export const GUARANTEE_SEAL = '/img/guarantee-seal.webp';
+
+/** Days of supply each row buys. Four weeks is 28, not a month. */
+const SUPPLY_DAYS: Record<OfferKind, number> = {
+  single: 30,
+  protocol: 60,
+  subscribe: 28,
+};
+
+/**
+ * What a row costs a day.
+ *
+ * The day rate is the only number that compares three prices bought over
+ * three different lengths of time, so every card carries one.
+ */
+export const perDay = (kind: OfferKind): string =>
+  money(optionFor(kind).price / SUPPLY_DAYS[kind]);
+
+export interface OfferCard {
+  kind: OfferKind;
+  /** Small-caps label at the top of the card. */
+  kicker: string;
+  /** How long it lasts, under the kicker. */
+  supply: string;
+  /** The struck-through price, only where there is a real saving. */
+  was?: string;
+  now: string;
+  perDay: string;
+  terms: string;
+  freeShipping: boolean;
+  /** Named, pictured, and never handed over before she has bought. */
+  bonus?: string;
+  cta: string;
+  badge?: string;
+  /** Which product shot sits at the top. */
+  shot: string;
+  /** The guide shot beside it, on the plan that includes it. */
+  shotGuide?: string;
+}
+
+/**
+ * The three cards, in the order she reads them.
+ *
+ * Every number is derived rather than typed twice: the saving is the two
+ * singles minus the plan, and the day rates come from perDay(). Change a
+ * price in one place above and all three cards follow.
+ */
+export function offerCards(): OfferCard[] {
+  const saving = ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE;
+
+  return [
+    {
+      kind: 'single',
+      kicker: '1 bottle',
+      supply: '30-day supply',
+      now: money(ONE_MONTH_PRICE),
+      perDay: perDay('single'),
+      terms: 'One-time · shipping charged separately',
+      freeShipping: false,
+      cta: 'Get 1 bottle',
+      shot: SHOT_ONE,
+    },
+    {
+      kind: 'protocol',
+      kicker: '2 bottles',
+      supply: '60-day supply',
+      was: money(ONE_MONTH_PRICE * 2),
+      now: money(PROTOCOL_PRICE),
+      perDay: perDay('protocol'),
+      terms: `One-time · save ${money(saving)}`,
+      freeShipping: true,
+      bonus: 'Hormone Focus Starter Guide',
+      cta: 'Get 2 bottles',
+      badge: 'Best seller',
+      shot: SHOT_TWO,
+      shotGuide: SHOT_GUIDE,
+    },
+    {
+      kind: 'subscribe',
+      kicker: 'Subscribe and save',
+      supply: 'One bottle every 4 weeks',
+      was: money(ONE_MONTH_PRICE),
+      now: money(SUBSCRIBE_PRICE),
+      perDay: perDay('subscribe'),
+      terms: `Save ${SUBSCRIBE_SAVING} · cancel any time`,
+      freeShipping: true,
+      cta: 'Subscribe and save',
+      shot: SHOT_ONE,
+    },
+  ];
+}
+
 /* -------------------------------------------------- what she gets -- */
 
 export interface StackItem {
