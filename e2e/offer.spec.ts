@@ -69,7 +69,19 @@ test.describe('the offer pages', () => {
       await expect(plan).toHaveCount(1);
       await expect(plan).toContainText(PLAN_SHORT);
       await expect(plan.locator('.ocBadge')).toHaveText('Best Seller');
+      /* All three buttons are filled — hollow beside two solid ones reads as
+         disabled — so the Plan leads through the badge, the border and the
+         gradient instead. Exactly one card carries the gradient. */
       await expect(page.locator('.ofHeroBuy .ocCta:not(.ocCtaSoft)')).toHaveCount(1);
+      for (const el of await page.locator('.ofHeroBuy .ocCta').all()) {
+        /* A gradient is a background-IMAGE, so the Plan's button reports a
+           transparent backgroundColor. Either counts as filled. */
+        const filled = await el.evaluate((n) => {
+          const cs = getComputedStyle(n);
+          return cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.backgroundImage !== 'none';
+        });
+        expect(filled, 'a purchase button is hollow').toBe(true);
+      }
 
       /* The word we use among ourselves never reaches her. */
       expect(
@@ -236,7 +248,7 @@ test.describe('the cart link', () => {
     expect(url.searchParams.get('hf_offer')).toBe('single');
     expect(url.searchParams.get('storefront')).toBe('true');
 
-    await expect(single).toContainText('Get one bottle');
+    await expect(single).toContainText('Get 1 bottle');
   });
 
   test('the closer offers the same three carts as the hero', async ({ page }) => {
@@ -599,11 +611,11 @@ test.describe('the buttons and the subscription', () => {
 
       /* Each card says what pressing it gets her, in her words, not ours. */
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="single"]'))
-        .toContainText('Get one bottle');
+        .toContainText('Get 1 bottle');
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="protocol"]'))
         .toContainText('Get my two bottles');
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="subscribe"]'))
-        .toContainText('Start the subscription');
+        .toContainText('Subscribe & save');
 
       /* The sticky bar has room for one offer and carries the Plan, which is
          what the page sells; there is no selection for it to follow. */

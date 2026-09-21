@@ -480,10 +480,16 @@ test('five value props, and the headline carries the section alone', () => {
 });
 
 test('the buttons name the bottles', () => {
+  /* Jane's own wording on the Plan, from her nine notes, and untouched. */
   expect(offer.optionFor('protocol').cta).toBe('Get my two bottles');
   expect(offer.optionFor('protocol').ctaShort).toBe('Get my two bottles');
-  expect(offer.optionFor('single').cta).toBe('Get one bottle');
-  expect(offer.optionFor('single').ctaShort).toBe('Get one bottle');
+
+  /* The other two match the buttons on Jane's landing page word for word,
+     at David's request, so the two surfaces stop reading as two products. */
+  expect(offer.optionFor('single').cta).toBe('Get 1 bottle');
+  expect(offer.optionFor('single').ctaShort).toBe('Get 1 bottle');
+  expect(offer.optionFor('subscribe').cta).toBe('Subscribe & save');
+  expect(offer.optionFor('subscribe').ctaShort).toBe('Subscribe & save');
 
   /* The row still names the Plan, even though the button does not. */
   expect(offer.optionFor('protocol').title).toBe(`2 bottles · ${offer.PLAN_SHORT}`);

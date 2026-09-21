@@ -70,7 +70,7 @@ function Card({ card, outcome, angle }: CardProps) {
 
   return (
     <div className="ocCol">
-      <div className={`oc oc-${card.kind}`}>
+      <div className={`oc oc-${card.kind}${card.badge ? ' oc-badged' : ''}`}>
         {card.badge && <div className="ocBadge">{card.badge}</div>}
 
         {/* Shots and words are one unit, so they can sit as a column on a

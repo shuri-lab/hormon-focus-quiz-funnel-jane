@@ -220,7 +220,7 @@ test('every row keeps both bonuses and the guarantee', () => {
 
 test('the button and the stack always name the same purchase', () => {
   /* One bottle in the button, one bottle at the top of the stack. */
-  expect(optionFor('single').cta).toMatch(/one bottle/i);
+  expect(optionFor('single').cta).toMatch(/1 bottle/i);
   expect(valueStackFor('single')[0].what).toMatch(/one bottle/i);
   expect(optionFor('protocol').cta).toMatch(/two bottles/i);
   expect(valueStackFor('protocol')[0].what).toMatch(/two bottles/i);
