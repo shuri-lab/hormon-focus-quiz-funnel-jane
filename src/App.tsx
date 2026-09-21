@@ -7,7 +7,7 @@ import { Quiz } from './quiz/Quiz';
 import { OfferPage } from './offer/OfferPage';
 import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
-import { captureAttribution, initClarity, pageView } from './lib/analytics';
+import { initClarity, pageView } from './lib/analytics';
 
 /**
  * Tells GTM about client-side navigations, which it cannot see on its own.
@@ -49,8 +49,8 @@ function KnownAngle({ children }: { children: React.JSX.Element }) {
 
 export default function App() {
   useEffect(() => {
-    /* Read the ad parameters once, before any navigation can strip them. */
-    captureAttribution();
+    /* Attribution is captured in main.tsx, before the first render, because
+       the cart links are built during render and an effect is too late. */
     /* Injects Clarity once. VITE_CLARITY_ID overrides the committed project. */
     initClarity();
   }, []);

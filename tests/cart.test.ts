@@ -13,6 +13,7 @@ import { afterEach, beforeEach, expect, test } from 'vitest';
 import {
   PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, SUBSCRIBE_SELLING_PLAN_ID,
   ONE_MONTH_PRICE, PROTOCOL_PRICE, SUBSCRIBE_PRICE,
+  SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
 import { shopUrl } from '../src/lib/analytics';
@@ -60,10 +61,13 @@ test('the Plan is the two-bottle bundle variant, quantity 1, not two singles', (
 test('the subscription carries its selling plan through /cart/add', () => {
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'subscribe'));
   expect(u.origin + u.pathname).toBe('https://shop.jjsmithonline.com/cart/add');
-  expect(u.searchParams.get('id')).toBe(SINGLE_VARIANT_ID);
+  /* Its own variant, not the one-off with a plan bolted on. */
+  expect(u.searchParams.get('id')).toBe(SUBSCRIBE_VARIANT_ID);
+  expect(SUBSCRIBE_VARIANT_ID).toBe('54355951845487');
+  expect(SUBSCRIBE_VARIANT_ID).not.toBe(SINGLE_VARIANT_ID);
   expect(u.searchParams.get('quantity')).toBe('1');
   expect(u.searchParams.get('selling_plan')).toBe(SUBSCRIBE_SELLING_PLAN_ID);
-  expect(SUBSCRIBE_SELLING_PLAN_ID).toBe('3665428591');
+  expect(SUBSCRIBE_SELLING_PLAN_ID).toBe('5529010287');
 });
 
 test('no row sends her to a product page', () => {

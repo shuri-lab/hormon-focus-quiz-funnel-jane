@@ -88,7 +88,17 @@ export const PROTOCOL_DISCOUNT_CODE: string | null = 'PROTOCOL';
 export const SUBSCRIPTION_LIVE = true;
 
 /** The Shopify selling plan: one bottle, delivered every four weeks. */
-export const SUBSCRIBE_SELLING_PLAN_ID = '3665428591';
+export const SUBSCRIBE_SELLING_PLAN_ID = '5529010287';
+
+/**
+ * The subscription's OWN variant, which is not the single bottle.
+ *
+ * It was 41200079175791 — the one-off variant with a plan attached. It is
+ * its own variant now, so the two cannot be confused in the store or in a
+ * report, and changing the one-off price can no longer move what a
+ * subscriber pays.
+ */
+export const SUBSCRIBE_VARIANT_ID = '54355951845487';
 
 /**
  * Where the subscription is bought.
@@ -102,7 +112,7 @@ export const SUBSCRIBE_SELLING_PLAN_ID = '3665428591';
  * what a test holds it to.
  */
 export const SUBSCRIBE_PATH =
-  `/cart/add?id=${SINGLE_VARIANT_ID}&quantity=1` +
+  `/cart/add?id=${SUBSCRIBE_VARIANT_ID}&quantity=1` +
   `&selling_plan=${SUBSCRIBE_SELLING_PLAN_ID}`;
 
 /* ------------------------------------------------------- the options -- */

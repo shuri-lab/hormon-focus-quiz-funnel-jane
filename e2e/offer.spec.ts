@@ -1,9 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
 import { expectNoHorizontalOverflow, expectTapTargets } from './helpers';
 import {
-  BATCH_ON_SHELF, LIVE_DEADLINE, PLAN_SHORT, PROTOCOL_DISCOUNT_CODE,
-  PROTOCOL_VARIANT_ID, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, SINGLE_VARIANT_ID,
-  VALUE_STACK, cartPath, dailyPrice,
+  BATCH_ON_SHELF,
+  LIVE_DEADLINE,
+  PLAN_SHORT,
+  PROTOCOL_DISCOUNT_CODE,
+  PROTOCOL_VARIANT_ID,
+  SHOW_BATCH_LINE,
+  SHOW_DAILY_PRICE,
+  SINGLE_VARIANT_ID,
+  SUBSCRIBE_SELLING_PLAN_ID,
+  SUBSCRIBE_VARIANT_ID,
+  VALUE_STACK,
+  cartPath,
+  dailyPrice,
 } from '../src/lib/offer';
 
 /* The Starter Guide, with everything the quiz would have put on the link. */
@@ -259,6 +269,46 @@ test.describe('the cart link', () => {
         expect(url.searchParams.get('hf_offer'), route).toBeTruthy();
       }
     }
+  });
+
+  test('the ad tags are on the link at first paint, before any re-render', async ({ page }) => {
+    /* THE BUG THIS EXISTS FOR: attribution used to be captured in an effect,
+       which runs after the first render. The links were therefore built from
+       the fallbacks, and a woman who landed from an ad and pressed buy
+       without triggering a re-render reached Shopify tagged utm_source=quiz
+       with her fbclid dropped — the exact traffic the carry-through is for.
+
+       No click, no scroll, no navigation here on purpose. Read the href off
+       the first paint and nothing else. */
+    const ad = {
+      utm_source: 'meta', utm_medium: 'paid', utm_campaign: 'peri_q3',
+      utm_content: 'vid_07', utm_term: 'bloat_kw',
+      hf_funnel: 'quiz_v2', hf_variant: 'b', fbclid: 'FB1',
+    };
+    await page.goto(`/offer?${new URLSearchParams(ad)}`);
+    await page.waitForLoadState('networkidle');
+
+    for (const kind of ['single', 'protocol', 'subscribe']) {
+      const href = await page.locator(`.ocCta[data-offer="${kind}"]`).first()
+        .getAttribute('href');
+      const url = new URL(href!);
+      for (const [k, v] of Object.entries(ad)) {
+        expect(url.searchParams.get(k), `${kind} lost ${k} on the first paint`).toBe(v);
+      }
+    }
+  });
+
+  test('the subscription buys its own variant on its own plan', async ({ page }) => {
+    await page.goto('/offer');
+    const url = new URL((await page.locator('.ocCta[data-offer="subscribe"]').first()
+      .getAttribute('href'))!);
+
+    expect(url.pathname).toBe('/cart/add');
+    expect(url.searchParams.get('id')).toBe(SUBSCRIBE_VARIANT_ID);
+    expect(url.searchParams.get('selling_plan')).toBe(SUBSCRIBE_SELLING_PLAN_ID);
+    expect(url.searchParams.get('quantity')).toBe('1');
+    /* Not the one-off variant with a plan bolted onto it. */
+    expect(url.searchParams.get('id')).not.toBe(SINGLE_VARIANT_ID);
   });
 
   test('the cart path helper answers for each mode', () => {
