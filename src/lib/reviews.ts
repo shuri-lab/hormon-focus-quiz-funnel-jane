@@ -31,27 +31,40 @@ export interface Review {
   verified: boolean;
   /** A contiguous span of the published review. '…' marks a cut. */
   body: string;
+  /**
+   * The two lines the wall shows before 'Read more'.
+   *
+   * A PREFIX OF body, character for character. Not a summary and not a
+   * rewrite: the excerpt is where the quote was cut, never what it was cut
+   * into. A test asserts body.startsWith(excerpt) for every one of them, so
+   * an edit that improves a line fails the build instead of shipping.
+   */
+  excerpt?: string;
 }
 
 export const WALL: Review[] = [
   {
     name: 'Katina S.',
     verified: true,
+    excerpt: 'I started taking Hormone Focus and all I can say is I had immediate relief in many areas.',
     body: 'I started taking Hormone Focus and all I can say is I had immediate relief in many areas. My hot flashes started to fade; I could sleep through the night and my brain fog is slowly recovering. I have all 3 in the plan and I\'m so thankful for this product! I\'m starting to feel like myself again. Thanks JJ!!!!!!',
   },
   {
     name: 'Shauna H.',
     verified: false,
+    excerpt: '…I have been taking the Hormone Focus for less than 60 days and have noticed improved changes,',
     body: '…I have been taking the Hormone Focus for less than 60 days and have noticed improved changes, I haven\'t had any hot flashes, I can feel I\'m more balanced with energy, less mood swings, reduction of fat around the mid-section, back, and arms while taking hormone Focus with light exercise and healthy eating.',
   },
   {
     name: 'Toya H.',
     verified: true,
+    excerpt: 'Love the product. It works for my hot flashes and my stomach is getting flatter.',
     body: 'Love the product. It works for my hot flashes and my stomach is getting flatter. I also use flat tummy focus, love that as well.',
   },
   {
     name: 'Sharon',
     verified: false,
+    excerpt: 'Hello! I\'ve been using for 8 days and already my hot flashes and night sweats have stopped.',
     body: 'Hello! I\'ve been using for 8 days and already my hot flashes and night sweats have stopped. Even the bloating and water retention in my belly has come down. Now I\'m gonna see if these fat arms will get smaller. But so far so good. Loving them!',
   },
   {
@@ -62,6 +75,7 @@ export const WALL: Review[] = [
   {
     name: 'Catonne J.',
     verified: false,
+    excerpt: 'Hormone Focus along with taking my other 3 supplements have been a game changer.',
     body: 'Hormone Focus along with taking my other 3 supplements have been a game changer. I am sleeping better at night and I am starting to see the weight around my belly area decrease. Thank you JJ Smith!',
   },
   {
@@ -85,6 +99,18 @@ export const WALL: Review[] = [
     body: 'I notice the difference when my bottle of Hormones runs out. As soon as I start taking them again I notice a reduction in hot flashes. I think has reduced the amount of weight that I would have gained if I had not been taking the Hormones. I liked to product.',
   },
 ];
+
+/**
+ * The one line about the scale, which is the thing she wants and the one
+ * thing the brand may not promise. It is a customer's, published and
+ * attributed, and it is quoted in the claims list in exactly this form as the
+ * approved way to say it at all.
+ */
+export const SCALE_QUOTE: Review = {
+  name: 'Gigi',
+  verified: true,
+  body: 'The scale finally moved.',
+};
 
 /** The rating and the count travel together and appear nowhere else. */
 export const RATING = '4.9';

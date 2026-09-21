@@ -22,8 +22,8 @@
   color: #fff;
   text-align: center;
   font-family: var(--serif);
-  font-size: 14px;
-  line-height: 1.32;
+  font-size: 12.5px;
+  line-height: 1.34;
   padding: 7px var(--gutter);
   padding-top: calc(9px + var(--safe-top));
 }
@@ -76,12 +76,27 @@
   line-height: 1.34; color: var(--ink-2); margin: 0 0 11px;
 }
 
+.ofScale {
+  margin: 0 0 9px; padding: 7px 10px;
+  background: var(--wash); border-left: 3px solid var(--lilac);
+  border-radius: 0 10px 10px 0;
+}
+.ofScale figcaption {
+  font-size: 11px; font-weight: 600; color: var(--ink-2); margin-bottom: 2px;
+}
+.ofScale blockquote {
+  margin: 0; font-family: var(--serif); font-size: 14.5px;
+  font-style: italic; line-height: 1.3; color: var(--ink);
+}
+.ofScale cite { font-style: normal; font-size: 11px; color: var(--ink-3); }
+.ofScale cite b { color: var(--ink-2); font-weight: 600; }
+
 .ofShot {
   background: var(--wash); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 4px; margin: 0 0 9px;
 }
 .ofShot img {
-  display: block; width: 100%; height: 78px;
+  display: block; width: 100%; height: 70px;
   object-fit: contain; object-position: center;
 }
 
@@ -194,9 +209,14 @@
   background: var(--good); color: #fff; font-size: 11px;
   display: grid; place-items: center; margin-top: 1px;
 }
-.guar p { margin: 0; font-size: 12.5px; line-height: 1.32; color: var(--ink); }
-.guar b { color: var(--good); font-weight: 700; }
-.guar a { color: var(--good); text-decoration: underline; }
+.guar p { margin: 0; }
+.guar .guarBig {
+  font-size: 13.5px; font-weight: 700; line-height: 1.26; color: var(--good);
+}
+.guar .guarSmall {
+  margin-top: 2px; font-size: 11px; line-height: 1.32; color: var(--ink-2);
+}
+.guar a { color: var(--good); text-decoration: underline; font-weight: 600; }
 
 /* The same block on the quiz's own offer screen, which has its own rhythm. */
 .quizBuy { margin-top: 18px; }
@@ -244,8 +264,32 @@
   font-family: var(--serif); font-size: 14.5px; line-height: 1.44;
   color: var(--ink); margin: 6px 0 7px;
 }
-.ofRev cite { font-style: normal; font-size: 12.5px; color: var(--ink-3); }
+.ofRev cite {
+  display: block; font-style: normal; font-size: 12.5px; color: var(--ink-3);
+}
 .ofRev cite b { color: var(--ink); font-weight: 600; }
+
+/* A face on every other card. Photo left, her words right. */
+.ofRev.hasPhoto { display: grid; grid-template-columns: 76px 1fr; gap: 12px; }
+.ofRev .revFace {
+  width: 76px; height: 92px; border-radius: 10px;
+  object-fit: cover; object-position: center 22%; display: block;
+}
+.ofRev .revBody { min-width: 0; }
+
+.revMore {
+  /* Padding out, margin back: a finger-sized hit area without a
+     finger-sized hole in the paragraph. */
+  display: inline-block; margin: -8px 0 -2px; padding: 8px 0;
+  border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--plum); text-decoration: underline;
+}
+
+@media (max-width: 359px) {
+  .ofRev.hasPhoto { grid-template-columns: 60px 1fr; gap: 10px; }
+  .ofRev .revFace { width: 60px; height: 74px; }
+}
 
 .ofNote { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-3); }
 
@@ -344,6 +388,8 @@
 
 @media (min-width: 760px) {
   .offer .screen { max-width: var(--col-wide); padding: 0 32px; }
+
+  .liveStrip { font-size: 14px; }
 
   .ofHero { padding-bottom: 36px; }
   .ofLogo { padding: 22px 0 8px; }

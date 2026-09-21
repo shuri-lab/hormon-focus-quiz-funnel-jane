@@ -118,8 +118,10 @@ const PROTOCOL_OPTION: OfferOption = {
   kind: 'protocol',
   title: `2 bottles · ${PLAN_SHORT}`,
   detail: `${money(PROTOCOL_PER_BOTTLE)} per bottle · free shipping`,
-  cta: `Start ${planShortInline()}`,
-  ctaShort: `Start ${planShortInline()}`,
+  /* What she is buying, not what she is starting. The row label still names
+     the Plan; the button names the bottles. */
+  cta: 'Get my two bottles',
+  ctaShort: 'Get my two bottles',
   price: PROTOCOL_PRICE,
   priceNote: 'free shipping',
   badge: 'Best Seller',
@@ -147,6 +149,10 @@ export const OFFER_OPTIONS: OfferOption[] = SUBSCRIPTION_LIVE
 
 /** The Plan is what we sell. It is chosen for her, on every page. */
 export const DEFAULT_OFFER: OfferKind = 'protocol';
+
+/** The subscription never shows on /live, whatever SUBSCRIPTION_LIVE says; on /offer and the quiz it shows only when the flag is on. */
+export const optionsFor = (live: boolean): OfferOption[] =>
+  (live ? OFFER_OPTIONS.filter((o) => o.kind !== 'subscribe') : OFFER_OPTIONS);
 
 export const optionFor = (kind: OfferKind): OfferOption =>
   OFFER_OPTIONS.find((o) => o.kind === kind) ?? PROTOCOL_OPTION;
@@ -190,7 +196,7 @@ export const VALUE_STACK: StackItem[] = [
     bonus: true,
   },
   { what: 'A note from JJ every week for the 60 days', worth: 'included' },
-  { what: 'The 60-Day Happiness Guarantee', worth: 'the risk is on JJ' },
+  { what: 'The 60-Day Happiness Guarantee', worth: 'or it is free' },
 ];
 
 /* ------------------------------------------------------- the switches -- */

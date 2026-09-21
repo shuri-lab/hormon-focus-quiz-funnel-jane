@@ -33,8 +33,6 @@ export interface OfferHero {
   h1c: string;
   /** How the headline is achieved, carrying the value props. */
   sub: string;
-  /** The second beat, under the sub-headline. */
-  beat: string;
   /** The closer's mini headline, at the bottom of the page. */
   close: string;
   /** Recognition lines, where the angle changes them. */
@@ -50,19 +48,19 @@ export interface OfferHero {
  * It is the only manufactured-looking deadline on the page and it is not
  * manufactured: it is the window JJ says out loud on the broadcast.
  */
-export const LIVE_STRIP_LEAD = 'You came from JJ’s Live.';
-export const LIVE_STRIP_REST = ` ${PLAN_SHORT}, two bottles, free shipping.`;
+export const LIVE_STRIP_LEAD = 'The plan from tonight’s Live.';
+export const LIVE_STRIP_REST =
+  ' Two bottles, free shipping, and if you do not see results in 60 days, it is free.';
 
 /** The deadline JJ set out loud, when there is one. LIVE_DEADLINE null hides it. */
 export const liveDeadlineLine = (): string | null =>
   LIVE_DEADLINE ? `Through ${LIVE_DEADLINE}.` : null;
 
 export const LIVE_HERO: OfferHero = {
-  h1a: 'The one I made ',
-  h1b: 'for exactly this',
+  h1a: 'The two-bottle plan ',
+  h1b: 'from tonight’s Live',
   h1c: '.',
-  sub: 'Two capsules with a meal. Change nothing else. Two bottles, because it takes more than one month to know, and a guarantee that puts the risk on JJ rather than on you. The link you tapped is the one you heard tonight.',
-  beat: 'And the scale finally moves, women tell us, once your body stops fighting you.',
+  sub: 'Two capsules with a meal. Change nothing else. For the weight that went to the middle after 40, the 3 a.m. sweats, and feeling like yourself again.',
   close: 'Two bottles, free shipping, and two months to decide.',
   lines: [
     'Awake at three, drenched.',
@@ -98,17 +96,18 @@ export const WALL_HEADLINE = 'Women who felt like themselves again';
 export const WALL_NOTE =
   'Results vary. Every review is a customer’s own words, unedited.';
 
-export const VALUE_EYEBROW = 'Why this one';
-export const VALUE_HEADLINE = 'Made for this stage, not for everyone';
+/**
+ * The section headline carries it alone, so there is no eyebrow above it.
+ * Every other section has one; this one would only repeat itself.
+ */
+export const VALUE_HEADLINE = 'Why this one';
 
-/** Six. Each headline carries the value on its own, read without the line under it. */
+/** Five. Each headline carries the value on its own, read without the line under it. */
 export const VALUE_PROPS: [string, string][] = [
   ['Two capsules, one meal, done',
     'Nothing to reorganise. Two capsules with a meal, every day.'],
   ['Every milligram on the label',
     'DIM 200mg, Calcium D-Glucarate 500mg, BioPerine 2.5mg. Nothing hidden in a blend.'],
-  ['Made for this stage, not for everyone',
-    'For women 40 plus, in perimenopause and menopause.'],
   ['Two bottles, because one month is not enough to know',
     'That is the length of the Plan, and it is why it is two rather than one.'],
   ['Free shipping on the Plan',
@@ -150,10 +149,12 @@ export const INGREDIENTS: [string, string, string][] = [
  * Rendered as three pieces so the policy itself is one tap away from the words
  * that name it.
  */
-export const GUARANTEE_PRE = '60-Day ';
+export const GUARANTEE_HEADLINE = 'See results in 60 days, or it is free.';
+
+/* The policy underneath it, smaller, with the policy itself one tap away. */
+export const GUARANTEE_SUB_PRE = 'The 60-Day ';
 export const GUARANTEE_LINK_TEXT = 'Happiness Guarantee';
-export const GUARANTEE_REST =
-  '. Try it for two months. If you are not satisfied, we refund up to two bottles within 60 days.';
+export const GUARANTEE_SUB_REST = ': money back, up to two bottles.';
 export const REFUND_POLICY_URL =
   'https://shop.jjsmithonline.com/policies/refund-policy';
 
@@ -165,6 +166,15 @@ export const SHIPPING_LINE =
 
 /** What she gets, above the stack. */
 export const STACK_HEADING = 'What is in it';
+
+/**
+ * Under the sub-headline, where the page used to make the claim itself.
+ *
+ * The scale is the thing she wants and the one thing the brand may not
+ * promise, so it is not ours to say. It is hers, in her words, with her name
+ * beside it, and the quote lives in reviews.ts with every other customer's.
+ */
+export const SCALE_LEAD = 'What most women on Hormone Focus tell us:';
 
 export const FAQ_EYEBROW = 'Questions';
 export const FAQ_HEADLINE = 'What women ask before they start';
@@ -234,7 +244,6 @@ export function heroFor(angle: Angle): OfferHero | null {
     h1b: o.h1b ?? angle.h1b,
     h1c: o.h1c ?? '',
     sub: o.sub,
-    beat: o.beat,
     close: o.close,
     lines: angle.lines,
     title: o.title,

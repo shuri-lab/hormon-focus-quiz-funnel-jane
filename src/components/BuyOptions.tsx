@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { SHOP_BASE } from '../lib/logic';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  DEFAULT_OFFER, NEXT_BATCH, OFFER_OPTIONS, SHOW_BATCH_LINE,
-  SHOW_DAILY_PRICE, VALUE_STACK, batchCount, dailyPrice, money, optionFor,
-  type OfferKind,
+  DEFAULT_OFFER, NEXT_BATCH, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, VALUE_STACK,
+  batchCount, dailyPrice, money, optionFor, optionsFor, type OfferKind,
 } from '../lib/offer';
 import {
-  GUARANTEE_LINK_TEXT, GUARANTEE_PRE, GUARANTEE_REST, GUIDE_CARD_LEAD,
-  GUIDE_CARD_REST, REFUND_POLICY_URL, SHIPPING_LINE, STACK_HEADING, batchLine,
-  liveDeadlineLine,
+  GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE,
+  GUARANTEE_SUB_REST, GUIDE_CARD_LEAD, GUIDE_CARD_REST, REFUND_POLICY_URL,
+  SHIPPING_LINE, STACK_HEADING, batchLine, liveDeadlineLine,
 } from '../lib/offerCopy';
 
 /**
@@ -49,20 +48,28 @@ export function useOfferChoice(initial: OfferKind = DEFAULT_OFFER) {
   return { chosen, choose };
 }
 
-/** The guarantee, verbatim from the policy, with the policy one tap away. */
+/**
+ * The promise first, the policy underneath it.
+ *
+ * She is deciding whether to risk $84.99 on something that has not worked
+ * before, so the line that answers her goes in the size she will actually
+ * read, and the policy that backs it sits under it with the policy itself one
+ * tap away.
+ */
 export function Guarantee() {
   return (
     <div className="guar" data-af="guarantee">
       <span className="guarTick" aria-hidden="true">&#10003;</span>
-      <p>
-        <b>
-          {GUARANTEE_PRE}
+      <div>
+        <p className="guarBig">{GUARANTEE_HEADLINE}</p>
+        <p className="guarSmall">
+          {GUARANTEE_SUB_PRE}
           <a href={REFUND_POLICY_URL} target="_blank" rel="noopener noreferrer">
             {GUARANTEE_LINK_TEXT}
           </a>
-        </b>
-        {GUARANTEE_REST}
-      </p>
+          {GUARANTEE_SUB_REST}
+        </p>
+      </div>
     </div>
   );
 }
@@ -129,7 +136,7 @@ export function BuyOptions({ chosen, onChoose, outcome, angle, name, live = fals
           the button creates and are measured separately. */}
       <div className="buyCta" data-af="cta">
       <div className="buyRows" role="radiogroup" aria-label="Choose how much to start with">
-        {OFFER_OPTIONS.map((o) => (
+        {optionsFor(live).map((o) => (
           <button
             key={o.kind}
             type="button"

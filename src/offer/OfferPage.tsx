@@ -5,15 +5,16 @@ import { usePageMeta } from '../lib/usePageMeta';
 import { shopUrl, track } from '../lib/analytics';
 import { SHOP_BASE } from '../lib/logic';
 import { BOTTLE, CHIP_PROGRAMS, CUSTOMERS } from '../lib/content';
-import { RATING, REVIEW_COUNT, WALL } from '../lib/reviews';
+import { RATING, REVIEW_COUNT, SCALE_QUOTE } from '../lib/reviews';
 import { money, optionFor } from '../lib/offer';
 import { BuyOptions, useOfferChoice } from '../components/BuyOptions';
+import { ReviewWall } from '../components/ReviewWall';
 import { Stars } from '../components/icons';
 import {
   CLOSER_SUB, DOCTOR_LINE, FAQ, FAQ_EYEBROW, FAQ_HEADLINE, FOOTER_LINE,
   INGREDIENTS, LIVE_HERO, LIVE_STRIP_LEAD, LIVE_STRIP_REST, MG_EYEBROW,
   MG_HEADLINE, OFFER_FINE_PRINT, PAIN_EYEBROW, PAIN_TURN, STEPS, STEPS_EYEBROW,
-  STEPS_HEADLINE, VALUE_EYEBROW, VALUE_HEADLINE, VALUE_PROPS, WALL_EYEBROW,
+  SCALE_LEAD, STEPS_HEADLINE, VALUE_HEADLINE, VALUE_PROPS, WALL_EYEBROW,
   WALL_HEADLINE, WALL_NOTE, heroFor, liveDeadlineLine, painHeadline,
   type OfferHero,
 } from '../lib/offerCopy';
@@ -142,7 +143,18 @@ export function OfferPage({ live = false }: Props) {
                 <Proof />
                 <Headline hero={hero} af="headline" />
                 <p className="ofSub" data-af="sub">{hero.sub}</p>
-                <p className="ofBeat">{hero.beat}</p>
+
+                {/* The one line about the scale is not ours to write. It is
+                    hers, published, attributed, and quoted in the claims list
+                    in exactly this form as the approved way to say it. */}
+                <figure className="ofScale">
+                  <figcaption>{SCALE_LEAD}</figcaption>
+                  <blockquote>&ldquo;{SCALE_QUOTE.body}&rdquo;</blockquote>
+                  <cite>
+                    <b>{SCALE_QUOTE.name}</b>
+                    {SCALE_QUOTE.verified ? ' · verified buyer' : ''}
+                  </cite>
+                </figure>
               </div>
 
               <div className="ofHeroBuy" ref={heroBuy}>
@@ -175,32 +187,20 @@ export function OfferPage({ live = false }: Props) {
         </section>
 
         {/* --------------------------------------------- 3. WALL OF LOVE -- */}
-        {/* Stacked, never a carousel: under two per cent of readers reach a
-            second slide, and the volume itself is the signal. */}
         <section className="ofSec wash">
           <div className="screen">
             <p className="eyebrow">{WALL_EYEBROW}</p>
             <h2 className="ofH2">{WALL_HEADLINE}</h2>
-            <div className="ofWall">
-              {WALL.map((r) => (
-                <blockquote className="ofRev" key={r.name + r.body.slice(0, 12)}>
-                  <span className="rs"><Stars n={5} /></span>
-                  <p>{r.body}</p>
-                  <cite>
-                    <b>{r.name}</b>
-                    {r.verified ? ' · verified buyer' : ' · Hormone Focus customer'}
-                  </cite>
-                </blockquote>
-              ))}
-            </div>
+            <ReviewWall />
             <p className="ofNote">{WALL_NOTE}</p>
           </div>
         </section>
 
-        {/* -------------------------------------------- 4. SIX VALUE PROPS -- */}
+        {/* ------------------------------------------- 4. FIVE VALUE PROPS -- */}
+        {/* No eyebrow here: the headline carries the section on its own, and
+            an eyebrow above it would only say the same words twice. */}
         <section className="ofSec">
           <div className="screen">
-            <p className="eyebrow">{VALUE_EYEBROW}</p>
             <h2 className="ofH2">{VALUE_HEADLINE}</h2>
             <div className="ofVp">
               {VALUE_PROPS.map(([head, body]) => (

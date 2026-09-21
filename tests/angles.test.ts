@@ -23,7 +23,7 @@ const ALLOWED_KEYS: (keyof Angle)[] = [
 
 /** And exactly the fields the offer block may carry. */
 const ALLOWED_OFFER_KEYS: (keyof AngleOffer)[] = [
-  'h1a', 'h1b', 'h1c', 'sub', 'beat', 'close', 'title', 'description',
+  'h1a', 'h1b', 'h1c', 'sub', 'close', 'title', 'description',
 ];
 
 test('no route carries a field beyond the allowed set', () => {

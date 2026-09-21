@@ -24,7 +24,7 @@
  */
 import { test, expect } from 'vitest';
 import { ANGLES } from '../src/lib/angles';
-import { WALL } from '../src/lib/reviews';
+import { SCALE_QUOTE, WALL } from '../src/lib/reviews';
 import { FDA_DISCLAIMER } from '../src/lib/content';
 import * as offer from '../src/lib/offer';
 import * as copy from '../src/lib/offerCopy';
@@ -422,12 +422,96 @@ test('there is no countdown anywhere in the copy', () => {
   }
 });
 
-test('the guarantee is the policy, word for word', () => {
-  const whole = copy.GUARANTEE_PRE + copy.GUARANTEE_LINK_TEXT + copy.GUARANTEE_REST;
-  expect(whole).toBe(
-    '60-Day Happiness Guarantee. Try it for two months. '
-    + 'If you are not satisfied, we refund up to two bottles within 60 days.',
-  );
+test('the guarantee leads with the promise and backs it with the policy', () => {
+  expect(copy.GUARANTEE_HEADLINE).toBe('See results in 60 days, or it is free.');
+
+  const policy = copy.GUARANTEE_SUB_PRE + copy.GUARANTEE_LINK_TEXT + copy.GUARANTEE_SUB_REST;
+  expect(policy).toBe('The 60-Day Happiness Guarantee: money back, up to two bottles.');
+
+  /* The words that name the policy are the words that link to it. */
+  expect(copy.GUARANTEE_LINK_TEXT).toBe('Happiness Guarantee');
   expect(copy.REFUND_POLICY_URL)
     .toBe('https://shop.jjsmithonline.com/policies/refund-policy');
+});
+
+/**
+ * Jane's wording, signed off on 21 September, and it is a results guarantee:
+ * the brand's own voice attaching an outcome to a date. It is allowed here
+ * because she owns copy sign-off and because it is the refund term rather
+ * than a claim about what the capsules do — the policy line sits directly
+ * under it saying exactly what 'free' means.
+ *
+ * Listed in full, so nobody can widen it into a claim about results without
+ * the build failing.
+ */
+test('the results guarantee is exactly the line that was signed off', () => {
+  expect(copy.GUARANTEE_HEADLINE).toBe('See results in 60 days, or it is free.');
+  expect(copy.LIVE_STRIP_REST).toBe(
+    ' Two bottles, free shipping, and if you do not see results in 60 days, it is free.',
+  );
+});
+
+test('the scale is quoted, never claimed', () => {
+  /* The brand says who is speaking; the customer says what happened. */
+  expect(copy.SCALE_LEAD).toBe('What most women on Hormone Focus tell us:');
+  expect(SCALE_QUOTE.body).toBe('The scale finally moved.');
+  expect(SCALE_QUOTE.name).toBe('Gigi');
+  expect(SCALE_QUOTE.verified).toBe(true);
+
+  /* And the beat that said it in the brand's own voice is gone from every
+     hero. The FAQ still says it with 'Women tell us' in front, which is the
+     attributed form and the one the claims list allows. */
+  const REMOVED = 'And the scale finally moves, women tell us, once your body stops fighting you.';
+  for (const [where, value] of CUSTOMER_FACING) {
+    expect(
+      value.includes(REMOVED),
+      `${where} still carries the removed beat: ${JSON.stringify(value)}`,
+    ).toBe(false);
+  }
+});
+
+test('five value props, and the headline carries the section alone', () => {
+  expect(copy.VALUE_PROPS).toHaveLength(5);
+  expect(copy.VALUE_HEADLINE).toBe('Why this one');
+  expect(
+    copy.VALUE_PROPS.some(([head]) => /made for this stage/i.test(head)),
+    'the removed value prop is still here',
+  ).toBe(false);
+});
+
+test('the buttons name the bottles', () => {
+  expect(offer.optionFor('protocol').cta).toBe('Get my two bottles');
+  expect(offer.optionFor('protocol').ctaShort).toBe('Get my two bottles');
+  expect(offer.optionFor('single').cta).toBe('Get one bottle');
+  expect(offer.optionFor('single').ctaShort).toBe('Get one bottle');
+
+  /* The row still names the Plan, even though the button does not. */
+  expect(offer.optionFor('protocol').title).toBe(`2 bottles · ${offer.PLAN_SHORT}`);
+});
+
+test('the subscription never reaches the Live, whatever the flag says', () => {
+  expect(offer.optionsFor(true).some((o) => o.kind === 'subscribe')).toBe(false);
+  /* And off the Live it follows the flag, which is where the decision lives. */
+  expect(offer.optionsFor(false).some((o) => o.kind === 'subscribe'))
+    .toBe(offer.SUBSCRIPTION_LIVE);
+});
+
+/* ------------------------------------------------ the wall, cut not edited -- */
+
+test('every excerpt on the wall is where the quote was cut, not what it was cut into', () => {
+  for (const r of WALL) {
+    if (!r.excerpt) continue;
+    expect(
+      r.body.startsWith(r.excerpt),
+      `${r.name}: the excerpt is not a prefix of the review. It may be shortened, never reworded.`,
+    ).toBe(true);
+    expect(r.excerpt.length, `${r.name}: the excerpt is the whole review`).toBeLessThan(r.body.length);
+    expect(r.excerpt.length, `${r.name}: the excerpt is too short to say anything`).toBeGreaterThan(40);
+  }
+});
+
+test('the wall shows six, and half of them carry a face', () => {
+  /* Six cards, alternating, so three faces. The component slices the first
+     six; this is what stops somebody trimming reviews.ts below that. */
+  expect(WALL.length).toBeGreaterThanOrEqual(6);
 });

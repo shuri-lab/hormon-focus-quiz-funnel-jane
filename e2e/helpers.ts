@@ -18,13 +18,21 @@ export async function expectNoHorizontalOverflow(page: Page, where: string) {
   expect(offenders, `horizontal overflow on ${where}`).toEqual([]);
 }
 
-/** Anything you tap has to be big enough to tap. Inline links in prose are exempt. */
+/**
+ * Anything you tap has to be big enough to tap.
+ *
+ * Inline links in prose are exempt, and so is anything marked data-inline: a
+ * control that sits inside a sentence, like the Read more inside a customer's
+ * quote, is prose with a button's semantics. It is built as a button because
+ * that is what a screen reader needs, not because it is a call to action.
+ */
 export async function expectTapTargets(page: Page, where: string) {
   const small = await page.evaluate(() => {
     const out: string[] = [];
     for (const el of Array.from(document.querySelectorAll('button, a.cta, input'))) {
       const b = el.getBoundingClientRect();
       if (b.width === 0 || b.height === 0 || el.hasAttribute('hidden')) continue;
+      if (el.hasAttribute('data-inline')) continue;
       if (b.height < 44 || b.width < 44) {
         out.push(`${el.tagName.toLowerCase()} ${Math.round(b.width)}x${Math.round(b.height)} "${(el.textContent || '').trim().slice(0, 24)}"`);
       }

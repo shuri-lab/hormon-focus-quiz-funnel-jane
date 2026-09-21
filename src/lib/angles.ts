@@ -35,8 +35,6 @@ export interface AngleOffer {
   h1c?: string;
   /** How the headline is achieved, carrying the value props. */
   sub: string;
-  /** The second beat, under the sub-headline. */
-  beat: string;
   /** The closer's mini headline. */
   close: string;
   /** Tab title and meta description for /offer/<slug>. */
@@ -92,7 +90,6 @@ export const ANGLES: Angle[] = [
       h1b: 'in your own clothes',
       h1c: '.',
       sub: 'Two capsules with a meal. Change nothing else. Hormone Focus supports hormone balance for women in perimenopause and menopause, so the flashes ease, the nights get quiet, and the weight stops going to the middle. Most women notice the first change inside two weeks, as customers report; the full reset is sixty days.',
-      beat: 'And the scale finally moves, women tell us, once your body stops fighting you.',
       close: 'Quieter nights start with two capsules.',
       title: 'Hormone Focus \u2014 the 60-Day Plan',
       description: 'Hormone Focus supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two bottles, free shipping, and a 60-day money-back guarantee.',
@@ -115,7 +112,6 @@ export const ANGLES: Angle[] = [
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
     offer: {
       sub: 'Tired of being flat at breakfast and swollen by six, of a waistband you undo in the car, of cutting things out and nothing changing? Hormone Focus helps with occasional bloating and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And the six o\u2019clock swelling settles, women tell us, once your body is no longer fighting you.',
       close: 'Easier evenings start with two capsules.',
       title: 'Hormone Focus for occasional bloating \u2014 the 60-Day Plan',
       description: 'Bloated most days, and cutting foods out changed nothing. Hormone Focus helps with occasional bloating and supports hormone balance. Every milligram disclosed.',
@@ -138,7 +134,6 @@ export const ANGLES: Angle[] = [
     description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
     offer: {
       sub: 'Tired of heat that arrives out of nowhere, in a meeting, in the car, in front of everybody? Hormone Focus helps ease occasional hot flashes and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And the layers you wear all year become a choice again, women tell us.',
       close: 'Cooler days start with two capsules.',
       title: 'Hormone Focus for occasional hot flashes \u2014 the 60-Day Plan',
       description: 'Hormone Focus helps ease occasional hot flashes and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed.',
@@ -163,7 +158,6 @@ export const ANGLES: Angle[] = [
     description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
     offer: {
       sub: 'Tired of waking soaked at three, throwing the covers off, and changing sheets you never used to change? Hormone Focus helps ease occasional night sweats and supports restful sleep through perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And the nights get quiet, women tell us, once your body is no longer fighting you.',
       close: 'Quieter nights start with two capsules.',
       title: 'Hormone Focus for occasional night sweats \u2014 the 60-Day Plan',
       description: 'Hormone Focus helps ease occasional night sweats and supports restful sleep. Every milligram disclosed. Two bottles, free shipping, and a 60-day guarantee.',
@@ -186,7 +180,6 @@ export const ANGLES: Angle[] = [
     description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
     offer: {
       sub: 'Tired of being asleep by ten and awake at three, with nothing about your bedtime changed? Hormone Focus supports restful sleep and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And three in the morning goes back to being the middle of the night, women tell us.',
       close: 'Sleeping through starts with two capsules.',
       title: 'Hormone Focus for restful sleep \u2014 the 60-Day Plan',
       description: 'Awake at three, and a better bedtime changed nothing. Hormone Focus supports restful sleep and hormone balance. Every milligram disclosed.',
@@ -210,7 +203,6 @@ export const ANGLES: Angle[] = [
     description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
     offer: {
       sub: 'Tired of the same food, the same walking, and a different body that settled on your middle and stayed? Hormone Focus supports a healthy weight as part of a healthy diet and regular exercise, and supports hormone balance through this stage. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And the scale finally moves, women tell us, once your body stops fighting you.',
       close: 'A body that works with you starts with two capsules.',
       title: 'Hormone Focus for this stage \u2014 the 60-Day Plan',
       description: 'Hormone Focus supports a healthy weight as part of a healthy diet and regular exercise, and supports hormone balance after 40. Every milligram disclosed.',
@@ -233,7 +225,6 @@ export const ANGLES: Angle[] = [
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
     offer: {
       sub: 'Tired of snapping at people you love, anxious for no reason you can point to, walking into a room and forgetting why? Hormone Focus helps support a calm mood and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
-      beat: 'And you start to feel like yourself again, women tell us.',
       close: 'Feeling like yourself starts with two capsules.',
       title: 'Hormone Focus for a calm mood \u2014 the 60-Day Plan',
       description: 'Mood swings and brain fog that are not like you. Hormone Focus helps support a calm mood and supports hormone balance. Every milligram disclosed.',
@@ -261,7 +252,6 @@ export const ANGLES: Angle[] = [
       h1b: 'It stores it differently now',
       h1c: '.',
       sub: 'The belly that arrived without you changing a thing. The jeans that fit in March. The arms. The 3 a.m. sweats. Hormone Focus supports hormone balance through this stage, so your body stops working against you. Every milligram disclosed.',
-      beat: 'None of it is you letting yourself go. It is one thing, and it has a name.',
       close: 'Your body at 40 is not working against you. It is asking for something.',
       title: 'Your body at 40 \u2014 Hormone Focus, the 60-Day Plan',
       description: 'After 40 the body stores fat differently. Hormone Focus supports hormone balance through this stage. Every milligram disclosed. Two bottles, free shipping.',

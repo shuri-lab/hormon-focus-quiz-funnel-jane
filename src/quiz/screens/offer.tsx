@@ -10,6 +10,10 @@ import {
   GUARANTEE_DAYS, PROTOCOL_DISCOUNT_CODE, PROTOCOL_VARIANT_ID, showInternalNotes,
 } from '../../lib/offer';
 import { BuyOptions, GuideCard, useOfferChoice } from '../../components/BuyOptions';
+import {
+  GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE, GUARANTEE_SUB_REST,
+  REFUND_POLICY_URL,
+} from '../../lib/offerCopy';
 import type { Severity } from '../../lib/logic';
 
 function Guarantee() {
@@ -17,9 +21,17 @@ function Guarantee() {
     <>
       <div className="sealWrap">
         <span className="seal"><b>SEE<br />RESULTS</b><i>or it is free</i></span>
+        {/* The same words as the buy block, from the same constants. Two
+            guarantees worded two ways is one guarantee nobody believes. */}
         <div className="sealTxt">
-          <b>Sixty days. Up to two bottles.</b>
-          <span>Empty or full. If you do not feel the difference, tell us and we send your money back.</span>
+          <b>{GUARANTEE_HEADLINE}</b>
+          <span>
+            {GUARANTEE_SUB_PRE}
+            <a href={REFUND_POLICY_URL} target="_blank" rel="noopener noreferrer">
+              {GUARANTEE_LINK_TEXT}
+            </a>
+            {GUARANTEE_SUB_REST}
+          </span>
         </div>
       </div>
       <p className="microDisc">Results may vary based on individual. No results guaranteed.</p>

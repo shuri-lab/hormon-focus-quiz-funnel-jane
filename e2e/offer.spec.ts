@@ -59,7 +59,8 @@ test.describe('the offer pages', () => {
   test('/live is the only route that carries the strip', async ({ page }) => {
     await page.goto('/live');
     await expect(page.locator('.liveStrip')).toBeVisible();
-    await expect(page.locator('.liveStrip')).toContainText(PLAN_SHORT);
+    await expect(page.locator('.liveStrip')).toContainText('The plan from tonight');
+    await expect(page.locator('.liveStrip')).toContainText('free shipping');
 
     await page.goto('/offer');
     await expect(page.locator('.liveStrip')).toHaveCount(0);
@@ -295,13 +296,14 @@ test.describe('what she gets for the money', () => {
       await expect(guarantee).toHaveCount(2);
 
       for (let i = 0; i < 2; i += 1) {
-        await expect(guarantee.nth(i).locator('p')).toHaveText(
-          '60-Day Happiness Guarantee. Try it for two months. '
-          + 'If you are not satisfied, we refund up to two bottles within 60 days.',
-        );
+        await expect(guarantee.nth(i).locator('.guarBig'))
+          .toHaveText('See results in 60 days, or it is free.');
+        await expect(guarantee.nth(i).locator('.guarSmall'))
+          .toHaveText('The 60-Day Happiness Guarantee: money back, up to two bottles.');
         await expect(guarantee.nth(i).locator('a')).toHaveAttribute(
           'href', 'https://shop.jjsmithonline.com/policies/refund-policy',
         );
+        await expect(guarantee.nth(i).locator('a')).toHaveText('Happiness Guarantee');
       }
     });
 });
@@ -401,7 +403,16 @@ test.describe('the page says what it has to say', () => {
     await page.goto('/offer');
 
     const reviews = page.locator('.ofRev');
-    await expect(reviews).toHaveCount(10);
+    await expect(reviews).toHaveCount(6);
+
+    /* Alternating, so three faces, and every one of them labelled. */
+    await expect(page.locator('.ofRev.hasPhoto')).toHaveCount(3);
+    await expect(page.locator('.ofRev .revFace')).toHaveCount(3);
+    for (const alt of await page.locator('.ofRev .revFace').evaluateAll(
+      (els) => els.map((e) => e.getAttribute('alt')),
+    )) {
+      expect(alt).toBe('Hormone Focus customer');
+    }
 
     /* A carousel is a horizontally scrolling strip. This must not be one. */
     const scrolls = await page.locator('.ofWall').evaluate((el) => ({
@@ -418,7 +429,7 @@ test.describe('the page says what it has to say', () => {
     await page.goto('/offer');
 
     await expect(page.locator('.ofRecog li')).toHaveCount(5);       // the pain point
-    await expect(page.locator('.ofVp > div')).toHaveCount(6);       // six value props
+    await expect(page.locator('.ofVp > div')).toHaveCount(5);       // five value props
     await expect(page.locator('.ofStep')).toHaveCount(3);           // three steps
     await expect(page.locator('.ofMg > div')).toHaveCount(3);       // every milligram
     await expect(page.locator('.ofFaq details')).toHaveCount(4);    // four drop-downs
@@ -457,5 +468,65 @@ test.describe('the page says what it has to say', () => {
       'href', /shop\.jjsmithonline\.com\/cart\//,
     );
     await expectNoHorizontalOverflow(page, '/offer with the sticky bar');
+  });
+});
+
+/* ------------------------------------------------- Jane's notes, on screen -- */
+
+test.describe('the review wall', () => {
+  test('Read more opens the rest of her words and changes none of them', async ({ page }) => {
+    await page.goto('/offer');
+
+    const card = page.locator('.ofRev').first();
+    const quote = card.locator('p');
+    const short = (await quote.innerText()).trim();
+
+    await expect(card.locator('.revMore')).toHaveText('Read more');
+    await card.locator('.revMore').click();
+
+    const long = (await quote.innerText()).trim();
+    await expect(card.locator('.revMore')).toHaveText('Read less');
+    expect(long.length, 'Read more must reveal more').toBeGreaterThan(short.length);
+
+    /* What was on show is where the quote was cut, not what it was cut into:
+       the short form is a prefix of the long one, quotation marks aside. */
+    const strip = (t: string) => t.replace(/[“”…"]/g, '').trim();
+    expect(strip(long).startsWith(strip(short))).toBe(true);
+  });
+});
+
+test.describe('the buttons and the subscription', () => {
+  test('the button names the bottles, in the block and on the sticky bar',
+    async ({ page }) => {
+      await page.goto('/offer');
+      await expect(page.locator('.ofHeroBuy .buyBtn')).toContainText('Get my two bottles');
+
+      await page.locator('.ofHeroBuy .buyRow').first().click();
+      await expect(page.locator('.ofHeroBuy .buyBtn')).toContainText('Get one bottle');
+    });
+
+  test('the subscription never appears on the Live', async ({ page }) => {
+    for (const route of ROUTES) {
+      await page.goto(route);
+      const rows = await page.locator('.buyRow').count();
+      /* Two blocks. Two rows each while the flag is off, and on /live the
+         subscription is absent whatever the flag says. */
+      expect(rows % 2, `${route} renders a half-built block`).toBe(0);
+      await expect(page.getByText('Monthly delivery'), route).toHaveCount(0);
+    }
+  });
+});
+
+test.describe('the scale', () => {
+  test('is a customer speaking, with her name on it', async ({ page }) => {
+    for (const route of ['/offer', '/live']) {
+      await page.goto(route);
+      const scale = page.locator('.ofScale');
+      await expect(scale, route).toBeVisible();
+      await expect(scale, route).toContainText('What most women on Hormone Focus tell us');
+      await expect(scale, route).toContainText('The scale finally moved.');
+      await expect(scale, route).toContainText('Gigi');
+      await expect(scale, route).toContainText('verified buyer');
+    }
   });
 });
