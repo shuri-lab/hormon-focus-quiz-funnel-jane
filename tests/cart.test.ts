@@ -16,7 +16,7 @@ import {
   SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
-import { shopUrl } from '../src/lib/analytics';
+import { OFFER_UTM_CONTENT, QUIZ_UTM, shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE } from '../src/lib/logic';
 
 /* shopUrl reads stored attribution. In a node environment there is no
@@ -93,14 +93,46 @@ const AD = {
   hf_funnel: 'quiz_v2', hf_variant: 'b',
 };
 
-test('every row carries the ad parameters through, on all three shapes', () => {
+test('the quiz owns the utm_* on all three shapes', () => {
   arrivedWith(AD);
   for (const kind of ['single', 'protocol', 'subscribe'] as const) {
     const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
-    for (const [k, v] of Object.entries(AD)) {
-      expect(u.searchParams.get(k), `${kind} lost ${k}`).toBe(v);
-    }
+    expect(u.searchParams.get('utm_source'), kind).toBe(QUIZ_UTM.source);
+    expect(u.searchParams.get('utm_medium'), kind).toBe(QUIZ_UTM.medium);
+    expect(u.searchParams.get('utm_campaign'), kind).toBe(QUIZ_UTM.campaign);
+    expect(u.searchParams.get('utm_content'), kind).toBe(OFFER_UTM_CONTENT[kind]);
     expect(u.searchParams.get('hf_offer'), kind).toBe(kind);
+  }
+  /* One utm_content per offer, and no two the same, or the report cannot
+     tell a bundle from a subscription. */
+  expect(new Set(Object.values(OFFER_UTM_CONTENT)).size).toBe(3);
+});
+
+test('the ad attribution survives beside the quiz, not under it', () => {
+  arrivedWith(AD);
+  for (const kind of ['single', 'protocol', 'subscribe'] as const) {
+    const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
+    /* Every original, moved one prefix across and unchanged. */
+    expect(u.searchParams.get('hf_src'), kind).toBe(AD.utm_source);
+    expect(u.searchParams.get('hf_medium'), kind).toBe(AD.utm_medium);
+    expect(u.searchParams.get('hf_campaign'), kind).toBe(AD.utm_campaign);
+    expect(u.searchParams.get('hf_content'), kind).toBe(AD.utm_content);
+    expect(u.searchParams.get('hf_term'), kind).toBe(AD.utm_term);
+    /* And the quiz's own, still there. */
+    expect(u.searchParams.get('hf_funnel'), kind).toBe(AD.hf_funnel);
+    expect(u.searchParams.get('hf_variant'), kind).toBe(AD.hf_variant);
+  }
+});
+
+test('click ids keep their real names, because that is how they are read', () => {
+  arrivedWith({ ...AD, fbclid: 'FB1', gclid: 'GC1', ttclid: 'TT1' });
+  const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'protocol'));
+  expect(u.searchParams.get('fbclid')).toBe('FB1');
+  /* gclid and ttclid were captured on arrival and then dropped here. */
+  expect(u.searchParams.get('gclid')).toBe('GC1');
+  expect(u.searchParams.get('ttclid')).toBe('TT1');
+  for (const k of ['fbclid', 'gclid', 'ttclid']) {
+    expect(u.searchParams.get(`hf_${k}`), `${k} must not be prefixed`).toBeNull();
   }
 });
 
@@ -112,12 +144,16 @@ test('carrying the ad parameters does not cost the required ones', () => {
     .toBe(SUBSCRIBE_SELLING_PLAN_ID);
 });
 
-test('organic traffic falls back to the quiz own values, not to nothing', () => {
+test('organic traffic sends the quiz attribution and no empty originals', () => {
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'single'));
-  expect(u.searchParams.get('utm_source')).toBe('quiz');
-  expect(u.searchParams.get('utm_content')).toBe('offer_screen__B');
+  expect(u.searchParams.get('utm_source')).toBe(QUIZ_UTM.source);
+  expect(u.searchParams.get('utm_content')).toBe('1bottle');
   expect(u.searchParams.get('utm_term')).toBe('weight');
   expect(u.searchParams.get('hf_outcome')).toBe('B');
+  /* Nothing came in, so nothing is invented to stand in for it. */
+  for (const k of ['hf_src', 'hf_medium', 'hf_campaign', 'hf_content', 'hf_term']) {
+    expect(u.searchParams.get(k), k).toBeNull();
+  }
 });
 
 /* --------------------------------------------------------------- rows -- */

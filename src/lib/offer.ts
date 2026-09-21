@@ -391,8 +391,8 @@ export const VALUE_STACK: StackItem[] = valueStackFor(DEFAULT_OFFER);
  * renders one line or nothing at all.
  */
 
-/** Under the price: what the Plan costs a day. */
-export const SHOW_DAILY_PRICE = true;
+/** Under the price: what the Plan costs a day. Off at David's request. */
+export const SHOW_DAILY_PRICE = false;
 
 /**
  * Near the button: real stock, said once.
@@ -402,7 +402,8 @@ export const SHOW_DAILY_PRICE = true;
  * this category and this audience has seen enough of them to distrust ours.
  * Take this line down the day it stops being true.
  */
-export const SHOW_BATCH_LINE = true;
+/* The batch line. Off at David's request. */
+export const SHOW_BATCH_LINE = false;
 export const BATCH_ON_SHELF = 2280;
 export const NEXT_BATCH = 'December';
 

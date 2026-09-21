@@ -220,6 +220,53 @@ export function readAttribution(): Record<string, string> {
  * `storefront=true` is set explicitly rather than inherited, so this cannot
  * silently become the direct-to-checkout link.
  */
+/**
+ * What the quiz tells Shopify about itself.
+ *
+ * These five are the quiz's own, and they overwrite whatever the ad set,
+ * because a Shopify report reads utm_* and nothing else. The ad's originals
+ * are not lost — they move to the hf_* pair of each one below.
+ */
+export const QUIZ_UTM = {
+  source: 'bridge',
+  medium: 'quiz',
+  campaign: 'hf-60day',
+} as const;
+
+/** One utm_content per offer, so the store can read bundle mix directly. */
+export const OFFER_UTM_CONTENT: Record<OfferKind, string> = {
+  single: '1bottle',
+  protocol: '2bottle',
+  subscribe: 'sub',
+};
+
+/**
+ * Where an incoming utm_* goes once the quiz has taken its name.
+ *
+ * Prefixed rather than dropped: Shopify keeps the whole query on the order's
+ * landing-site URL, so both questions stay answerable from one row — where
+ * she came from originally, and that she bought through the quiz.
+ */
+const ORIGINAL_OF: Record<string, string> = {
+  utm_source: 'hf_src',
+  utm_medium: 'hf_medium',
+  utm_campaign: 'hf_campaign',
+  utm_content: 'hf_content',
+  utm_term: 'hf_term',
+};
+
+/**
+ * The cart link: the quiz's attribution, without losing the ad's.
+ *
+ * THE COLLISION, AND HOW IT IS RESOLVED. Shopify attributes on utm_source,
+ * utm_medium and utm_campaign. The quiz has to own those or no order can be
+ * traced to it. The ad also needs them or no order can be traced to Meta.
+ * They cannot both have the same five keys, so the quiz takes them and the
+ * ad's values move one prefix across, unchanged and complete.
+ *
+ * Click ids are NOT prefixed. fbclid, gclid and ttclid are read by exact
+ * name by the platforms that issued them; renaming one breaks it.
+ */
 export function shopUrl(
   base: string,
   outcome: string,
@@ -231,29 +278,34 @@ export function shopUrl(
 
   /* The cart, not the checkout. Asserted here, not assumed from the base. */
   url.searchParams.set('storefront', 'true');
-
   url.searchParams.set('src', 'quiz');
-  url.searchParams.set('utm_source', ad.utm_source ?? 'quiz');
-  url.searchParams.set('utm_medium', ad.utm_medium ?? 'owned');
-  url.searchParams.set('utm_campaign', ad.utm_campaign ?? 'hormone_check');
-  url.searchParams.set('utm_content', ad.utm_content ?? `offer_screen__${outcome}`);
 
-  const term = ad.utm_term ?? angle;
-  if (term) url.searchParams.set('utm_term', term);
+  /* 1. The quiz's own attribution. */
+  url.searchParams.set('utm_source', QUIZ_UTM.source);
+  url.searchParams.set('utm_medium', QUIZ_UTM.medium);
+  url.searchParams.set('utm_campaign', QUIZ_UTM.campaign);
+  url.searchParams.set('utm_content', OFFER_UTM_CONTENT[offer]);
+  /* The angle she came through. Nothing was specified for utm_term, and the
+     landing page she answered is the useful thing to put there. */
+  if (angle) url.searchParams.set('utm_term', angle);
 
-  /* Pass-through, only when the ad actually set them. */
-  for (const key of ['hf_funnel', 'hf_variant'] as const) {
+  /* 2. The ad's attribution, preserved beside it rather than under it. */
+  for (const [incoming, kept] of Object.entries(ORIGINAL_OF)) {
+    if (ad[incoming]) url.searchParams.set(kept, ad[incoming]);
+  }
+
+  /* 3. Click ids, by their real names, because that is how they are read.
+        gclid and ttclid were being captured and then dropped here. */
+  for (const key of ['fbclid', 'gclid', 'ttclid'] as const) {
     if (ad[key]) url.searchParams.set(key, ad[key]);
   }
 
-  /* The quiz result, kept in its own param so carrying the ad's utm_content
-     through does not cost us the outcome attribution. */
+  /* 4. What the quiz knows that no UTM carries. */
+  for (const key of ['hf_funnel', 'hf_variant'] as const) {
+    if (ad[key]) url.searchParams.set(key, ad[key]);
+  }
   url.searchParams.set('hf_outcome', outcome);
-
-  /* Which of the three she chose, so the store side can read bundle mix
-     without inferring it from the line items. */
   url.searchParams.set('hf_offer', offer);
 
-  if (ad.fbclid) url.searchParams.set('fbclid', ad.fbclid);
   return url.toString();
 }

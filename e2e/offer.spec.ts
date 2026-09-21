@@ -288,13 +288,21 @@ test.describe('the cart link', () => {
     await page.goto(`/offer?${new URLSearchParams(ad)}`);
     await page.waitForLoadState('networkidle');
 
+    /* The quiz owns utm_*, so what has to survive the first paint is the
+       ad's originals under hf_*, plus the click ids by their own names. */
+    const kept: Record<string, string> = {
+      hf_src: ad.utm_source, hf_medium: ad.utm_medium, hf_campaign: ad.utm_campaign,
+      hf_content: ad.utm_content, hf_term: ad.utm_term,
+      hf_funnel: ad.hf_funnel, hf_variant: ad.hf_variant, fbclid: ad.fbclid,
+    };
     for (const kind of ['single', 'protocol', 'subscribe']) {
       const href = await page.locator(`.ocCta[data-offer="${kind}"]`).first()
         .getAttribute('href');
       const url = new URL(href!);
-      for (const [k, v] of Object.entries(ad)) {
+      for (const [k, v] of Object.entries(kept)) {
         expect(url.searchParams.get(k), `${kind} lost ${k} on the first paint`).toBe(v);
       }
+      expect(url.searchParams.get('utm_source'), kind).toBe('bridge');
     }
   });
 
