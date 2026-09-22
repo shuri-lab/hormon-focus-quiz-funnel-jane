@@ -25,8 +25,14 @@
 /* ------------------------------------------------------------- prices -- */
 
 export const ONE_MONTH_PRICE = 49.99;
-/** Two bottles, sixty days, free shipping. */
-export const PROTOCOL_PRICE = 84.99;
+/**
+ * Two bottles, sixty days, free shipping.
+ *
+ * Everything the Plan says about itself divides out of this one number: the
+ * per-bottle line, the saving against two singles, and the day rate. Move it
+ * and the card, the row and the stack all move together.
+ */
+export const PROTOCOL_PRICE = 79.99;
 /**
  * Per bottle every four weeks, free shipping.
  *

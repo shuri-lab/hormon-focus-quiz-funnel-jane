@@ -398,8 +398,8 @@ test('the doctor route has no plan to open', () => {
 /* ---------------------------------------------------- the three switches -- */
 
 test('each switch renders one line or nothing, and the maths is right', () => {
-  /* $84.99 over sixty days. If the price moves, this line moves with it. */
-  expect(offer.dailyPrice()).toBe('$1.42');
+  /* $79.99 over sixty days. If the price moves, this line moves with it. */
+  expect(offer.dailyPrice()).toBe('$1.33');
   expect(offer.batchCount()).toBe('2,280');
   expect(offer.batchCount()).toBe(offer.BATCH_ON_SHELF.toLocaleString('en-US'));
 

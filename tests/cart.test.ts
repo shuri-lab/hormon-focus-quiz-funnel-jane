@@ -261,7 +261,7 @@ test('the saving on the plan is the two singles minus the plan', () => {
   const plan = offerCards()[1];
   const saving = (ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE).toFixed(2);
   expect(plan.saving).toBe(`$${saving}`);
-  expect(saving).toBe('14.99');
+  expect(saving).toBe('19.99');
   /* And only the Plan names one. */
   expect(offerCards().filter((c) => c.saving)).toHaveLength(1);
 });

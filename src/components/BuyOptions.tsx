@@ -51,7 +51,7 @@ export function useOfferChoice(initial: OfferKind = DEFAULT_OFFER) {
 /**
  * The promise first, the policy underneath it.
  *
- * She is deciding whether to risk $84.99 on something that has not worked
+ * She is deciding whether to risk $79.99 on something that has not worked
  * before, so the line that answers her goes in the size she will actually
  * read, and the policy that backs it sits under it with the policy itself one
  * tap away.
