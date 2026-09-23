@@ -192,7 +192,11 @@ export function captureAttribution(): void {
       if (v) found[key] = v;
     }
     if (!Object.keys(found).length) return;
-    sessionStorage.setItem(STORE_KEY, JSON.stringify({ ...readAttribution(), ...found }));
+    /* FIRST WINS. What is already stored is the acquisition, and it is not
+       for a later page load to overwrite: a second landing with a partial
+       or absent query, or an internal link someone tags by accident, must
+       not be able to rename where she actually came from. */
+    sessionStorage.setItem(STORE_KEY, JSON.stringify({ ...found, ...readAttribution() }));
   } catch { /* private browsing */ }
 }
 
@@ -221,91 +225,54 @@ export function readAttribution(): Record<string, string> {
  * silently become the direct-to-checkout link.
  */
 /**
- * What the quiz tells Shopify about itself.
+ * What is carried to Shopify, and nothing else.
  *
- * These five are the quiz's own, and they overwrite whatever the ad set,
- * because a Shopify report reads utm_* and nothing else. The ad's originals
- * are not lost — they move to the hf_* pair of each one below.
+ * THE UTMs ARE HERS, NOT OURS. An earlier version of this function set
+ * utm_source=bridge, utm_medium=quiz and utm_content per offer, which
+ * overwrote the acquisition: a woman who arrived from an Instagram DM
+ * reached checkout looking like quiz traffic, and the campaign that actually
+ * paid for her could never be credited. The quiz adds nothing to these five
+ * now — it passes on what it was given.
+ *
+ * Which offer she chose is not encoded here either. The variant in the cart
+ * path already says it, so a parameter saying it again is redundant, and one
+ * carrying her quiz RESULT would put a health inference in an ad URL.
  */
-export const QUIZ_UTM = {
-  source: 'bridge',
-  medium: 'quiz',
-  campaign: 'hf-60day',
-} as const;
-
-/** One utm_content per offer, so the store can read bundle mix directly. */
-export const OFFER_UTM_CONTENT: Record<OfferKind, string> = {
-  single: '1bottle',
-  protocol: '2bottle',
-  subscribe: 'sub',
-};
+const PASS_THROUGH = [
+  /* The acquisition, exactly as it arrived. */
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+  /* Click ids keep their own names: the platforms that issued them read
+     them by exact name, so a prefix would break them. */
+  'fbclid', 'gclid', 'ttclid',
+] as const;
 
 /**
- * Where an incoming utm_* goes once the quiz has taken its name.
+ * The cart link for an offer, carrying the attribution she arrived with.
  *
- * Prefixed rather than dropped: Shopify keeps the whole query on the order's
- * landing-site URL, so both questions stay answerable from one row — where
- * she came from originally, and that she bought through the quiz.
- */
-const ORIGINAL_OF: Record<string, string> = {
-  utm_source: 'hf_src',
-  utm_medium: 'hf_medium',
-  utm_campaign: 'hf_campaign',
-  utm_content: 'hf_content',
-  utm_term: 'hf_term',
-};
-
-/**
- * The cart link: the quiz's attribution, without losing the ad's.
+ * Built with URL and URLSearchParams throughout, so the query is assembled
+ * rather than concatenated and the subscription's existing ?id=&quantity=
+ * &selling_plan= cannot gain a second "?".
  *
- * THE COLLISION, AND HOW IT IS RESOLVED. Shopify attributes on utm_source,
- * utm_medium and utm_campaign. The quiz has to own those or no order can be
- * traced to it. The ad also needs them or no order can be traced to Meta.
- * They cannot both have the same five keys, so the quiz takes them and the
- * ad's values move one prefix across, unchanged and complete.
- *
- * Click ids are NOT prefixed. fbclid, gclid and ttclid are read by exact
- * name by the platforms that issued them; renaming one breaks it.
+ * Nothing is invented. A visitor with no attribution gets a clean cart link
+ * and no empty parameters standing in for the ones she did not have.
  */
 export function shopUrl(
   base: string,
-  outcome: string,
-  angle: string,
+  _outcome: string,
+  _angle: string,
   offer: OfferKind = 'single',
 ): string {
   const url = new URL(cartPath(offer), base);
   const ad = readAttribution();
 
-  /* The cart, not the checkout. Asserted here, not assumed from the base. */
-  url.searchParams.set('storefront', 'true');
-  url.searchParams.set('src', 'quiz');
+  /* The cart, not the checkout. Asserted rather than assumed from the base,
+     because losing it sends her straight to payment. */
+  if (url.pathname.includes(':')) url.searchParams.set('storefront', 'true');
 
-  /* 1. The quiz's own attribution. */
-  url.searchParams.set('utm_source', QUIZ_UTM.source);
-  url.searchParams.set('utm_medium', QUIZ_UTM.medium);
-  url.searchParams.set('utm_campaign', QUIZ_UTM.campaign);
-  url.searchParams.set('utm_content', OFFER_UTM_CONTENT[offer]);
-  /* The angle she came through. Nothing was specified for utm_term, and the
-     landing page she answered is the useful thing to put there. */
-  if (angle) url.searchParams.set('utm_term', angle);
-
-  /* 2. The ad's attribution, preserved beside it rather than under it. */
-  for (const [incoming, kept] of Object.entries(ORIGINAL_OF)) {
-    if (ad[incoming]) url.searchParams.set(kept, ad[incoming]);
+  for (const key of PASS_THROUGH) {
+    const value = ad[key];
+    if (value) url.searchParams.set(key, value);
   }
-
-  /* 3. Click ids, by their real names, because that is how they are read.
-        gclid and ttclid were being captured and then dropped here. */
-  for (const key of ['fbclid', 'gclid', 'ttclid'] as const) {
-    if (ad[key]) url.searchParams.set(key, ad[key]);
-  }
-
-  /* 4. What the quiz knows that no UTM carries. */
-  for (const key of ['hf_funnel', 'hf_variant'] as const) {
-    if (ad[key]) url.searchParams.set(key, ad[key]);
-  }
-  url.searchParams.set('hf_outcome', outcome);
-  url.searchParams.set('hf_offer', offer);
 
   return url.toString();
 }

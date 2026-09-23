@@ -16,7 +16,7 @@ import {
   SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
-import { OFFER_UTM_CONTENT, QUIZ_UTM, shopUrl } from '../src/lib/analytics';
+import { shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE } from '../src/lib/logic';
 
 /* shopUrl reads stored attribution. In a node environment there is no
@@ -93,50 +93,53 @@ const AD = {
   hf_funnel: 'quiz_v2', hf_variant: 'b',
 };
 
-test('the quiz owns the utm_* on all three shapes', () => {
+test('the acquisition reaches Shopify untouched, on all three shapes', () => {
   arrivedWith(AD);
   for (const kind of ['single', 'protocol', 'subscribe'] as const) {
     const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
-    expect(u.searchParams.get('utm_source'), kind).toBe(QUIZ_UTM.source);
-    expect(u.searchParams.get('utm_medium'), kind).toBe(QUIZ_UTM.medium);
-    expect(u.searchParams.get('utm_campaign'), kind).toBe(QUIZ_UTM.campaign);
-    expect(u.searchParams.get('utm_content'), kind).toBe(OFFER_UTM_CONTENT[kind]);
-    expect(u.searchParams.get('hf_offer'), kind).toBe(kind);
+    for (const [k, v] of Object.entries(AD)) {
+      if (!k.startsWith('utm_')) continue;
+      expect(u.searchParams.get(k), `${kind} changed ${k}`).toBe(v);
+    }
   }
-  /* One utm_content per offer, and no two the same, or the report cannot
-     tell a bundle from a subscription. */
-  expect(new Set(Object.values(OFFER_UTM_CONTENT)).size).toBe(3);
 });
 
-test('the ad attribution survives beside the quiz, not under it', () => {
+test('the quiz does not rename the source it was given', () => {
+  /* The bug this replaces: utm_source=bridge, utm_medium=quiz and a
+     per-offer utm_content overwrote the acquisition, so a woman who arrived
+     from an Instagram DM reached checkout looking like quiz traffic and the
+     campaign that paid for her could never be credited. */
+  arrivedWith(AD);
+  const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'protocol'));
+  expect(u.searchParams.get('utm_source')).not.toBe('bridge');
+  expect(u.searchParams.get('utm_medium')).not.toBe('quiz');
+  expect(u.searchParams.get('utm_content')).not.toBe('2bottle');
+});
+
+test('no health answer, result or profile rides in the cart URL', () => {
   arrivedWith(AD);
   for (const kind of ['single', 'protocol', 'subscribe'] as const) {
     const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
-    /* Every original, moved one prefix across and unchanged. */
-    expect(u.searchParams.get('hf_src'), kind).toBe(AD.utm_source);
-    expect(u.searchParams.get('hf_medium'), kind).toBe(AD.utm_medium);
-    expect(u.searchParams.get('hf_campaign'), kind).toBe(AD.utm_campaign);
-    expect(u.searchParams.get('hf_content'), kind).toBe(AD.utm_content);
-    expect(u.searchParams.get('hf_term'), kind).toBe(AD.utm_term);
-    /* And the quiz's own, still there. */
-    expect(u.searchParams.get('hf_funnel'), kind).toBe(AD.hf_funnel);
-    expect(u.searchParams.get('hf_variant'), kind).toBe(AD.hf_variant);
+    /* hf_outcome carried the quiz RESULT, which is a health inference about
+       her, and is gone. Which offer she chose is the variant in the path. */
+    for (const banned of ['hf_outcome', 'hf_offer', 'outcome', 'result', 'angle']) {
+      expect(u.searchParams.get(banned), `${kind} leaks ${banned}`).toBeNull();
+    }
+    for (const [, v] of u.searchParams) {
+      expect(v, `${kind} leaks the angle`).not.toBe('bloating');
+    }
   }
 });
 
-test('click ids keep their real names, because that is how they are read', () => {
+test('click ids keep their own names and survive', () => {
   arrivedWith({ ...AD, fbclid: 'FB1', gclid: 'GC1', ttclid: 'TT1' });
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'protocol'));
   expect(u.searchParams.get('fbclid')).toBe('FB1');
-  /* gclid and ttclid were captured on arrival and then dropped here. */
   expect(u.searchParams.get('gclid')).toBe('GC1');
   expect(u.searchParams.get('ttclid')).toBe('TT1');
-  for (const k of ['fbclid', 'gclid', 'ttclid']) {
-    expect(u.searchParams.get(`hf_${k}`), `${k} must not be prefixed`).toBeNull();
-  }
 });
 
-test('carrying the ad parameters does not cost the required ones', () => {
+test('carrying the attribution does not cost the required parameters', () => {
   arrivedWith(AD);
   expect(new URL(shopUrl(SHOP_BASE, 'B', '', 'protocol')).searchParams.get('storefront'))
     .toBe('true');
@@ -144,16 +147,10 @@ test('carrying the ad parameters does not cost the required ones', () => {
     .toBe(SUBSCRIBE_SELLING_PLAN_ID);
 });
 
-test('organic traffic sends the quiz attribution and no empty originals', () => {
+test('traffic with no attribution gets a clean link, not invented values', () => {
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'single'));
-  expect(u.searchParams.get('utm_source')).toBe(QUIZ_UTM.source);
-  expect(u.searchParams.get('utm_content')).toBe('1bottle');
-  expect(u.searchParams.get('utm_term')).toBe('weight');
-  expect(u.searchParams.get('hf_outcome')).toBe('B');
-  /* Nothing came in, so nothing is invented to stand in for it. */
-  for (const k of ['hf_src', 'hf_medium', 'hf_campaign', 'hf_content', 'hf_term']) {
-    expect(u.searchParams.get(k), k).toBeNull();
-  }
+  expect(u.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
+  expect([...u.searchParams.keys()]).toEqual(['storefront']);
 });
 
 /* --------------------------------------------------------------- rows -- */

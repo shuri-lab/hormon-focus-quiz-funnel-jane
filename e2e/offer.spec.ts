@@ -218,9 +218,10 @@ test.describe('the cart link', () => {
     expect(url.host).toBe('shop.jjsmithonline.com');
     expect(url.pathname).toBe(expectedProtocolPath());
     expect(url.searchParams.get('storefront')).toBe('true');
-    expect(url.searchParams.get('hf_offer')).toBe('protocol');
-    expect(url.searchParams.get('utm_source')).toBeTruthy();
-    expect(url.searchParams.get('hf_outcome')).toBeTruthy();
+    /* The variant in the path names the offer, so nothing repeats it, and
+       nothing carries her result. */
+    expect(url.searchParams.get('hf_offer')).toBeNull();
+    expect(url.searchParams.get('hf_outcome')).toBeNull();
 
     /* Mode 2 carries the code; mode 3 must not, because the variant already
        prices itself and a stacked code would discount it twice. */
@@ -245,7 +246,6 @@ test.describe('the cart link', () => {
     const url = new URL((await single.getAttribute('href'))!);
     expect(url.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
     expect(url.searchParams.get('discount')).toBeNull();
-    expect(url.searchParams.get('hf_offer')).toBe('single');
     expect(url.searchParams.get('storefront')).toBe('true');
 
     await expect(single).toContainText('Get 1 bottle');
@@ -277,8 +277,8 @@ test.describe('the cart link', () => {
         const url = new URL(href);
         expect(url.origin, route).toBe('https://shop.jjsmithonline.com');
         expect(url.pathname.startsWith('/cart/'), `${route} ${href}`).toBe(true);
-        expect(url.searchParams.get('utm_source'), route).toBeTruthy();
-        expect(url.searchParams.get('hf_offer'), route).toBeTruthy();
+        /* No attribution is invented for a visitor who arrived with none. */
+        expect(url.searchParams.get('utm_source'), route).toBeNull();
       }
     }
   });
@@ -300,12 +300,10 @@ test.describe('the cart link', () => {
     await page.goto(`/offer?${new URLSearchParams(ad)}`);
     await page.waitForLoadState('networkidle');
 
-    /* The quiz owns utm_*, so what has to survive the first paint is the
-       ad's originals under hf_*, plus the click ids by their own names. */
     const kept: Record<string, string> = {
-      hf_src: ad.utm_source, hf_medium: ad.utm_medium, hf_campaign: ad.utm_campaign,
-      hf_content: ad.utm_content, hf_term: ad.utm_term,
-      hf_funnel: ad.hf_funnel, hf_variant: ad.hf_variant, fbclid: ad.fbclid,
+      utm_source: ad.utm_source, utm_medium: ad.utm_medium,
+      utm_campaign: ad.utm_campaign, utm_content: ad.utm_content,
+      utm_term: ad.utm_term, fbclid: ad.fbclid,
     };
     for (const kind of ['single', 'protocol', 'subscribe']) {
       const href = await page.locator(`.ocCta[data-offer="${kind}"]`).first()
@@ -314,7 +312,6 @@ test.describe('the cart link', () => {
       for (const [k, v] of Object.entries(kept)) {
         expect(url.searchParams.get(k), `${kind} lost ${k} on the first paint`).toBe(v);
       }
-      expect(url.searchParams.get('utm_source'), kind).toBe('bridge');
     }
   });
 
@@ -449,8 +446,10 @@ test.describe('the plan page', () => {
 
     const url = new URL((await page.locator('.buyBtn').getAttribute('href'))!);
     expect(url.origin).toBe('https://shop.jjsmithonline.com');
-    expect(url.searchParams.get('hf_offer')).toBe('protocol');
-    expect(url.searchParams.get('hf_outcome')).toBe('plan_perimenopause');
+    expect(url.searchParams.get('storefront')).toBe('true');
+    /* hf_outcome used to read "plan_perimenopause" here — the quiz result,
+       in plain words, in an outbound advertising URL. It is gone. */
+    expect(url.searchParams.get('hf_outcome')).toBeNull();
   });
 
   test('reads like something a person wrote when the link carried nothing',
