@@ -18,7 +18,7 @@ export type Periods = 'yes' | 'changing' | 'stopped';
 export type StopCause = 'coil' | 'pill' | 'surgery' | 'treatment' | 'none';
 export type Regularity = 'clock' | 'abit' | 'allover';
 export type Severity = 'rare' | 'monthly' | 'weekly' | 'daily';
-export type Helped = 'temp' | 'little' | 'none' | 'worse';
+export type Helped = 'still' | 'temp' | 'little' | 'none' | 'worse';
 export type SymptomId = 'sweats' | 'weight' | 'sleep' | 'bloat' | 'mood' | 'energy';
 export type MoodId = 'irritable' | 'anxious' | 'flat' | 'notme';
 export type MarkerId = 'skipped' | 'heavier' | 'closer' | 'pms' | 'tender' | 'none';
@@ -30,6 +30,8 @@ export type DocReason = 'treatment' | 'surgery' | 'young' | 'late' | '';
 
 export interface QuizState {
   sym: SymptomId[];
+  /** The one she says bothers her most. Asked only when she picked more than one. */
+  main: SymptomId | '';
   age: Age | '';
   periods: Periods | '';
   stopCause: StopCause | '';
@@ -50,7 +52,7 @@ export interface QuizState {
 /** The complete shape. Every field, and what it may hold. */
 export function createState(): QuizState {
   return {
-    sym: [], age: '', periods: '', stopCause: '', reg: '',
+    sym: [], main: '', age: '', periods: '', stopCause: '', reg: '',
     mood: [], markers: [], sev: '', tried: [], helped: '',
     name: '', email: '', consent: false,
   };
@@ -104,6 +106,19 @@ export const GROUPS: Group[] = [
 
 export function has(S: QuizState, id: SymptomId): boolean {
   return S.sym.indexOf(id) > -1;
+}
+
+/**
+ * The symptom her result leads with.
+ *
+ * Her own answer where she gave one and it is still ticked; otherwise the
+ * first thing she picked, in the order the tiles are shown. It never changes
+ * the outcome. It only decides which concern her next step is written for.
+ */
+export function mainConcern(S: QuizState): SymptomId | '' {
+  if (S.main && has(S, S.main)) return S.main;
+  const first = TILES.filter(([id]) => has(S, id))[0];
+  return first ? first[0] : '';
 }
 
 export function periScore(S: QuizState): number {
@@ -178,6 +193,19 @@ export function stateKey(S: QuizState): Outcome {
   return 'A';                                   // under thirty is never perimenopause
 }
 
+/** The same read, said as a sentence she can use. */
+export function confidenceNote(S: QuizState): string {
+  const c = confidence(S);
+  if (c === 'Clear') return 'Your answers point one way.';
+  if (c === 'Two things overlapping') {
+    return 'Your answers sit between two stages. This is the closer fit.';
+  }
+  if (c === 'Read from your symptoms') {
+    return 'Read from your symptoms and your age, because your cycle cannot tell us.';
+  }
+  return c;
+}
+
 export function confidence(S: QuizState): string {
   const p = periScore(S);
   if (stateKey(S) === 'D') return 'Worth checking properly';
@@ -215,18 +243,18 @@ export function groupMax(g: Group): number {
 /* --------------------------------------------------------------- flow ---- */
 
 export type ScreenId =
-  | 's1' | 's2' | 's3' | 's4' | 's4b' | 's5' | 's6' | 's7' | 's8' | 's9'
+  | 's1' | 's1b' | 's2' | 's3' | 's4' | 's4b' | 's5' | 's6' | 's7' | 's8' | 's9'
   | 's10' | 's11' | 's12' | 's13'
   | 'r1' | 'r2' | 'rDoc' | 'r4' | 'r4b' | 'r5' | 'r6' | 'r7';
 
 export const FLOW: ScreenId[] = [
-  's1', 's2', 's3', 's4', 's4b', 's5', 's6', 's7', 's8', 's9',
+  's1', 's1b', 's2', 's3', 's4', 's4b', 's5', 's6', 's7', 's8', 's9',
   's10', 's11', 's12', 's13',
   'r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 'r7',
 ];
 
 /** The screens that count toward the progress bar. */
-export const QUESTIONS: ScreenId[] = ['s1', 's2', 's4', 's4b', 's5', 's6', 's7', 's8', 's10', 's11'];
+export const QUESTIONS: ScreenId[] = ['s1', 's1b', 's2', 's4', 's4b', 's5', 's6', 's7', 's8', 's10', 's11'];
 
 /** The reveal, which is paced differently from the questions. */
 export const REVEAL: ScreenId[] = ['r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 'r7'];
@@ -251,6 +279,19 @@ export function docDecided(S: QuizState): boolean {
   return Boolean(S.age && S.periods);
 }
 
+/**
+ * WHICH RESULTS ARE SHOWN THE KIT.
+ *
+ * JJ's decision of 22 September 2026: only a perimenopause result sees the
+ * offer. Everybody else still gets her result, the reasons for it and a first
+ * step; she is simply not sold to. One line to change if that decision moves.
+ */
+export const OFFER_OUTCOMES: Outcome[] = ['B'];
+
+export function seesOffer(S: QuizState): boolean {
+  return OFFER_OUTCOMES.includes(stateKey(S));
+}
+
 /** Settled, and the answer is the doctor. */
 export function doctorExit(S: QuizState): boolean {
   return docDecided(S) && stateKey(S) === 'D';
@@ -264,6 +305,8 @@ export function doctorExit(S: QuizState): boolean {
  * the offer sequence. The two are mutually exclusive by construction.
  */
 export function shouldSkip(S: QuizState, id: ScreenId): boolean {
+  /* One symptom needs no ranking. */
+  if (id === 's1b') return S.sym.length < 2;
   if (id === 's4b') return S.periods !== 'stopped';
   /* THE DOCTOR EXIT. docReason() is settled by s2 (age), s4 (periods) and,
      where she has stopped, s4b (why). The moment it is settled and the
@@ -272,9 +315,14 @@ export function shouldSkip(S: QuizState, id: ScreenId): boolean {
      refuse, in order to market to her later, was the bug this closes. */
   if (doctorExit(S) && EXIT_AT_S4B.includes(id)) return true;
   if (id === 's5') return S.periods === 'stopped';
+  /* "Did any of it help?" has no meaning when she has tried nothing. */
+  if (id === 's11') return S.tried.length === 0;
   if (id === 'rDoc') return stateKey(S) !== 'D';
-  if (id === 'r4' || id === 'r4b' || id === 'r5' || id === 'r6' || id === 'r7') {
-    return stateKey(S) === 'D';
+  /* Where to start: everybody but the doctor route. */
+  if (id === 'r4') return stateKey(S) === 'D';
+  /* The kit: only the outcomes it is offered to. */
+  if (id === 'r4b' || id === 'r5' || id === 'r6' || id === 'r7') {
+    return !seesOffer(S);
   }
   return false;
 }

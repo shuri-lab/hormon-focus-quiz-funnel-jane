@@ -9,8 +9,10 @@ import {
 } from '../lib/content';
 import { Stars } from '../components/icons';
 
-const CTA_LABEL = 'GET MY HORMONE PLAN';
-const PRIVACY_LINE = 'Private, and no answer is ever shared.';
+const CTA_LABEL = 'TAKE THE FREE HORMONE CHECK';
+/* Only what is true of the build: no address is sent anywhere without the
+   ticked box on the result gate. */
+const PRIVACY_LINE = 'Free. We only email you if you tick the box.';
 
 function CheckMark() {
   return (
@@ -24,7 +26,7 @@ function CheckMark() {
 
 /** Stars plus the 4.9. The review count sits beside it on the proof section. */
 function Rate() {
-  return <div className="rate"><Stars n={5} /><b>4.9</b></div>;
+  return <div className="rate"><Stars n={5} /><b>4.9</b><span> from reviews of Hormone Focus, JJ&rsquo;s supplement</span></div>;
 }
 
 /* The JJ programs chip shows on every route. The route chip shows only where
@@ -115,7 +117,7 @@ export function Landing() {
 
                 <div className="getline">
                   <CheckMark />
-                  <p>Get your <u>free personal</u> hormone plan in <u>2 minutes</u></p>
+                  <p>Get your <u>free personal</u> result in <u>2 minutes</u>: what your answers point to, why, and where to start</p>
                 </div>
 
                 {/* .heroCta is the hook e2e/funnel.spec.ts uses to find the
@@ -139,7 +141,7 @@ export function Landing() {
         <section className="lpSec first">
           <div className="screen">
             <p className="eyebrow">Step one</p>
-            <h2 className="sech">First, find out what is <em>really going on</em></h2>
+            <h2 className="sech">First, see what your answers <em>point to</em></h2>
             <ul className="recogbox">
               {angle.lines.map((l) => <li key={l}>{l}</li>)}
             </ul>
@@ -167,15 +169,15 @@ export function Landing() {
             <div className="step">
               <span className="stepn">2</span>
               <div>
-                <b>Get your hormone read.</b>
-                <span>Which stage you are in, read from your answers.</span>
+                <b>Get your result.</b>
+                <span>Which stage your answers fit, and the answers it rests on.</span>
               </div>
             </div>
             <div className="step">
               <span className="stepn">3</span>
               <div>
-                <b>Find out what helps.</b>
-                <span>What fits your stage, and what to do next.</span>
+                <b>Know where to start.</b>
+                <span>One practical step for the thing bothering you most.</span>
               </div>
             </div>
             </div>
@@ -209,10 +211,10 @@ export function Landing() {
         {/* --------------------------------------------- 5. CLOSER ----- */}
         <section className="lpSec">
           <div className="screen">
-            <h2 className="sech">Ready to find out what is <em>really going on?</em></h2>
+            <h2 className="sech">Ready to see what your answers <em>point to?</em></h2>
             <p className="secBody">
-              Take the two-minute check and get your personal hormone plan, free.
-              What you learn is yours to keep.
+              Take the two-minute check and get your personal result, free: what
+              your answers point to, why, and one thing to start with.
             </p>
             <Cta to={quizHref} />
             <p className="priv">{PRIVACY_LINE}</p>

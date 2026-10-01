@@ -21,7 +21,7 @@
  * marketing stack is having a good afternoon.
  */
 import { readAttribution } from './analytics';
-import { score } from './logic';
+import { mainConcern, score } from './logic';
 import type { QuizState, Outcome } from './logic';
 
 /** Public, and public on purpose. See the note above. */
@@ -99,6 +99,8 @@ export async function submitLead(
           angle,
           ...utm,
           signs: score(S).raw,
+          /* What she said bothers her most, so the first email can lead with it. */
+          main_concern: mainConcern(S),
           consent_at: consentAt,
         },
         metric: {

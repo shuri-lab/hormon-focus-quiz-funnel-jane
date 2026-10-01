@@ -1,20 +1,19 @@
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { score, stateKey } from '../../lib/logic';
+import { BRAND, mainConcern, seesOffer, stateKey } from '../../lib/logic';
 import {
-  BOTTLE, CUSTOMERS, FDA_DISCLAIMER, OFFER_DISCLAIMER, SEV_PHRASE, TRIED_WHY, VERDICT,
+  BOTTLE, CUSTOMERS, FDA_DISCLAIMER, HELPED_NOTE, NEXT_STEP, NEXT_WATCH, OFFER_DISCLAIMER,
+  QUIZ_DISCLAIMER, SHORT, TRIED_NOTE, VERDICT,
 } from '../../lib/content';
 import { Stars } from '../../components/icons';
 import { RATING, REVIEW_COUNT } from '../../lib/reviews';
-import {
-  GUARANTEE_DAYS,
-} from '../../lib/offer';
+import { GUARANTEE_DAYS, KIT_CONTENTS, PLAN_NAME } from '../../lib/offer';
 import { OfferCards } from '../../components/OfferCards';
 import {
   GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE, GUARANTEE_SUB_REST,
   REFUND_POLICY_URL,
 } from '../../lib/offerCopy';
-import type { Severity } from '../../lib/logic';
+import type { SymptomId } from '../../lib/logic';
 
 function Guarantee() {
   return (
@@ -41,43 +40,70 @@ function Guarantee() {
 
 /* ---------------------------------------------------------------- r4 ---- */
 
+/* WHERE TO START. The free part of the result, and the last screen for every
+   outcome the kit is not offered to.
+ *
+ * It used to be "Why nothing has worked", which told her that her bedtime and
+ * her plate were never the problem. The check cannot know that, and food,
+ * movement and sleep are three of the five steps in JJ's own plan. So this
+ * screen keeps what she is doing, and gives her one thing to add. */
 export function R4() {
-  const { S, next } = useQuiz();
-  const why = S.tried.map((k) => TRIED_WHY[k]).filter(Boolean);
+  const { S, next, restart } = useQuiz();
+  const tried = S.tried.map((k) => TRIED_NOTE[k]).filter(Boolean);
+  const main = mainConcern(S) as SymptomId;
+  const step = NEXT_STEP[main];
+  const offered = seesOffer(S);
 
   return (
     <Screen id="r4">
-      <p className="eyebrow">What you have already tried</p>
-      <ScreenTitle className="rTitle">Why nothing has worked.</ScreenTitle>
+      <p className="eyebrow">Your next step</p>
+      <ScreenTitle className="rTitle">Where to start.</ScreenTitle>
 
-      <div className="block">
-        {why.length
-          ? why.map(([head, tail], i) => <p key={i}><strong>{head}</strong> {tail}</p>)
-          : (
-            <p>
-              <strong>You have not tried anything for this yet.</strong> Most women have not.
-              Nobody tells you there is anything to try.
-            </p>
-          )}
-      </div>
+      {tried.length > 0 && (
+        <div className="block">
+          <p className="blabel">What you have already done</p>
+          {tried.map(([head, tail], i) => <p key={i}><strong>{head}</strong> {tail}</p>)}
+          {S.helped && HELPED_NOTE[S.helped] && <p>{HELPED_NOTE[S.helped]}</p>}
+        </div>
+      )}
 
-      <div className="block key"><p className="lead">None of it was aimed at the cause.</p></div>
+      {step && (
+        <div className="block key">
+          <p className="blabel">One thing to start with, for {SHORT[main]}</p>
+          <p className="lead">{step.step}</p>
+          <p>{step.why}</p>
+          <p>{NEXT_WATCH}</p>
+        </div>
+      )}
 
-      <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>So what does? &rarr;</button>
-      </ActionBar>
+      {offered ? (
+        <ActionBar>
+          <button type="button" className="cta" onClick={() => next()}>How JJ&rsquo;s kit fits in &rarr;</button>
+        </ActionBar>
+      ) : (
+        <>
+          <a className="cta soft" href={BRAND} target="_blank" rel="noopener noreferrer">
+            More from JJ Smith
+          </a>
+          <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
+          <p className="fine">{QUIZ_DISCLAIMER}</p>
+        </>
+      )}
     </Screen>
   );
 }
 
 /* --------------------------------------------------------------- r4b ---- */
 
+/* The kit, as the way to put the next steps into practice. Not two capsules
+   as the whole answer, and no "no diet changes": the kit ships with recipes
+   and a plan whose first step is how she eats. */
 export function R4b() {
   const { next } = useQuiz();
   return (
     <Screen id="r4b">
-      <p className="eyebrow">What does</p>
-      <ScreenTitle className="rTitle">Two capsules a day.</ScreenTitle>
+      <p className="eyebrow">If you want help doing it</p>
+      <ScreenTitle className="rTitle">{PLAN_NAME}.</ScreenTitle>
 
       <div className="shot">
         <img src={BOTTLE} alt="Hormone Focus" width={620} height={540} loading="lazy" decoding="async" />
@@ -85,25 +111,34 @@ export function R4b() {
 
       <div className="badges">
         <span className="badge">{GUARANTEE_DAYS}-day guarantee</span>
-        <span className="badge">No diet changes</span>
+        <span className="badge">Free shipping</span>
         <span className="badge">Two capsules a day</span>
       </div>
 
       <div className="block key">
-        <p className="lead">Most hormone supplements only do half the job.</p>
-        <p>They break it down. They do not carry it out. So it goes back in.</p>
-        <p><strong>Hormone Focus is a 3-in-1 blend that does all three.</strong></p>
+        <p className="lead">JJ built the kit for this stage. It is the supplement and the plan together.</p>
         <div className="formula">
-          <div className="ing"><b>Breaks it down &mdash; <em>DIM</em></b><i>From broccoli and cabbage.</i></div>
-          <div className="ing"><b>Carries it out &mdash; <em>Calcium D-Glucarate</em></b><i>So it does not come back.</i></div>
-          <div className="ing"><b>Helps you absorb both &mdash; <em>BioPerine</em></b><i>From black pepper.</i></div>
+          {KIT_CONTENTS.map(([what, detail]) => (
+            <div className="ing" key={what}><b>{what}</b><i>{detail}</i></div>
+          ))}
         </div>
+      </div>
+
+      <div className="block">
+        <p className="blabel">What is in Hormone Focus</p>
+        <p>
+          A 3-in-1 blend: <strong>DIM</strong>, from broccoli and cabbage,{' '}
+          <strong>Calcium D-Glucarate</strong> and <strong>BioPerine</strong>, from black pepper.
+          Hormone Focus supports hormone balance for women in perimenopause and menopause.*
+        </p>
       </div>
 
       <Guarantee />
 
+      <p className="fine">*{FDA_DISCLAIMER}</p>
+
       <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>How fast does it work? &rarr;</button>
+        <button type="button" className="cta" onClick={() => next()}>What does the kit ask of me? &rarr;</button>
       </ActionBar>
     </Screen>
   );
@@ -111,35 +146,36 @@ export function R4b() {
 
 /* ---------------------------------------------------------------- r5 ---- */
 
+/* What she does, not what she will feel. No symptom is promised by a day. */
 export function R5() {
   const { next } = useQuiz();
   return (
     <Screen id="r5">
-      <p className="eyebrow">You asked</p>
-      <ScreenTitle className="rTitle">This is how fast it works.</ScreenTitle>
+      <p className="eyebrow">What you would be doing</p>
+      <ScreenTitle className="rTitle">What the kit asks of you.</ScreenTitle>
 
-      <div className="protocol">Take two capsules a day</div>
+      <div className="protocol">Two capsules a day, with a meal</div>
 
       <div className="steps">
         <div className="step">
           <b className="n">1</b>
-          <div className="t"><b>The first month</b><span>Your body needs a full cycle before it can show you anything. The first thing most women notice is <em>less bloating and water retention.</em>*</span></div>
+          <div className="t"><b>Start</b><span>Take two capsules a day with a meal, and open the ebook. JJ&rsquo;s plan has five steps: Eat, Train, Replace, Release and Track.</span></div>
         </div>
         <div className="step">
           <b className="n">2</b>
-          <div className="t"><b>From today</b><span>Your plan is already written: what to change this week, and what customers report at two weeks, four, and sixty.</span></div>
+          <div className="t"><b>Build</b><span>Work through the steps at your own pace. The recipes are there for the first one.</span></div>
         </div>
         <div className="step">
           <b className="n">3</b>
-          <div className="t"><b>Day thirty</b><span>The point most women say they can tell.</span></div>
+          <div className="t"><b>Record</b><span>Mark the Daily Symptom Tracker. It takes a minute, and it is how you will see what is changing.</span></div>
         </div>
         <div className="step">
           <b className="n">4</b>
-          <div className="t"><b>Day sixty</b><span>The guarantee is still running. It outlasts the bottle by a month, on purpose.</span></div>
+          <div className="t"><b>Decide</b><span>Look back over your tracker and judge it for yourself. The guarantee is there if it is not for you.</span></div>
         </div>
       </div>
 
-      <p className="fine">*{FDA_DISCLAIMER}</p>
+      <p className="fine">Individual results vary. {FDA_DISCLAIMER}</p>
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>Who else is doing this? &rarr;</button>
@@ -176,6 +212,7 @@ export function R6() {
         <div className="ratingStars"><Stars /></div>
         <p className="ratingSub">from {REVIEW_COUNT} verified reviews of Hormone Focus</p>
       </div>
+      <p className="fine">These are reviews of Hormone Focus, the supplement in the kit. Individual results vary.</p>
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>See what it costs &rarr;</button>
@@ -190,7 +227,6 @@ export function R7() {
   const { S, angle, restart } = useQuiz();
   const outcome = stateKey(S);
   const v = VERDICT[outcome];
-  const sc = score(S);
 
   return (
     <Screen id="r7">
@@ -199,15 +235,13 @@ export function R7() {
         Here is where I would start you, {S.name.trim() || 'you'}.
       </ScreenTitle>
       <p className="rDeck">
-        {v.name} &middot; {sc.raw} of 14 signs
-        {S.sev && ` · ${SEV_PHRASE[S.sev as Severity]}`}
+        Your answers point to {v.name.toLowerCase()}. This is the kit JJ built for that stage.
+        Whether it is right for you is your call.
       </p>
 
       {/* No bottle photograph above the cards: each card carries its own
-          product shot, and a fourth picture of the same bottle was the
-          largest thing on the screen while saying the least. The Starter
-          Guide rides inside the two-bottle card as the bonus it is, rather
-          than as a block of its own. */}
+          product shot. The kit card names its three digital pieces as the
+          bonus line. */}
       <OfferCards outcome={outcome} angle={angle.slug} stack={false} />
 
       <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>

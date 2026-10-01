@@ -75,7 +75,7 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why nothing feels',
     h1b: 'the same any more',
-    paren: 'and the one pattern nobody checks for',
+    paren: 'and what your answers may point to',
     lines: [
       'Breakouts you have not had since your twenties.',
       'Clothes that fit last year and do not now.',
@@ -83,8 +83,8 @@ export const ANGLES: Angle[] = [
       'Awake at three, and staying awake.',
       'Snapping at people you love.',
     ],
-    closer: 'Five separate problems, or one? That is what the check tells you.',
-    description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    closer: 'The check looks at them together and tells you which stage your answers fit.',
+    description: 'A two-minute symptom check that tells you which stage your answers fit: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
     offer: {
       h1a: 'Feel like yourself again, ',
       h1b: 'in your own clothes',
@@ -102,13 +102,13 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why the bloating',
     h1b: 'keeps coming back',
-    paren: 'and the one thing nobody checks',
+    paren: 'and what your answers may point to',
     lines: [
       'Flat at breakfast, swollen by six.',
       'A waistband you undo in the car.',
       'Cutting out the obvious things changed nothing.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
     offer: {
       sub: 'Tired of being flat at breakfast and swollen by six, of a waistband you undo in the car, of cutting things out and nothing changing? Hormone Focus helps with occasional bloating and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -124,13 +124,13 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why the heat',
     h1b: 'comes out of nowhere',
-    paren: 'and the one pattern behind it',
+    paren: 'and what your answers may point to',
     lines: [
       'Heat that arrives out of nowhere.',
       'Your face goes and everybody notices.',
       'You dress in layers now, all year.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
     description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
     offer: {
       sub: 'Tired of heat that arrives out of nowhere, in a meeting, in the car, in front of everybody? Hormone Focus helps ease occasional hot flashes and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -146,16 +146,16 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why you are',
     h1b: 'soaked every night',
-    paren: 'and the one thing nobody asks about',
+    paren: 'and what your answers may point to',
     lines: [
       'You wake soaked and throw the covers off.',
       'Sheets you change more than you used to.',
       'Cool again by four, and wide awake.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
-    description: 'A two-minute symptom check that tells you which stage you are in: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    description: 'A two-minute symptom check that tells you which stage your answers fit: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
     offer: {
       sub: 'Tired of waking soaked at three, throwing the covers off, and changing sheets you never used to change? Hormone Focus helps ease occasional night sweats and supports restful sleep through perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Quieter nights start with two capsules.',
@@ -170,14 +170,14 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why you stopped',
     h1b: 'sleeping past 3am',
-    paren: 'and the one question nobody asks',
+    paren: 'and what your answers may point to',
     lines: [
       'Asleep by ten, awake at three.',
       'Nothing about your bedtime changed.',
       'Sleeping in does not fix it.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
-    description: 'When fixing your bedtime does not fix your sleep, the cause is usually hormonal. Take the two-minute check.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
+    description: 'When fixing your bedtime does not fix your sleep, the cause may be hormonal. Take the two-minute check.',
     offer: {
       sub: 'Tired of being asleep by ten and awake at three, with nothing about your bedtime changed? Hormone Focus supports restful sleep and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Sleeping through starts with two capsules.',
@@ -193,13 +193,13 @@ export const ANGLES: Angle[] = [
     chip1: '5M+ lbs lost',
     h1a: 'Why losing weight after 40 feels',
     h1b: 'impossible',
-    paren: 'and the one thing nobody checks for',
+    paren: 'and what your answers may point to',
     lines: [
       'Clothes that fit last year and do not now.',
       'The same food, the same walking, a different body.',
       'It settled on your middle and stayed.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
     description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
     offer: {
       sub: 'Tired of the same food, the same walking, and a different body that settled on your middle and stayed? Hormone Focus supports a healthy weight as part of a healthy diet and regular exercise, and supports hormone balance through this stage. Every milligram disclosed. Two capsules a day with a meal.',
@@ -215,13 +215,13 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why you are',
     h1b: 'tired all the time',
-    paren: 'and the one thing nobody connects it to',
+    paren: 'and what your answers may point to',
     lines: [
       'Snapping at people you love.',
       'Anxious for no reason you can point to.',
       'Walking into a room and forgetting why.',
     ],
-    closer: 'A stage, or something else? That is what the check tells you.',
+    closer: 'The check tells you which stage your answers fit, and where to start.',
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
     offer: {
       sub: 'Tired of snapping at people you love, anxious for no reason you can point to, walking into a room and forgetting why? Hormone Focus helps support a calm mood and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -237,7 +237,7 @@ export const ANGLES: Angle[] = [
     chip1: '',
     h1a: 'Why your body changed',
     h1b: 'at 40, and you did not',
-    paren: 'and the one thing nobody checks for',
+    paren: 'and what your answers may point to',
     lines: [
       'The belly that showed up though nothing else changed.',
       'The jeans that fit in March.',
@@ -245,7 +245,7 @@ export const ANGLES: Angle[] = [
       'Awake at three, drenched.',
       'The word that goes missing mid-sentence.',
     ],
-    closer: 'Five separate problems, or one? That is what the check tells you.',
+    closer: 'The check looks at them together and tells you which stage your answers fit.',
     description: 'The belly that arrived without you changing a thing. Find out whether your hormones are the reason, with a two-minute check from JJ Smith.',
     offer: {
       h1a: 'Your body does not store fat randomly after 40. ',

@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  createState, stateKey, periScore, path, shouldSkip,
+  createState, stateKey, periScore, path, shouldSkip, mainConcern, OFFER_OUTCOMES,
   type QuizState, type Age, type Periods, type StopCause, type Regularity, type ScreenId,
   type Outcome,
 } from '../src/lib/logic';
@@ -225,9 +225,18 @@ test('the doctor route never reaches the offer, and the offer never reaches it',
         expect(seen, 'D must never see ' + offer + ': ' + label(S)).not.toContain(offer);
       }
     } else {
-      sellers++;
       expect(seen, 'only D sees rDoc: ' + label(S)).not.toContain('rDoc');
-      expect(seen, 'everyone else reaches the offer: ' + label(S)).toContain('r7');
+      /* Everybody who is not sent to a doctor is given a first step. */
+      expect(seen, 'everyone else is told where to start: ' + label(S)).toContain('r4');
+      /* The kit is shown to the outcomes it is offered to and to nobody else. */
+      if (OFFER_OUTCOMES.includes(stateKey(S))) {
+        sellers++;
+        expect(seen, 'an offered outcome reaches the offer: ' + label(S)).toContain('r7');
+      } else {
+        for (const sell of ['r4b', 'r5', 'r6', 'r7'] as ScreenId[]) {
+          expect(seen, stateKey(S) + ' must not be sold to (' + sell + '): ' + label(S)).not.toContain(sell);
+        }
+      }
     }
   }
   expect(doctors, 'both routes must be exercised').toBeGreaterThan(0);
@@ -297,7 +306,10 @@ test('every state reaches a terminal screen', () => {
   for (const S of combinations()) {
     const seen = path(S);
     const last = seen[seen.length - 1];
-    expect(['r7', 'rDoc'], 'ended at ' + last + ': ' + label(S)).toContain(last);
+    /* The offer, the doctor, or the first step for a result that is not sold to. */
+    const ends = stateKey(S) === 'D' ? ['rDoc']
+      : OFFER_OUTCOMES.includes(stateKey(S)) ? ['r7'] : ['r4'];
+    expect(ends, 'ended at ' + last + ': ' + label(S)).toContain(last);
     expect(new Set(seen).size, 'no screen repeats: ' + label(S)).toBe(seen.length);
   }
 });
@@ -309,4 +321,42 @@ test('shouldSkip and path agree', () => {
       expect(seen.has(id), id + ': ' + label(S)).toBe(!shouldSkip(S, id));
     }
   }
+});
+
+/* ------------------------------------ 6. the content pass of 1 Oct 2026 --- */
+
+test('only a perimenopause result is shown the kit', () => {
+  /* JJ's decision of 22 September 2026. Change OFFER_OUTCOMES and this test
+     together, on purpose, or not at all. */
+  expect(OFFER_OUTCOMES).toEqual(['B']);
+});
+
+test('she is asked what bothers her most only when there is something to rank', () => {
+  const one = { ...createState(), sym: ['sleep'] } as QuizState;
+  const two = { ...createState(), sym: ['weight', 'sleep'] } as QuizState;
+  expect(shouldSkip(one, 's1b')).toBe(true);
+  expect(shouldSkip(two, 's1b')).toBe(false);
+});
+
+test('her result leads with her own answer, and falls back to the first tile she picked', () => {
+  const S = { ...createState(), sym: ['weight', 'sleep'] } as QuizState;
+  /* No answer given: tile order decides, and sweats, weight, sleep is the order. */
+  expect(mainConcern(S)).toBe('weight');
+  expect(mainConcern({ ...S, main: 'sleep' })).toBe('sleep');
+  /* An answer she has since unticked does not survive. */
+  expect(mainConcern({ ...S, sym: ['weight'], main: 'sleep' })).toBe('weight');
+  expect(mainConcern(createState())).toBe('');
+});
+
+test('what bothers her most never changes her result', () => {
+  for (const S of combinations()) {
+    expect(stateKey({ ...S, sym: ['weight', 'sleep'], main: 'sleep' }))
+      .toBe(stateKey({ ...S, sym: ['weight', 'sleep'], main: 'weight' }));
+  }
+});
+
+test('"did any of it help" is not asked of a woman who has tried nothing', () => {
+  const base = { ...createState(), age: '40s', periods: 'changing', reg: 'abit' } as QuizState;
+  expect(shouldSkip({ ...base, tried: [] }, 's11')).toBe(true);
+  expect(shouldSkip({ ...base, tried: ['food'] }, 's11')).toBe(false);
 });

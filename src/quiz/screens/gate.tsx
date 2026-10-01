@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { score, stateKey } from '../../lib/logic';
+import { stateKey } from '../../lib/logic';
 import { isEmail, submitLead } from '../../lib/leads';
 import { track } from '../../lib/analytics';
 
 /* --------------------------------------------------------------- s12 ---- */
 
+/* Only what actually happens. The result is worked out from her answers by
+   fixed rules; nothing is matched against other women, and there is no plan
+   being built, so neither is claimed. */
 const LOAD_STEPS = [
   'Reading what you told me',
-  'Weighing how often it hits',
-  'Working out your stage',
-  /* The review count is a review count, not a number of customers. Saying
-     "170 women" turns a rating into a club size, which is the exact error the
-     claim rule names. No number here: none is needed. */
-  'Matching it against what other women report',
-  'Building your plan',
+  'Looking at your cycle',
+  'Looking at your age',
+  'Putting your result together',
 ];
 
 const RING = 364;
@@ -47,13 +46,13 @@ export function S12() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const k = Math.floor(n / 20);
+  const k = Math.floor(n / 25);
 
   return (
     <Screen id="s12">
       <div className="loadWrap">
-        <ScreenTitle className="q" >Analyzing your answers.</ScreenTitle>
-        <p className="qsub">Preparing your plan.</p>
+        <ScreenTitle className="q" >Putting your result together.</ScreenTitle>
+        <p className="qsub">This takes a few seconds.</p>
         <div className="ring">
           <svg width="132" height="132" aria-hidden="true">
             <circle cx="66" cy="66" r="58" stroke="var(--wash-2)" strokeWidth="11" fill="none" />
@@ -84,9 +83,7 @@ export function S12() {
 
 export function S13() {
   const { S, set, next, angle } = useQuiz();
-  const sc = score(S);
   const outcome = stateKey(S);
-  const doc = outcome === 'D';
 
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -105,13 +102,11 @@ export function S13() {
 
   return (
     <Screen id="s13">
-      <p className="eyebrow">{doc ? 'Almost there' : 'Good news'}</p>
-      <ScreenTitle className="rTitle">
-        {doc ? 'Your read is ready.' : 'Your pattern is clear, and your plan is ready.'}
-      </ScreenTitle>
+      <p className="eyebrow">Almost there</p>
+      <ScreenTitle className="rTitle">Your result is ready.</ScreenTitle>
       <p className="rDeck">
-        You said yes to {sc.raw} things, and they are not {sc.raw} separate problems.
-        Where should I send it?
+        On the next screen you will see what your answers point to, why, and
+        one thing to start with. Where should I send it?
       </p>
 
       <form onSubmit={(e) => { e.preventDefault(); void submit(); }} noValidate>

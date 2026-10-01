@@ -69,10 +69,18 @@ test.describe('the quiz', () => {
     await page.locator('.tile').nth(1).click();
     await page.locator('.actionBar .cta').click();
 
+    /* Two ticks, so she is asked which one bothers her most, and offered only
+       the two she ticked. */
+    await expect(heading(page)).toContainText('bothering you most');
+    await expect(page.locator('.opt')).toHaveCount(2);
+    await page.locator('.opt').nth(1).click();                 // the weight
+
     await expect(heading(page)).toContainText('What is your age');
     await page.locator('.opt').nth(2).click();                 // 40 to 49
 
-    await expect(heading(page)).toContainText('already done this');
+    /* Reassurance, with no product review before she has a result. */
+    await expect(heading(page)).toContainText('not the only one');
+    await expect(page.locator('.rev')).toHaveCount(0);
     await page.locator('.actionBar .cta').click();
 
     await expect(heading(page)).toContainText('Do you still have periods');
@@ -92,8 +100,9 @@ test.describe('the quiz', () => {
     await expect(heading(page)).toContainText('How often');
     await page.locator('.opt').nth(2).click();
 
-    await expect(heading(page)).toContainText('one place');
-    await expectNoHorizontalOverflow(page, 's9 mechanism');
+    await expect(heading(page)).toContainText('have in common');
+    await expect(page.getByText('This check cannot tell you the cause')).toBeVisible();
+    await expectNoHorizontalOverflow(page, 's9 explanation');
     await page.locator('.actionBar .cta').click();
 
     await expect(heading(page)).toContainText('already tried');
@@ -119,15 +128,28 @@ test.describe('the quiz', () => {
 
     await expect(page.locator('.verdict .name')).toHaveText('Perimenopause');
     await expectNoHorizontalOverflow(page, 'r1 verdict');
+
+    /* The first reveal sells nothing: she gave an address for a result. */
+    await expect(page.locator('.guideCard')).toHaveCount(0);
     await page.locator('.actionBar .cta').click();
 
-    await expect(heading(page)).toContainText('Your read');
+    /* Why: her own answers, what the check cannot tell her, and no score. */
+    await expect(heading(page)).toContainText('What you told me');
+    await expect(page.locator('.scoreCard')).toHaveCount(0);
+    await expect(page.locator('.gauge')).toHaveCount(0);
+    await expect(page.getByText('What this check cannot tell you')).toBeVisible();
     await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('Why nothing has worked');
+
+    /* One first step, for the concern she named, before any product. */
+    await expect(heading(page)).toContainText('Where to start');
+    await expect(page.getByText('One thing to start with, for the weight')).toBeVisible();
+    await expect(page.getByText('It was never')).toHaveCount(0);
     await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('Two capsules a day');
+
+    await expect(heading(page)).toContainText('Feel Like YOU Again Kit');
+    await expect(page.getByText('No diet changes')).toHaveCount(0);
     await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('how fast it works');
+    await expect(heading(page)).toContainText('asks of you');
     await page.locator('.actionBar .cta').click();
     await expect(heading(page)).toContainText('good company');
     await page.locator('.actionBar .cta').click();
@@ -147,11 +169,15 @@ test.describe('the quiz', () => {
        of the same bottle was the biggest thing on the screen. */
     await expect(page.locator('.shot')).toHaveCount(0);
 
-    /* The Starter Guide is named as a bonus inside the two-bottle card, and
-       never handed over as a link before she has bought anything. */
+    /* The kit's three digital pieces are named inside the kit card, in JJ's
+       own titles, and the kit is priced as it is on her page. */
     await expect(page.locator('.ocBonus')).toBeVisible();
-    await expect(page.locator('.ocBonus')).toContainText('Starter Guide');
+    await expect(page.locator('.ocBonus')).toContainText('60-Day Hormone Fix');
+    await expect(page.locator('.ocBonus')).not.toContainText('Starter Guide');
     await expect(page.locator('.ocBonus a')).toHaveCount(0);
+    await expect(page.locator('.oc-protocol .ocNow')).toHaveText('$74.99');
+    await expect(page.locator('.ocCta[data-offer="protocol"]'))
+      .toHaveAttribute('href', /54330638663791:1.*discount=HF60FREESHIP/);
 
     /* The guarantee is said once, under all three, with the seal beside it. */
     await expect(page.locator('.ocGuard')).toBeVisible();
@@ -171,21 +197,73 @@ test.describe('the quiz', () => {
     expect(errors, 'javascript errors during the run').toEqual([]);
   });
 
+  test('a menopause result gets her read and a first step, and is not sold to', async ({ page }) => {
+    await startQuiz(page);
+    await page.locator('.tile').nth(2).click();                // poor sleep, one tick
+    await page.locator('.actionBar .cta').click();
+
+    /* One tick, so nothing to rank: straight to her age. */
+    await expect(heading(page)).toContainText('What is your age');
+    await page.locator('.opt').nth(3).click();                 // 50 to 59
+    await expect(heading(page)).toContainText('not the only one');
+    await page.locator('.actionBar .cta').click();
+    await expect(heading(page)).toContainText('Do you still have periods');
+    await page.locator('.opt').nth(2).click();                 // stopped
+    await expect(heading(page)).toContainText('anything else');
+    await page.locator('.opt').nth(4).click();                 // nothing like that
+    await expect(heading(page)).toContainText('mood changed');
+    await page.locator('.actionBar .cta.ghost').click();       // none of these
+    await expect(heading(page)).toContainText('last year');
+    await page.locator('.opt').nth(5).click();                 // none of these
+    await page.locator('.actionBar .cta').first().click();
+    await expect(heading(page)).toContainText('How often');
+    await page.locator('.opt').nth(2).click();
+    await expect(heading(page)).toContainText('have in common');
+    await page.locator('.actionBar .cta').click();
+    await expect(heading(page)).toContainText('already tried');
+    await page.locator('.actionBar .cta.ghost').click();       // nothing yet
+
+    /* Nothing tried, so "did any of it help" is not asked. */
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
+    await page.fill('#nf', 'Dana');
+    await page.fill('#ef', 'dana@example.com');
+    await page.locator('#cf').check();
+    await page.locator('.actionBar .cta').click();
+
+    await expect(page.locator('.verdict .name')).toHaveText('Menopause');
+    await page.locator('.actionBar .cta').click();
+    await expect(heading(page)).toContainText('What you told me');
+    await page.locator('.actionBar .cta').click();
+
+    /* Her first step is the last screen. No price, no kit, no shop link. */
+    await expect(heading(page)).toContainText('Where to start');
+    await expect(page.getByText('One thing to start with, for the poor sleep')).toBeVisible();
+    await expect(page.locator('.actionBar')).toHaveCount(0);
+    await expect(page.locator('.ocCta')).toHaveCount(0);
+    const hrefs = await page.locator('a[href]').evaluateAll(
+      (as) => as.map((a) => a.getAttribute('href') ?? ''),
+    );
+    expect(hrefs.filter((h) => h.includes('shop.jjsmithonline.com')), 'no shop link').toEqual([]);
+    await expect(page.getByText('$')).toHaveCount(0);
+  });
+
   test('the loader is not re-entered by the back button', async ({ page }) => {
     await startQuiz(page);
 
     await page.locator('.tile').nth(1).click();
     await answerAndWait(page, pressPrimary(page), /What is your age/);
-    await answerAndWait(page, pickOption(page, 2), /already done this/);
+    await answerAndWait(page, pickOption(page, 2), /not the only one/);
     await answerAndWait(page, pressPrimary(page), /Do you still have periods/);
     await answerAndWait(page, pickOption(page, 1), /how regular/);
     await answerAndWait(page, pickOption(page, 0), /mood changed/);
     await answerAndWait(page, pressSecondary(page), /last year/);
     await page.locator('.opt').nth(3).click();
     await answerAndWait(page, pressPrimary(page), /How often/);
-    await answerAndWait(page, pickOption(page, 2), /one place/);
+    await answerAndWait(page, pickOption(page, 2), /have in common/);
     await answerAndWait(page, pressPrimary(page), /already tried/);
-    await answerAndWait(page, pressSecondary(page), /Did any of it help/);
+    /* She has to have tried something, or the next question is skipped. */
+    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /Did any of it help/);
     await page.locator('.opt').nth(1).click();
 
     // the analysing screen hands off on its own
@@ -213,7 +291,7 @@ test.describe('the doctor route is an exit', () => {
     await startQuiz(page);
     await page.locator('.tile').nth(0).click();
     await answerAndWait(page, pressPrimary(page), /What is your age/);
-    await answerAndWait(page, pickOption(page, 4), /already done this/);          // 60+
+    await answerAndWait(page, pickOption(page, 4), /not the only one/);          // 60+
     await answerAndWait(page, pressPrimary(page), /Do you still have periods/);
 
     /* Still bleeding at sixty is D, and docReason is settled right here. She

@@ -42,7 +42,20 @@ export async function expectTapTargets(page: Page, where: string) {
   expect(small, `tap targets under 44px on ${where}`).toEqual([]);
 }
 
+/**
+ * No test may reach Klaviyo.
+ *
+ * The walks tick the consent box and submit the gate, and the gate posts a
+ * real event to JJ's account with the public key. Left alone, every run adds
+ * example.com profiles to the quiz flow and to whatever report counts it.
+ * The request is answered here instead, with the 202 Klaviyo would give.
+ */
+export async function blockKlaviyo(page: Page) {
+  await page.route('**/a.klaviyo.com/**', (r) => r.fulfill({ status: 202, body: '' }));
+}
+
 export async function startQuiz(page: Page, route = '/quiz') {
+  await blockKlaviyo(page);
   await page.goto(route);
   await page.evaluate(() => sessionStorage.clear());
   await page.goto(route);

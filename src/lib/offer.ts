@@ -32,7 +32,7 @@ export const ONE_MONTH_PRICE = 49.99;
  * per-bottle line, the saving against two singles, and the day rate. Move it
  * and the card, the row and the stack all move together.
  */
-export const PROTOCOL_PRICE = 79.99;
+export const PROTOCOL_PRICE = 74.99;
 /**
  * Per bottle every four weeks, free shipping.
  *
@@ -60,8 +60,23 @@ export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
  * women over 40, a plan. "Protocol" is a delivery vehicle and it is our word
  * for it, not hers.
  */
-export const PLAN_NAME = 'The 60-Day Plan for Women Over 40';
-export const PLAN_SHORT = 'The 60-Day Plan';
+export const PLAN_NAME = 'The 60-Day Feel Like YOU Again Kit';
+export const PLAN_SHORT = 'The 60-Day Kit';
+
+/**
+ * What is in the kit, in JJ's own names for each piece. One list, read by the
+ * quiz and by the offer card, so the two cannot describe different kits.
+ */
+export const KIT_CONTENTS: [string, string][] = [
+  ['Two bottles of Hormone Focus', 'A two-month supply. Two capsules a day with a meal.'],
+  ['The 60-Day Hormone Fix', 'JJ\u2019s ebook and her 5-step plan: Eat, Train, Replace, Release, Track.'],
+  ['Hormone Healthy Recipes', 'For the first step, so you are not working out what to cook.'],
+  ['The Daily Symptom Tracker', 'A minute a day, so you can see what is changing.'],
+];
+
+/** The three digital pieces, as one line for a card. */
+export const KIT_BONUS =
+  'The 60-Day Hormone Fix ebook, Hormone Healthy Recipes and the Daily Symptom Tracker';
 
 /** The same name mid-sentence, where a capital article reads like a shout. */
 export const planShortInline = (): string => PLAN_SHORT.replace(/^The /, 'the ');
@@ -89,6 +104,13 @@ export const PROTOCOL_VARIANT_ID: string | null = '54330638663791';
  * two bottles at full price.
  */
 export const PROTOCOL_DISCOUNT_CODE: string | null = 'PROTOCOL';
+
+/**
+ * The code the kit link carries on JJ's own page, which is what gives the kit
+ * its free shipping at the cart. The quiz sends the same link the page does,
+ * so Shopify sees one offer from two doors.
+ */
+export const KIT_SHIPPING_CODE: string | null = 'HF60FREESHIP';
 
 /** True when the subscription plan exists. False keeps the option unrendered. */
 export const SUBSCRIPTION_LIVE = true;
@@ -160,8 +182,8 @@ const PROTOCOL_OPTION: OfferOption = {
   detail: `${money(PROTOCOL_PER_BOTTLE)} per bottle · free shipping`,
   /* What she is buying, not what she is starting. The row label still names
      the Plan; the button names the bottles. */
-  cta: 'Get my two bottles',
-  ctaShort: 'Get my two bottles',
+  cta: 'Get my kit',
+  ctaShort: 'Get my kit',
   price: PROTOCOL_PRICE,
   priceNote: 'free shipping',
   badge: 'Best Seller',
@@ -282,9 +304,8 @@ export function offerCards(): OfferCard[] {
     card('protocol', {
       was: money(ONE_MONTH_PRICE * 2),
       saving: money(saving),
-      bonus: 'Hormone Focus Starter Guide',
+      bonus: KIT_BONUS,
       shot: SHOT_TWO,
-      shotGuide: SHOT_GUIDE,
     }),
     card('subscribe', { was: money(ONE_MONTH_PRICE) }),
   ];
@@ -319,16 +340,9 @@ const SHIPPING_WORTH = '$7.95';
    both bonuses are things we already own, and the guarantee is store policy
    rather than a property of the order. Only the top of the stack changes. */
 const BONUSES: StackItem[] = [
-  {
-    what: 'The Starter Guide, personalised to your result: what to change this week, what to expect at two weeks, four, and sixty, as customers report',
-    worth: 'included',
-    bonus: true,
-  },
-  {
-    what: 'The Flat Belly Cheat Sheet for Women Over 40',
-    worth: 'included',
-    bonus: true,
-  },
+  { what: 'The 60-Day Hormone Fix, JJ\u2019s ebook and 5-step plan', worth: 'included', bonus: true },
+  { what: 'Hormone Healthy Recipes', worth: 'included', bonus: true },
+  { what: 'The Daily Symptom Tracker', worth: 'included', bonus: true },
 ];
 
 const GUARANTEE_ITEM: StackItem = {
@@ -355,8 +369,6 @@ export function valueStackFor(kind: OfferKind): StackItem[] {
         what: 'One bottle of Hormone Focus, 30 days',
         worth: money(ONE_MONTH_PRICE),
       },
-      ...BONUSES,
-      { what: 'A note from JJ every week', worth: 'included' },
       GUARANTEE_ITEM,
     ];
   }
@@ -368,8 +380,6 @@ export function valueStackFor(kind: OfferKind): StackItem[] {
         worth: `${money(ONE_MONTH_PRICE)} bought one at a time`,
       },
       { what: 'Free shipping, every delivery', worth: SHIPPING_WORTH },
-      ...BONUSES,
-      { what: 'A note from JJ every week', worth: 'included' },
       GUARANTEE_ITEM,
     ];
   }
@@ -381,7 +391,6 @@ export function valueStackFor(kind: OfferKind): StackItem[] {
     },
     { what: 'Free shipping', worth: SHIPPING_WORTH },
     ...BONUSES,
-    { what: 'A note from JJ every week for the 60 days', worth: 'included' },
     GUARANTEE_ITEM,
   ];
 }
@@ -422,7 +431,7 @@ export const NEXT_BATCH = 'December';
  */
 export const LIVE_DEADLINE: string | null = null;
 
-/** $84.99 over sixty days, to the cent. */
+/** The kit price over sixty days, to the cent. */
 export const dailyPrice = (): string => money(PROTOCOL_PRICE / 60);
 
 /** 2280 reads as 2,280. */
@@ -447,7 +456,10 @@ export function cartPath(kind: OfferKind): string {
 
   if (kind === 'protocol') {
     if (PROTOCOL_VARIANT_ID) {
-      return `/cart/${PROTOCOL_VARIANT_ID}:1?storefront=true`;
+      const ship = KIT_SHIPPING_CODE
+        ? `&discount=${encodeURIComponent(KIT_SHIPPING_CODE)}`
+        : '';
+      return `/cart/${PROTOCOL_VARIANT_ID}:1?storefront=true${ship}`;
     }
     const code = PROTOCOL_DISCOUNT_CODE
       ? `&discount=${encodeURIComponent(PROTOCOL_DISCOUNT_CODE)}`

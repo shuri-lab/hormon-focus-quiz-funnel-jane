@@ -71,20 +71,78 @@ export const TRIED_LABELS: [TriedId, string][] = [
   ['wait', 'Waiting for it to pass'],
 ];
 
-export const TRIED_WHY: Record<TriedId, [string, string]> = {
-  food: ['You cut foods out.', 'It was never your plate.'],
-  gym: ['You trained harder.', 'It was never calories.'],
-  sleep: ['You fixed your bedtime.', 'It was never your routine.'],
-  dim: ['You tried a hormone supplement.', 'It was doing half the job.'],
-  doctor: ['You asked your doctor.', 'You were told it is normal. A true word, and a useless one.'],
-  bloods: ['You had bloods done.', 'They came back fine. They usually do.'],
-  wait: ['You waited for it to pass.', 'It does not pass on its own.'],
+/* What she tried, acknowledged. NOT a verdict that it failed: the check does
+   not know why something did or did not work, and food, movement and sleep
+   are three of the five steps in JJ's own plan. Each line names the effort
+   and says what to do with it now. */
+export const TRIED_NOTE: Record<TriedId, [string, string]> = {
+  food: ['You changed what you eat.', 'Keep what feels good. Eating is the first step in JJ’s plan.'],
+  gym: ['You trained harder.', 'That effort counts. Training is the second step in JJ’s plan.'],
+  sleep: ['You worked on your bedtime.', 'Keep it. Protecting your sleep is one of JJ’s five steps.'],
+  dim: ['You tried a hormone supplement.', 'It is worth knowing what was in it and how long you took it.'],
+  doctor: ['You asked your doctor.', 'That was the right place to ask, and it is worth going back if things change.'],
+  bloods: ['You had bloods done.', 'Keep the results to hand for your next appointment.'],
+  wait: ['You waited for it to pass.', 'That was reasonable. Now you have something to go on.'],
 };
+
+/* What "Did any of it help?" changes on the result. */
+export const HELPED_NOTE: Record<string, string> = {
+  still: 'Something is helping. Keep doing it, and add the step below to it.',
+  temp: 'It helped for a while. That tells you your body responds, so the step below is worth a fair try.',
+  little: 'It helped a little. Build on that with the step below.',
+  none: 'Nothing changed. That is useful to know, and it is why the step below starts somewhere different.',
+  worse: 'It got worse. If that is still true, tell your doctor, and start gently with the step below.',
+};
+
+/* ONE first step, by the concern she said bothers her most. Each is JJ's own
+   advice from her Live of 29 September 2026 and her 60-Day Hormone Fix. No
+   outcome is promised and no timeframe is given: she is told what to do and
+   what to write down, and she is the judge of whether it helps. */
+export const NEXT_STEP: Record<SymptomId, { step: string; why: string }> = {
+  weight: {
+    step: 'Walk for ten minutes after each meal.',
+    why: 'It is the simplest thing JJ teaches for this stage, and you can start today.',
+  },
+  bloat: {
+    step: 'Build each plate around protein and fiber first.',
+    why: 'It is the first step in JJ’s plan, and it does not ask you to cut anything out.',
+  },
+  sleep: {
+    step: 'Keep the bedroom cool and dark, and put your phone away thirty minutes before bed.',
+    why: 'It is how JJ protects her own sleep.',
+  },
+  sweats: {
+    step: 'Keep the bedroom cool, and write down when the heat comes.',
+    why: 'The pattern is worth having, for you and for your doctor.',
+  },
+  mood: {
+    step: 'Write down when it happens: the day, how you slept, where you are in your cycle.',
+    why: 'A pattern you can see is easier to act on than a feeling you cannot explain.',
+  },
+  energy: {
+    step: 'Put protein and fiber first on your plate, and walk for ten minutes after you eat.',
+    why: 'These are the first two things JJ teaches for this stage.',
+  },
+};
+
+export const NEXT_WATCH =
+  'Write down what you notice each day. You are the judge of whether it is helping.';
 
 export const AGE_OPTIONS: [string, string][] = [
   ['u30', 'Under 30'], ['30s', '30 to 39'], ['40s', '40 to 49'],
   ['50s', '50 to 59'], ['60', '60+'],
 ];
+
+/** Her own answers, said back to her on the result. */
+export const AGE_PHRASE: Record<string, string> = {
+  u30: 'under 30', '30s': '30 to 39', '40s': '40 to 49', '50s': '50 to 59', '60': '60 or over',
+};
+
+export const PERIOD_PHRASE: Record<string, string> = {
+  yes: 'You still have periods',
+  changing: 'Your periods have changed',
+  stopped: 'Your periods have stopped',
+};
 
 export const PERIOD_OPTIONS: [string, string][] = [
   ['yes', 'Yes, I still have them'],
@@ -114,6 +172,7 @@ export const SEV_OPTIONS: [string, string][] = [
 ];
 
 export const HELPED_OPTIONS: [string, string][] = [
+  ['still', 'Yes, and it is still helping'],
   ['temp', 'Yes, for a while'],
   ['little', 'A little, but it never lasted'],
   ['none', 'No, nothing changed'],
@@ -129,6 +188,10 @@ export const REG_PHRASE: Record<string, string> = {
   clock: 'like clockwork', abit: 'a bit off', allover: 'all over the place',
 };
 
+/** What the check cannot do, said once on the result. */
+export const CANNOT_TELL =
+  'This check cannot measure your hormones, and it cannot rule anything out. If your periods changed suddenly, if you are under 45, or if anything here worries you, talk to your doctor.';
+
 export const REVIEWS = [
   { r: 5, b: 'I finally shed this hormonal weight gain! My energy and moods are so much better. Starting to feel like myself again.', n: 'Lisa' },
   { r: 5, b: 'It’s so AMAZING has given me my life back!', n: 'Anita F.' },
@@ -143,8 +206,8 @@ export const VERDICT: Record<Outcome, Verdict> = {
   A: {
     name: 'Hormonal imbalance',
     sub: (S) => masked(S)
-      ? 'You are too young for this to be the change, and your symptoms line up with estrogen building up faster than your body clears it. Your coil or your pill is hiding your cycle, so this read comes from everything else you told me.'
-      : 'Your cycle is still keeping time, and your symptoms are tracking it. That points to estrogen building up faster than your body clears it, rather than the change itself.',
+      ? 'Your age makes perimenopause less likely, and your symptoms can still come from hormone shifts. Your coil or your pill is hiding your cycle, so this read comes from everything else you told me.'
+      : 'Your cycle is still keeping time, and your symptoms follow it. That fits hormone shifts across your cycle more than perimenopause itself.',
   },
   B: {
     name: 'Perimenopause',

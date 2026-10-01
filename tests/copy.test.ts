@@ -266,8 +266,9 @@ test('the customer never reads the word we use among ourselves', () => {
 });
 
 test('the Plan is named the same way everywhere she sees it', () => {
-  expect(offer.PLAN_NAME).toBe('The 60-Day Plan for Women Over 40');
-  expect(offer.PLAN_SHORT).toBe('The 60-Day Plan');
+  /* JJ's own name for it, as it reads on her page. */
+  expect(offer.PLAN_NAME).toBe('The 60-Day Feel Like YOU Again Kit');
+  expect(offer.PLAN_SHORT).toBe('The 60-Day Kit');
   expect(offer.optionFor('protocol').title).toContain(offer.PLAN_SHORT);
   expect(offer.optionFor('single').title).toBe('1 bottle \u00b7 30 days');
 });
@@ -398,8 +399,9 @@ test('the doctor route has no plan to open', () => {
 /* ---------------------------------------------------- the three switches -- */
 
 test('each switch renders one line or nothing, and the maths is right', () => {
-  /* $79.99 over sixty days. If the price moves, this line moves with it. */
-  expect(offer.dailyPrice()).toBe('$1.33');
+  /* $74.99 over sixty days, the same $1.25 a day JJ's page shows. */
+  expect(offer.PROTOCOL_PRICE).toBe(74.99);
+  expect(offer.dailyPrice()).toBe('$1.25');
   expect(offer.batchCount()).toBe('2,280');
   expect(offer.batchCount()).toBe(offer.BATCH_ON_SHELF.toLocaleString('en-US'));
 
@@ -479,10 +481,11 @@ test('five value props, and the headline carries the section alone', () => {
   ).toBe(false);
 });
 
-test('the buttons name the bottles', () => {
-  /* Jane's own wording on the Plan, from her nine notes, and untouched. */
-  expect(offer.optionFor('protocol').cta).toBe('Get my two bottles');
-  expect(offer.optionFor('protocol').ctaShort).toBe('Get my two bottles');
+test('the buttons name what she is buying', () => {
+  /* The kit is bottles, an ebook, recipes and a tracker, so its button names
+     the kit. */
+  expect(offer.optionFor('protocol').cta).toBe('Get my kit');
+  expect(offer.optionFor('protocol').ctaShort).toBe('Get my kit');
 
   /* The other two match the buttons on Jane's landing page word for word,
      at David's request, so the two surfaces stop reading as two products. */

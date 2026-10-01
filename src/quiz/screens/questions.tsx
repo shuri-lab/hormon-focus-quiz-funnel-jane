@@ -3,16 +3,15 @@ import { useAutoAdvance } from '../useAutoAdvance';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { TileGrid } from '../../components/TileGrid';
 import { SingleChoice, MultiChoice } from '../../components/controls';
-import { RatingLine, Stars, VerifiedCheck } from '../../components/icons';
+import { RatingLine } from '../../components/icons';
 import {
   AGE_OPTIONS, PERIOD_OPTIONS, CAUSE_OPTIONS, REG_OPTIONS, SEV_OPTIONS,
-  HELPED_OPTIONS, MOOD_LABELS, MARKER_LABELS, TRIED_LABELS, REVIEWS,
-  REG_PHRASE, symPhrase,
+  HELPED_OPTIONS, MOOD_LABELS, MARKER_LABELS, TRIED_LABELS, SHORT,
 } from '../../lib/content';
+import { TILES, has, mainConcern } from '../../lib/logic';
 import type {
-  Age, Periods, StopCause, Regularity, Severity, Helped,
+  Age, Periods, StopCause, Regularity, Severity, Helped, SymptomId,
 } from '../../lib/logic';
-import { useEffect, useState } from 'react';
 
 /* ---------------------------------------------------------------- s1 ---- */
 
@@ -23,7 +22,7 @@ export function S1() {
   const { S, toggle, next } = useQuiz();
   return (
     <Screen id="s1">
-      <p className="eyebrow">Let us build your hormone plan</p>
+      <p className="eyebrow">The Hormone Check</p>
       <ScreenTitle>What changes have frustrated you the most?</ScreenTitle>
       <p className="qsub">Select all that apply.</p>
       <TileGrid selected={S.sym} onToggle={(id) => toggle('sym', id)} />
@@ -37,6 +36,30 @@ export function S1() {
   );
 }
 
+/* --------------------------------------------------------------- s1b ---- */
+
+/* Five ticks do not say which one she came here about. This asks, and only
+   when there is something to rank: one symptom skips the screen. The answer
+   never changes her result. It decides which concern her first step is for. */
+export function S1b() {
+  const { S, set, next } = useQuiz();
+  const pick = useAutoAdvance(next);
+  const options = TILES.filter(([id]) => has(S, id)).map(([id, label]) => [id, label] as [string, string]);
+  return (
+    <Screen id="s1b">
+      <p className="eyebrow">The Hormone Check</p>
+      <ScreenTitle>Which of these is bothering you most?</ScreenTitle>
+      <p className="qsub">Your result will start with this one.</p>
+      <SingleChoice
+        name="What is bothering you most"
+        options={options}
+        value={S.main}
+        onPick={(v: SymptomId) => pick(() => set({ main: v }))}
+      />
+    </Screen>
+  );
+}
+
 /* ---------------------------------------------------------------- s2 ---- */
 
 export function S2() {
@@ -46,7 +69,7 @@ export function S2() {
     <Screen id="s2">
       <p className="eyebrow">About you</p>
       <ScreenTitle>What is your age?</ScreenTitle>
-      <p className="qsub">This helps us personalize your results.</p>
+      <p className="qsub">Your age is read together with your cycle, never on its own.</p>
       <SingleChoice
         name="Your age"
         options={AGE_OPTIONS}
@@ -59,21 +82,18 @@ export function S2() {
 
 /* ---------------------------------------------------------------- s3 ---- */
 
-/* Lisa. She names the symptoms rather than praising the product. */
+/* Reassurance, and nothing sold. A product review sat here once, before she
+   had been told anything about herself; it is on the proof screen now, where
+   a product is actually being discussed. */
 export function S3() {
   const { next } = useQuiz();
-  const v = REVIEWS[0];
   return (
     <Screen id="s3">
       <p className="eyebrow">You are in the right place</p>
-      <ScreenTitle>Women with your symptoms have already done this.</ScreenTitle>
-      <div className="rev">
-        <div className="rs"><Stars n={v.r} /></div>
-        <p>&ldquo;{v.b}&rdquo;</p>
-        <div className="foot">
-          <b>{v.n}</b>
-          <span className="vbadge"><VerifiedCheck />Verified buyer</span>
-        </div>
+      <ScreenTitle>You are not the only one asking.</ScreenTitle>
+      <div className="block key">
+        <p className="lead">These changes are common after 40, and most women are never told what to look for.</p>
+        <p>The next few questions are about your cycle. It is one of the most useful things this check can go on.</p>
       </div>
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>Continue</button>
@@ -91,7 +111,7 @@ export function S4() {
     <Screen id="s4">
       <p className="eyebrow">Your cycle</p>
       <ScreenTitle>Do you still have periods?</ScreenTitle>
-      <p className="qsub">This one question tells me the most.</p>
+      <p className="qsub">Changed can mean heavier, lighter, closer together or further apart.</p>
       <SingleChoice
         name="Do you still have periods"
         options={PERIOD_OPTIONS}
@@ -168,7 +188,7 @@ export function S7() {
     <Screen id="s7">
       <p className="eyebrow">A few more</p>
       <ScreenTitle>Any of these in the last year?</ScreenTitle>
-      <p className="qsub">These tell me which stage you are in.</p>
+      <p className="qsub">Changes like these help place where you are. Select all that apply.</p>
       <MultiChoice
         name="Cycle markers"
         options={MARKER_LABELS}
@@ -190,8 +210,8 @@ export function S8() {
   return (
     <Screen id="s8">
       <p className="eyebrow">How often</p>
-      <ScreenTitle>How often does this hit you?</ScreenTitle>
-      <p className="qsub">Thinking about {symPhrase(S)}.</p>
+      <ScreenTitle>How often does it hit you?</ScreenTitle>
+      <p className="qsub">Thinking only about {SHORT[mainConcern(S) as SymptomId] ?? 'what bothers you most'}.</p>
       <SingleChoice
         name="How often"
         options={SEV_OPTIONS}
@@ -204,49 +224,25 @@ export function S8() {
 
 /* ---------------------------------------------------------------- s9 ---- */
 
-/* The mechanism. The vessel fills after the screen has settled, so the
-   movement reads as an explanation rather than a page still loading. */
+/* What these can have in common, said as a possibility. The old screen drew
+   a vessel filling up and told her that was the cause of what she feels. Her
+   answers cannot establish a cause, so this one explains the stage and says
+   plainly what the check can and cannot do. */
 export function S9() {
-  const { S, next } = useQuiz();
-  const [filled, setFilled] = useState(false);
-  const reg = S.reg ? REG_PHRASE[S.reg] : '';
-
-  useEffect(() => {
-    const t = setTimeout(() => setFilled(true), 340);
-    return () => clearTimeout(t);
-  }, []);
-
+  const { next } = useQuiz();
   return (
     <Screen id="s9">
-      <p className="eyebrow">Here is what is going on</p>
-      <ScreenTitle>All of it comes from one place.</ScreenTitle>
-      <div className="mech">
-        <p className="mechTop">Every month your body makes hormones. Then it has to clear them out again.</p>
-        <div className="mechFig">
-          <div className="vessel" role="img" aria-label="Most of what your body makes is cleared out. The part that stays in builds up.">
-            <span className="vGap" style={{ height: filled ? '36%' : '100%' }} />
-            <span className="vFill" style={{ height: filled ? '64%' : '0%' }} />
-            <span className="vLine" style={{ bottom: filled ? '64%' : '0%' }} />
-          </div>
-          <div className="mechKey">
-            <div className="keyRow">
-              <span className="keySwatch gap" />
-              <div><b>What stays in</b><span>The part that does not leave. It builds up month after month.</span></div>
-            </div>
-            <div className="keyRow">
-              <span className="keySwatch out" />
-              <div><b>What leaves</b><span>Cleared out through your gut.</span></div>
-            </div>
-          </div>
-        </div>
-        <p className="mechCap">Made each month</p>
+      <p className="eyebrow">While I put this together</p>
+      <ScreenTitle>What these changes can have in common.</ScreenTitle>
+      <div className="block">
+        <p>In the years before your periods stop, your hormone levels start to rise and fall less evenly than they used to.</p>
+        <p>That shift can show up in more than one place at once: heat, sleep, weight that moves to the middle, bloating, mood.</p>
       </div>
       <div className="block key">
-        <p className="lead">The part that does not leave is what you have been feeling.</p>
-        {reg && <p style={{ marginTop: 10 }}>Your periods being <strong>{reg}</strong> helps me place which stage you are in.</p>}
+        <p className="lead">This check cannot tell you the cause. It can tell you which stage your answers fit.</p>
       </div>
       <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>So why has nothing worked? &rarr;</button>
+        <button type="button" className="cta" onClick={() => next()}>Two more questions &rarr;</button>
       </ActionBar>
     </Screen>
   );
@@ -282,7 +278,7 @@ export function S11() {
   const pick = useAutoAdvance(next);
   return (
     <Screen id="s11">
-      <p className="eyebrow">And did it work</p>
+      <p className="eyebrow">What you have tried</p>
       <ScreenTitle>Did any of it help?</ScreenTitle>
       <SingleChoice
         name="Did any of it help"

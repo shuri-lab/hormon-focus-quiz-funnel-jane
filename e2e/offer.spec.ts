@@ -223,10 +223,10 @@ test.describe('the cart link', () => {
     expect(url.searchParams.get('hf_offer')).toBeNull();
     expect(url.searchParams.get('hf_outcome')).toBeNull();
 
-    /* Mode 2 carries the code; mode 3 must not, because the variant already
-       prices itself and a stacked code would discount it twice. */
+    /* Mode 2 carries the price code. Mode 3 is priced by its variant and
+       carries only the free-shipping code, the same link JJ's page sends. */
     if (PROTOCOL_VARIANT_ID) {
-      expect(url.searchParams.get('discount')).toBeNull();
+      expect(url.searchParams.get('discount')).toBe('HF60FREESHIP');
     } else {
       expect(url.searchParams.get('discount')).toBe(PROTOCOL_DISCOUNT_CODE);
     }
@@ -332,7 +332,7 @@ test.describe('the cart link', () => {
     expect(cartPath('single')).toBe(`/cart/${SINGLE_VARIANT_ID}:1?storefront=true`);
     expect(cartPath('protocol')).toBe(
       PROTOCOL_VARIANT_ID
-        ? `/cart/${PROTOCOL_VARIANT_ID}:1?storefront=true`
+        ? `/cart/${PROTOCOL_VARIANT_ID}:1?storefront=true&discount=HF60FREESHIP`
         : `/cart/${SINGLE_VARIANT_ID}:2?storefront=true&discount=${PROTOCOL_DISCOUNT_CODE}`,
     );
   });
@@ -359,8 +359,11 @@ test.describe('what she gets for the money', () => {
     await expect(hero.locator('.stackBonus')).toHaveCount(
       VALUE_STACK.filter((i) => i.bonus).length,
     );
-    await expect(hero).toContainText('Starter Guide');
-    await expect(hero).toContainText('Flat Belly Cheat Sheet for Women Over 40');
+    await expect(hero).toContainText('The 60-Day Hormone Fix');
+    await expect(hero).not.toContainText('Starter Guide');
+    await expect(hero).not.toContainText('Cheat Sheet');
+    await expect(hero).toContainText('Hormone Healthy Recipes');
+    await expect(hero).toContainText('The Daily Symptom Tracker');
   });
 
   test('the daily price and the batch line say what the switches say', async ({ page }) => {
@@ -612,7 +615,7 @@ test.describe('the buttons and the subscription', () => {
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="single"]'))
         .toContainText('Get 1 bottle');
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="protocol"]'))
-        .toContainText('Get my two bottles');
+        .toContainText('Get my kit');
       await expect(page.locator('.ofHeroBuy .ocCta[data-offer="subscribe"]'))
         .toContainText('Subscribe & save');
 
@@ -621,7 +624,7 @@ test.describe('the buttons and the subscription', () => {
       await page.locator('.ofCloser').scrollIntoViewIfNeeded();
       const sticky = page.locator('.ofSticky .buyBtn');
       await expect(sticky).toHaveAttribute('data-offer', 'protocol');
-      await expect(sticky).toContainText('Get my two bottles');
+      await expect(sticky).toContainText('Get my kit');
     });
 
   test('the subscription never appears on the Live, but does on the offer pages', async ({ page }) => {

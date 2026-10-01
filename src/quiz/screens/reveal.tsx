@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import {
-  GROUPS, TILES, BRAND, confidence, docReason, groupCount, groupMax, has, masked,
-  score, stateKey,
+  MARKERS, MOOD, TILES, BRAND, confidenceNote, docReason, has, masked, stateKey,
 } from '../../lib/logic';
-import { DOC, IMG, QUIZ_DISCLAIMER, VERDICT } from '../../lib/content';
-import { GuideCard } from '../../components/BuyOptions';
+import {
+  AGE_PHRASE, CANNOT_TELL, DOC, IMG, PERIOD_PHRASE, QUIZ_DISCLAIMER, REG_PHRASE, VERDICT,
+} from '../../lib/content';
 
 function displayName(name: string) {
   return name.trim() || 'you';
@@ -14,24 +13,23 @@ function displayName(name: string) {
 
 /* ---------------------------------------------------------------- r1 ---- */
 
+/* What her answers point to, said as a read and not as an answer. Nothing is
+   sold on this screen: she has just handed over her email for a result, and
+   the result is what she is given first. */
 export function R1() {
   const { S, next } = useQuiz();
   const v = VERDICT[stateKey(S)];
-  const outcome = stateKey(S);
 
   return (
     <Screen id="r1">
       <p className="eyebrow">Your hormone check</p>
-      <ScreenTitle className="rTitle">{displayName(S.name)}, here is your answer.</ScreenTitle>
+      <ScreenTitle className="rTitle">{displayName(S.name)}, here is what your answers point to.</ScreenTitle>
 
       <div className="verdict">
-        <p className="lab">What your answers point to</p>
+        <p className="lab">The closest fit</p>
         <p className="name">{v.name}</p>
         <p className="sub">{v.sub(S)}</p>
-        <p className="conf">
-          <span className="srOnly">How clear this read is: </span>
-          {confidence(S)}
-        </p>
+        <p className="conf">{confidenceNote(S)}</p>
       </div>
 
       {masked(S) && (
@@ -47,13 +45,10 @@ export function R1() {
         </div>
       )}
 
-      {/* What the guide is, not a link to it. The result above is hers for
-          finishing the check; the guide comes with the bottles. The doctor
-          route sees neither, because it sees no offer at all. */}
-      {outcome !== 'D' && <GuideCard />}
+      <p className="fine">{QUIZ_DISCLAIMER}</p>
 
       <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Show me how you know &rarr;</button>
+        <button type="button" className="cta" onClick={() => next()}>Show me why &rarr;</button>
       </ActionBar>
     </Screen>
   );
@@ -61,22 +56,24 @@ export function R1() {
 
 /* ---------------------------------------------------------------- r2 ---- */
 
-/* The read opens on her own answers, as pictures, not as a bar chart. */
+/* Why this result: her own answers, said back to her, and then what the
+   check cannot establish. There is no score. A number out of a hundred with
+   mild, moderate and severe under it looked like a measurement and was not
+   one. */
 export function R2() {
   const { S, next } = useQuiz();
-  const sc = score(S);
-  const [shown, setShown] = useState(false);
   const picked = TILES.filter(([id]) => has(S, id));
-
-  useEffect(() => {
-    const t = setTimeout(() => setShown(true), 260);
-    return () => clearTimeout(t);
-  }, []);
+  const moods = MOOD.filter(([id]) => S.mood.includes(id)).map(([, label]) => label);
+  const marks = MARKERS.filter(([id]) => id !== 'none' && S.markers.includes(id)).map(([, label]) => label);
+  const cycle = [
+    PERIOD_PHRASE[S.periods],
+    S.reg ? `and they are ${REG_PHRASE[S.reg]}` : '',
+  ].filter(Boolean).join(', ');
 
   return (
     <Screen id="r2">
-      <p className="eyebrow">Here is how I know</p>
-      <ScreenTitle className="rTitle">Your read.</ScreenTitle>
+      <p className="eyebrow">Here is why</p>
+      <ScreenTitle className="rTitle">What you told me.</ScreenTitle>
 
       {picked.length > 0 && (
         <div className="symStrip">
@@ -89,37 +86,21 @@ export function R2() {
         </div>
       )}
 
-      <div className="scoreCard">
-        <div className="scoreBig">{sc.raw} <small>of 14</small></div>
-        <p className="scoreLab">
-          {sc.pct > 65 ? 'A strong pattern' : sc.pct > 35 ? 'A clear pattern' : 'Early signs'}
-        </p>
+      <div className="block">
+        <p className="blabel">The answers this read rests on</p>
+        {S.age && <p><strong>Your age.</strong> You are {AGE_PHRASE[S.age]}.</p>}
+        {cycle && <p><strong>Your cycle.</strong> {cycle}.</p>}
+        {marks.length > 0 && <p><strong>In the last year.</strong> {marks.join('. ')}.</p>}
+        {moods.length > 0 && <p><strong>What is different now.</strong> {moods.join('. ')}.</p>}
+      </div>
 
-        <div className="gauge" role="img" aria-label={`Symptom load ${sc.pct} out of 100`}>
-          <span className="gaugePin" style={{ left: `${shown ? sc.pct : 0}%` }} />
-        </div>
-        <div className="gaugeEnds"><span>Mild</span><span>Moderate</span><span>Severe</span></div>
-
-        <div className="bars">
-          {GROUPS.map((g) => {
-            const n = groupCount(S, g);
-            const m = groupMax(g);
-            const pct = m ? Math.round((n / m) * 100) : 0;
-            return (
-              <div className="barRow" key={g.k}>
-                <b>{g.name}</b>
-                <i>{n} of {m}</i>
-                <span className="barTrack">
-                  <span className="barFill" style={{ width: `${shown ? pct : 0}%` }} />
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      <div className="block key">
+        <p className="blabel">What this check cannot tell you</p>
+        <p>{CANNOT_TELL}</p>
       </div>
 
       <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Why has nothing worked? &rarr;</button>
+        <button type="button" className="cta" onClick={() => next()}>Where do I start? &rarr;</button>
       </ActionBar>
     </Screen>
   );

@@ -7,13 +7,13 @@ import { angleBySlug } from '../lib/angles';
 import { usePageMeta } from '../lib/usePageMeta';
 import type { ScreenId } from '../lib/logic';
 
-import { S1, S2, S3, S4, S4b, S5, S6, S7, S8, S9, S10, S11 } from './screens/questions';
+import { S1, S1b, S2, S3, S4, S4b, S5, S6, S7, S8, S9, S10, S11 } from './screens/questions';
 import { S12, S13 } from './screens/gate';
 import { R1, R2, RDoc } from './screens/reveal';
 import { R4, R4b, R5, R6, R7 } from './screens/offer';
 
 const SCREENS: Record<ScreenId, () => React.JSX.Element> = {
-  s1: S1, s2: S2, s3: S3, s4: S4, s4b: S4b, s5: S5, s6: S6, s7: S7, s8: S8, s9: S9,
+  s1: S1, s1b: S1b, s2: S2, s3: S3, s4: S4, s4b: S4b, s5: S5, s6: S6, s7: S7, s8: S8, s9: S9,
   s10: S10, s11: S11, s12: S12, s13: S13,
   r1: R1, r2: R2, rDoc: RDoc, r4: R4, r4b: R4b, r5: R5, r6: R6, r7: R7,
 };

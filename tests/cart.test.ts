@@ -54,8 +54,9 @@ test('the Plan is the two-bottle bundle variant, quantity 1, not two singles', (
   expect(u.origin + u.pathname).toBe(
     `https://shop.jjsmithonline.com/cart/${PROTOCOL_VARIANT_ID}:1`);
   expect(u.searchParams.get('storefront')).toBe('true');
-  /* The bundle is priced in Shopify now, so no code should be riding along. */
-  expect(u.searchParams.get('discount')).toBeNull();
+  /* The kit link is the one JJ's own page sends: the bundle variant plus the
+     free-shipping code. One offer, from two doors. */
+  expect(u.searchParams.get('discount')).toBe('HF60FREESHIP');
 });
 
 test('the subscription carries its selling plan through /cart/add', () => {
@@ -173,8 +174,8 @@ test('every card is titled with the copy its own row already used', () => {
     expect(c.cta, c.kind).toBe(optionFor(c.kind).cta);
     expect(c.terms, c.kind).toBe(optionFor(c.kind).priceNote);
   }
-  /* The Plan keeps its name. A redesign that renames the offer is a rewrite. */
-  expect(offerCards()[1].kicker).toContain('The 60-Day Plan');
+  /* The kit keeps its name. A redesign that renames the offer is a rewrite. */
+  expect(offerCards()[1].kicker).toContain('The 60-Day Kit');
 });
 
 test('the stack describes the row she is actually on', () => {
@@ -207,11 +208,15 @@ test('the headline worth matches what that row actually costs', () => {
   expect(valueStackFor('subscribe')[0].worth).toBe('$49.99 bought one at a time');
 });
 
-test('every row keeps both bonuses and the guarantee', () => {
+test('the three digital pieces come with the kit and only the kit, and every row keeps the guarantee', () => {
+  /* JJ's ebook, recipes and tracker are what make the kit a kit. A single
+     bottle or a subscription does not include them, so their stacks must not
+     say so. */
+  expect(valueStackFor('protocol').filter((i) => i.bonus)).toHaveLength(3);
+  expect(valueStackFor('single').filter((i) => i.bonus)).toHaveLength(0);
+  expect(valueStackFor('subscribe').filter((i) => i.bonus)).toHaveLength(0);
   for (const k of ['single', 'protocol', 'subscribe'] as const) {
-    const stack = valueStackFor(k);
-    expect(stack.filter((i) => i.bonus), k).toHaveLength(2);
-    expect(stack.at(-1)!.what, k).toBe('The 60-Day Happiness Guarantee');
+    expect(valueStackFor(k).at(-1)!.what, k).toBe('The 60-Day Happiness Guarantee');
   }
 });
 
@@ -219,7 +224,9 @@ test('the button and the stack always name the same purchase', () => {
   /* One bottle in the button, one bottle at the top of the stack. */
   expect(optionFor('single').cta).toMatch(/1 bottle/i);
   expect(valueStackFor('single')[0].what).toMatch(/one bottle/i);
-  expect(optionFor('protocol').cta).toMatch(/two bottles/i);
+  /* The kit is more than its bottles, so the button names the kit; the
+     stack still opens on the two bottles that are in it. */
+  expect(optionFor('protocol').cta).toMatch(/kit/i);
   expect(valueStackFor('protocol')[0].what).toMatch(/two bottles/i);
 });
 
@@ -258,7 +265,7 @@ test('the saving on the plan is the two singles minus the plan', () => {
   const plan = offerCards()[1];
   const saving = (ONE_MONTH_PRICE * 2 - PROTOCOL_PRICE).toFixed(2);
   expect(plan.saving).toBe(`$${saving}`);
-  expect(saving).toBe('19.99');
+  expect(saving).toBe('24.99');
   /* And only the Plan names one. */
   expect(offerCards().filter((c) => c.saving)).toHaveLength(1);
 });
@@ -273,11 +280,17 @@ test('free shipping is claimed on exactly the two rows that have it', () => {
   expect(sub.terms).toMatch(/free shipping/i);
 });
 
-test('the Starter Guide rides on the plan, and only the plan', () => {
+test('the digital pieces ride on the kit, and only the kit', () => {
   const withBonus = offerCards().filter((c) => c.bonus);
   expect(withBonus).toHaveLength(1);
   expect(withBonus[0].kind).toBe('protocol');
-  expect(withBonus[0].shotGuide, 'the bonus is pictured, not just named').toBeTruthy();
+  /* Named in JJ's own titles. The retired Starter Guide is not one of them,
+     and its picture does not ride along either. */
+  expect(withBonus[0].bonus).toMatch(/60-Day Hormone Fix/);
+  expect(withBonus[0].bonus).toMatch(/Hormone Healthy Recipes/);
+  expect(withBonus[0].bonus).toMatch(/Daily Symptom Tracker/);
+  expect(withBonus[0].bonus).not.toMatch(/Starter Guide|Cheat Sheet/i);
+  expect(withBonus[0].shotGuide).toBeUndefined();
 });
 
 test('the badges are the ones the copy already carried', () => {
