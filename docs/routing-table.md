@@ -92,3 +92,25 @@ Periods stopped **plus any named cause** fell straight through to `periScore() >
 
 1. **30 to 39 can reach Perimenopause** on a heavy symptom load. Late-thirties perimenopause is real, but the band is 30 to 39, so a woman of 31 can land there. Splitting the age question into 30 to 34 and 35 to 39 would close it.
 2. **Under 30 never gets Perimenopause**, by design. If she wants that door open, it needs its own threshold rather than the shared one.
+
+## Who is shown the kit (1 October 2026)
+
+The outcome decides what she is told. A separate rule decides whether she is sold to.
+
+| Outcome | Sees her result and why | Sees a first step | Sees the kit |
+|---|---|---|---|
+| B Perimenopause | yes | yes | **yes** |
+| A Hormonal imbalance | yes | yes | no |
+| C Menopause | yes | yes | no |
+| E Early menopause | yes | yes | no |
+| D Doctor | the doctor screen only | no | no |
+
+`OFFER_OUTCOMES` in `src/lib/logic.ts` holds the rule, and it reads `['B']`: JJ's decision of 22 September 2026 that only a perimenopause result sees the offer. A, C and E end on "Where to start" with no price and no shop link. Changing the rule is one line and one test, and it is JJ's call, not a build decision.
+
+A, C and E still post the `HF Quiz Completed` event with their outcome, so the Klaviyo flow has to branch on `outcome` before it promotes the kit to them.
+
+## Three more judgement calls, raised by the content review of 1 October
+
+3. **40 to 49 is one band.** It cannot tell 43 from 48, and possible menopause symptoms before 45 are a reason to see a doctor. The result now says so in words ("if you are under 45, talk to your doctor"). Splitting the band into 40 to 44 and 45 to 49 would let the routing say it too; it changes this table and the equivalence tests.
+4. **"Hormonal imbalance" is a label, not a finding.** It is where everyone lands who is not one of the other four. The copy under it no longer names a mechanism. Whether the name itself should change is open.
+5. **What she said bothers her most** (`main`, screen s1b) never changes the outcome. It decides which concern her first step is written for, and it rides with the Klaviyo event as `main_concern`.
