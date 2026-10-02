@@ -32,6 +32,8 @@ export const IMG: Record<SymptomId, string> = {
 
 export const BOTTLE = '/img/hormone-focus-bottle.jpg';
 export const JJ = '/img/jj-smith.jpg';
+/** JJ's wordmark, as her offer page carries it. 132 by 25. */
+export const JJ_LOGO = '/img/jj-logo.webp';
 export const CUSTOMERS = [1, 2, 3, 4, 5, 6].map((n) => `/img/customer-${n}.jpg`);
 
 /* CHIP_PROGRAMS is the SCOPED form of the 800,000 figure: books and
@@ -51,7 +53,7 @@ export const REVIEW_SOURCE =
 /* The brief's words. The sub-line and the button are the same on every
    route; only the headline changes with the ad angle (angles.ts). */
 export const COVER_SUB =
-  'Answer 7 quick questions. Find out why you feel this way and what to do next.';
+  'Take a 1-minute check. Find out why you feel this way and what to do next.';
 export const COVER_CTA = 'GET THE HORMONE CHECK';
 
 /* -------------------------------------------------------- the questions -- */
@@ -222,6 +224,35 @@ export function cycleShort(S: QuizState): string {
   }
 }
 
+/* "YOU ARE NOT THE ONLY ONE". One fact about women at her stage, then one
+   line about what she is going through. No product here: that comes on the
+   next page. Every figure is from the source named under it, checked
+   3 October 2026. */
+export interface StageFact { fact: string; line: string; source: string }
+
+export const STAGE_FACT: Record<Exclude<Outcome, 'D'>, StageFact> = {
+  A: {
+    fact: 'More than 9 in 10 women get some symptoms around their period, and they can get stronger in the late 30s and 40s.',
+    line: 'What you are feeling is common, and what you do every day can change how it feels.',
+    source: 'US Office on Women’s Health',
+  },
+  B: {
+    fact: 'Perimenopause usually starts in the mid-40s and lasts about four years. For some women it lasts up to eight.',
+    line: 'What you are feeling has a name, it is common, and there is a lot you can do during these years.',
+    source: 'Cleveland Clinic',
+  },
+  C: {
+    fact: 'The average age of menopause in the US is 52.',
+    line: 'Your body is still adjusting to lower hormone levels, and what you do every day still makes a difference.',
+    source: 'US Office on Women’s Health',
+  },
+  E: {
+    fact: 'About 1 in 20 women naturally go through menopause early, between 40 and 45.',
+    line: 'You are not alone in this, and your body still responds to the care you give it.',
+    source: 'US Office on Women’s Health',
+  },
+};
+
 /** Said on the result when her cycle cannot tell us anything. */
 export const MASKED_NOTE =
   'Birth control, medication or surgery is affecting your cycle, so this result comes from your age and your symptoms.';
@@ -232,19 +263,47 @@ export const CANNOT_TELL =
 
 /* ---------------------------------------------------------- what to do next -- */
 
-/* The brief's words, opening the kit page. */
-export const NEXT_TITLE = 'So what do you do now?';
-export const NEXT_LEAD = 'You do not need to try to fix everything at once.';
-export const NEXT_INTRO = 'For the next 60 days, focus on a few things consistently:';
+/* THE 60 DAYS, BUILT TO THE KIT. It names her biggest concern, gives her the
+   five things to do, asks the question she is already asking (how?), and
+   answers it with the kit, piece by piece. Jane, 3 October 2026.
+   It is a plan for her, never a promised result by a date. */
+
+/** What her 60 days are for, by the concern she named. */
+export const PLAN_FOR: Record<SymptomId, string> = {
+  weight: 'your weight',
+  sleep: 'better sleep',
+  energy: 'more energy',
+  sweats: 'cooler days and nights',
+  bloat: 'less bloating',
+  mood: 'a calmer, clearer you',
+};
+
+export const NEXT_EYEBROW = 'Your next 60 days';
+export const nextTitle = (main: SymptomId | ''): string =>
+  main ? `Your 60-day plan for ${PLAN_FOR[main]}` : 'Your 60-day plan';
+
+export const NEXT_LEAD = 'You do not have to fix everything at once.';
+export const NEXT_INTRO = 'For the next 60 days, you focus on five things, every day:';
 export const NEXT_STEPS: string[] = [
-  'Eat to support the body you have now',
+  'Eat for the body you have now',
   'Move your body and protect your muscle',
-  'Pay attention to sleep and stress',
   'Support your hormones',
-  'Track how you feel instead of relying only on the scale',
+  'Track how you feel, not just the scale',
+  'Stay consistent, one day at a time',
 ];
+
+/* The question she is already asking. */
+export const NEXT_HOW = 'The hard part is the how. What do you eat? How do you track it? How do you keep going for 60 days?';
 export const NEXT_BRIDGE =
-  'This is exactly why I created the 60-Day Feel Like YOU Again Kit.';
+  'That is exactly why I created the 60-Day Feel Like YOU Again Kit. It gives you the how, all in one place:';
+
+/** Each piece of the kit, and which part of the 60 days it answers. */
+export const NEXT_HOW_PIECES: [string, string][] = [
+  ['Hormone Healthy Recipes', 'What to eat, so you are not guessing'],
+  ['The 60-Day Hormone Fix', 'JJ’s 5-step plan to follow for the 60 days'],
+  ['The Daily Symptom Tracker', 'A minute a day to see what is changing'],
+  ['Two bottles of Hormone Focus', 'Daily hormone support, two capsules with a meal*'],
+];
 
 /* ----------------------------------------------------------- doctor route -- */
 

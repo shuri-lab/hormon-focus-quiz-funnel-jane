@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuiz } from './context';
 import { ArrowLeft } from '../components/icons';
+import { JJ_LOGO } from '../lib/content';
 
 export function QuizHeader() {
   const { here, back, canBack, questionStep, revealStep } = useQuiz();
@@ -26,7 +27,7 @@ export function QuizHeader() {
           <ArrowLeft />
         </button>
 
-        <span className="brand">Hormone Focus</span>
+        <img className="brand jjLogo" src={JJ_LOGO} alt="JJ Smith" width={132} height={25} />
 
         {revealStep ? (
           <div className="segbar" role="progressbar"

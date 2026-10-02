@@ -36,8 +36,10 @@ test.describe('the cover', () => {
 
   test('the cover is one screen: the headline, one line, one button, and nothing sold', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toContainText('Over 40 and struggling with');
-    await expect(page.locator('.coverSub')).toHaveText('Answer 7 quick questions. Find out why you feel this way and what to do next.');
+    await expect(page.locator('h1')).toContainText('Struggling with');
+    await expect(page.locator('h1')).not.toContainText('Over 40');
+    await expect(page.locator('.lpLogo img')).toHaveAttribute('alt', 'JJ Smith');
+    await expect(page.locator('.coverSub')).toHaveText('Take a 1-minute check. Find out why you feel this way and what to do next.');
     await expect(page.locator('a.cta')).toHaveCount(1);
     await expect(page.locator('a.cta')).toContainText('GET THE HORMONE CHECK');
     /* No rating, no review, no bottle, no price before she has a result. */
@@ -103,7 +105,7 @@ test.describe('the quiz', () => {
     /* 6. What she tried. */
     await page.locator('.opt').nth(0).click();                 // eating differently
     await page.locator('.opt').nth(1).click();                 // exercising more
-    await answerAndWait(page, pressPrimary(page), /If one thing could feel better again/);
+    await answerAndWait(page, pressPrimary(page), /change one thing first/);
 
     /* 7. What she wants. */
     await expect(page.locator('.stepno')).toHaveText('7 of 7');
@@ -119,6 +121,8 @@ test.describe('the quiz', () => {
 
     /* A valid address is not enough: the opt-in is unticked and required. */
     await expect(page.locator('#cf')).not.toBeChecked();
+    expect(await page.locator('#cf').evaluate((el) => getComputedStyle(el).backgroundColor),
+      'the tick box is white').toBe('rgb(255, 255, 255)');
     await expect(page.locator('.actionBar .cta')).toBeDisabled();
     await page.locator('#cf').check();
     await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
@@ -143,11 +147,11 @@ test.describe('the quiz', () => {
     await expect(page.getByText('To sleep through the night.')).toBeVisible();
     await expectNoHorizontalOverflow(page, 'r1 result');
 
-    /* Women like her, before any price: faces, the 4.9, and a review that
-       speaks to the concern she named. */
-    await expect(page.locator('.resProof .pfFaces img')).toHaveCount(6);
-    await expect(page.locator('.resProof .pfRating')).toContainText('4.9');
-    await expect(page.locator('.resProof .kitRev').first()).toContainText('I sleep better');
+    /* One fact about women at her stage, with its source, and no product yet. */
+    await expect(page.locator('.resFact')).toContainText('Perimenopause usually starts in the mid-40s');
+    await expect(page.locator('.resFact')).toContainText('Source: Cleveland Clinic');
+    await expect(page.locator('.rise .kitRev')).toHaveCount(0);
+    await expect(page.locator('.rise .pfFaces')).toHaveCount(0);
 
     /* It is one answer: no hedging between two, and still nothing to buy. */
     const resultText = await page.locator('.rise').innerText();
@@ -159,11 +163,23 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 2. What to do, then the kit, on one page she scrolls. */
-    await expect(heading(page)).toHaveText('So what do you do now?');
+    /* RESULT PAGE 2. Her 60 days, named for what she picked, then the how,
+       answered by the kit, then women who did it, all before the price. */
+    await expect(heading(page)).toHaveText('Your 60-day plan for better sleep');
     await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
     await expect(page.locator('.nextList li')).toHaveCount(5);
-    await expect(page.getByText('This is exactly why I created the 60-Day Feel Like YOU Again Kit.')).toBeVisible();
+    await expect(page.locator('.nextHowQ')).toContainText('The hard part is the how.');
+    await expect(page.getByText('That is exactly why I created the 60-Day Feel Like YOU Again Kit.')).toBeVisible();
+    await expect(page.locator('.nextPieces > div')).toHaveCount(4);
+    await expect(page.locator('[data-proof="pre"] .pfFaces img')).toHaveCount(6);
+    await expect(page.locator('[data-proof="pre"] .kitRev').first()).toContainText('I sleep better');
+    /* The proof comes before the offer on the page. */
+    const order = await page.evaluate(() => {
+      const pre = document.querySelector('[data-proof="pre"]');
+      const offer = document.querySelector('#kit-offer');
+      return pre && offer ? Boolean(pre.compareDocumentPosition(offer) & Node.DOCUMENT_POSITION_FOLLOWING) : false;
+    });
+    expect(order, 'proof sits above the offer').toBe(true);
     await expect(page.locator('.actionBar'), 'no Continue button once the offer begins').toHaveCount(0);
     await expectNoHorizontalOverflow(page, 'r2 kit page');
     await expectTapTargets(page, 'r2 kit page');
@@ -188,11 +204,10 @@ test.describe('the quiz', () => {
 
     /* Proof comes after the offer, in three places. She said sleep bothers
        her most, so the first review she reads is about sleep. */
-    await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(3);
-    await expect(page.locator('[data-proof="lead"] .kitRev').first()).toContainText('I sleep better');
+    await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(2);
     await expect(page.locator('[data-proof="more"] .kitRev')).toHaveCount(4);
     await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
-    await expect(page.locator('.kitSec .pfFaces img')).toHaveCount(12);
+    await expect(page.locator("[data-proof=\"lead\"]").locator("xpath=..").locator(".pfFaces img")).toHaveCount(12);
     await expect(page.locator('.kitSec .pfRating').first()).toContainText('171 reviews');
     await expect(page.locator('.pfFb img')).toHaveAttribute('alt', /Martinez Sullivan/);
 
@@ -231,7 +246,7 @@ test.describe('the quiz', () => {
     await page.locator('.opt').nth(6).click();
     await expect(page.locator('.opt[aria-pressed="true"]')).toHaveCount(1);
     await expect(page.locator('.opt[aria-pressed="true"]')).toContainText('Nothing yet');
-    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await answerAndWait(page, pressPrimary(page), /change one thing first/);
     await page.locator('.opt').nth(3).click();                 // stop feeling hot
 
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
@@ -249,10 +264,10 @@ test.describe('the quiz', () => {
     await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
 
-    await expect(heading(page)).toHaveText('So what do you do now?');
+    await expect(heading(page)).toHaveText('Your 60-day plan for cooler days and nights');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
-    await expect(page.locator('[data-proof="lead"] .kitRev').first()).toContainText('hot flashes');
+    await expect(page.locator('[data-proof="pre"] .kitRev').first()).toContainText('hot flashes');
   });
 
   test('the loader is not re-entered by the back button', async ({ page }) => {
@@ -263,14 +278,14 @@ test.describe('the quiz', () => {
     await answerAndWait(page, pickOption(page, 0), /When do you notice/);
     await answerAndWait(page, pickOption(page, 4), /already tried/);
     await page.locator('.opt').nth(6).click();
-    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await answerAndWait(page, pressPrimary(page), /change one thing first/);
     await page.locator('.opt').nth(5).click();
 
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
     await page.goBack();
     // must land back on a question, never inside the loader
     await expect(page.locator('.loadSpin')).toHaveCount(0);
-    await expect(heading(page)).toHaveText(/If one thing could feel better/);
+    await expect(heading(page)).toHaveText(/change one thing first/);
   });
 
   test('a double tap on Continue advances exactly one screen', async ({ page }) => {
@@ -324,7 +339,7 @@ test.describe('the doctor route is an exit', () => {
     await answerAndWait(page, pickOption(page, 4), /When do you notice/);          // birth control, medication or surgery
     await answerAndWait(page, pickOption(page, 1), /already tried/);
     await page.locator('.opt').nth(4).click();
-    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await answerAndWait(page, pressPrimary(page), /change one thing first/);
     await page.locator('.opt').nth(0).click();
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
     await page.fill('#ef', 'dana@example.com');

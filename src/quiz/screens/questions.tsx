@@ -87,7 +87,7 @@ export function Q4() {
   const pick = useAutoAdvance(next);
   return (
     <Screen id="q4">
-      <ScreenTitle>What has been happening with your cycle lately?</ScreenTitle>
+      <ScreenTitle>What has been happening with your cycle (monthly periods) lately?</ScreenTitle>
       <SingleChoice
         name="What has been happening with your cycle"
         options={CYCLE_OPTIONS}
@@ -169,7 +169,7 @@ export function Q7() {
   const pick = useAutoAdvance(next);
   return (
     <Screen id="q7">
-      <ScreenTitle>If one thing could feel better again, what would you choose?</ScreenTitle>
+      <ScreenTitle>If you could change one thing first, what would it be?</ScreenTitle>
       <SingleChoice
         name="What you would choose"
         options={WANT_OPTIONS}

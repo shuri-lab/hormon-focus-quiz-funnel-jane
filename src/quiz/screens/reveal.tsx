@@ -1,14 +1,12 @@
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { Faces, Quote, RatingBadge } from '../../components/Proof';
 import {
   TILES, BRAND, docReason, has, mainConcern, masked, otherConcerns, stateKey,
 } from '../../lib/logic';
 import {
   CANNOT_TELL, DOC, DOC_TITLE, IMG, MASKED_NOTE, PATTERN_SHORT, QUIZ_DISCLAIMER, RESULT,
-  WANT_PHRASE, cycleShort, mentioned,
+  STAGE_FACT, WANT_PHRASE, cycleShort, mentioned,
 } from '../../lib/content';
-import { kitProof } from '../../lib/reviews';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
 const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
@@ -17,7 +15,7 @@ const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
 
 /* HER RESULT. One named answer at the top, said in one sentence. Then what
  * she told us, with the same pictures she tapped, what it means with her own
- * symptoms in it, and women who have been where she is.
+ * symptoms in it, and one fact about women at her stage.
  *
  * It is a pattern and never "you have", and it never tells her she might be
  * one thing or another: she gets one of four answers. */
@@ -29,7 +27,7 @@ export function R1() {
   const picked = main ? [main, ...otherConcerns(S)] : [];
   const cycle = cycleShort(S);
   const name = S.name.trim();
-  const review = kitProof(main).lead[0];
+  const fact = STAGE_FACT[outcome] ?? STAGE_FACT.A;
 
   return (
     <Screen id="r1">
@@ -75,12 +73,13 @@ export function R1() {
         </div>
       )}
 
-      <section className="resProof" data-proof="result">
+      {/* One fact about women at her stage, and no product yet: the kit and
+          the women who use it come on the next page. */}
+      <section className="resFact" data-proof="result">
         <p className="blabel">You are not the only one</p>
-        <Faces count={6} />
-        <RatingBadge />
-        {review && <Quote review={review} />}
-        <p className="kitNote">Every review is a customer’s own words. Individual results vary.</p>
+        <p className="resFactBig">{fact.fact}</p>
+        <p>{fact.line}</p>
+        <p className="resFactSrc">Source: {fact.source}</p>
       </section>
 
       <p className="fine">{CANNOT_TELL}</p>

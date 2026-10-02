@@ -74,7 +74,7 @@ export const ANGLES: Angle[] = [
     label: 'Default',
     chip1: '',
     /* The cover, from the quiz rebuild brief of 2 October 2026. */
-    h1a: 'Over 40 and struggling with',
+    h1a: 'Struggling with',
     h1b: 'stubborn weight, poor sleep, low energy or hot flashes?',
     paren: 'and what your answers may point to',
     lines: [
@@ -85,7 +85,7 @@ export const ANGLES: Angle[] = [
       'Snapping at people you love.',
     ],
     closer: 'The check looks at them together and tells you which stage your answers fit.',
-    description: 'Over 40 and noticing changes? Take the 2-Minute Hormone Check and find out the pattern behind your symptoms. From JJ Smith.',
+    description: 'Struggling with stubborn weight, poor sleep, low energy or hot flashes? Take a 1-minute check and find out why. From JJ Smith.',
     offer: {
       h1a: 'Feel like yourself again, ',
       h1b: 'in your own clothes',
@@ -156,7 +156,7 @@ export const ANGLES: Angle[] = [
     closer: 'The check tells you which stage your answers fit, and where to start.',
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
-    description: 'Waking up soaked after 40? Take the 2-Minute Hormone Check and find out the pattern behind your symptoms. From JJ Smith.',
+    description: 'Waking up soaked? Take a 1-minute check and find out why. From JJ Smith.',
     offer: {
       sub: 'Tired of waking soaked at three, throwing the covers off, and changing sheets you never used to change? Hormone Focus helps ease occasional night sweats and supports restful sleep through perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Quieter nights start with two capsules.',

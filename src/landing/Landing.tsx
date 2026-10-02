@@ -4,7 +4,7 @@ import { angleBySlug, angleTitle } from '../lib/angles';
 import { usePageMeta } from '../lib/usePageMeta';
 import { track } from '../lib/analytics';
 import {
-  COVER_CTA, COVER_SUB, FDA_DISCLAIMER, HERO_IMG, IMG, QUIZ_DISCLAIMER,
+  COVER_CTA, COVER_SUB, FDA_DISCLAIMER, HERO_IMG, IMG, JJ_LOGO, QUIZ_DISCLAIMER,
 } from '../lib/content';
 
 /* Three symptoms, three different women. No product and no review: she has
@@ -39,9 +39,9 @@ export function Landing() {
       <main className="appMain">
         <section className="lpHero">
           <div className="screen">
+            {/* JJ's wordmark, as her offer page carries it. */}
             <div className="lpLogo">
-              <b>HORMONE<i>FOCUS</i></b>
-              <span>by JJ Smith</span>
+              <img className="jjLogo" src={JJ_LOGO} alt="JJ Smith" width={132} height={25} />
             </div>
 
             <div className="coverBody">
