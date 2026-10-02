@@ -5,14 +5,11 @@
  * to Klaviyo, no tracking scripts, and a bar across the top that jumps
  * straight to each result.
  *
- * Everything here is OFF in the real build. VITE_REVIEW is replaced at build
- * time, so with the flag unset the bundler drops this code and the customer
- * never downloads it.
+ * Everything here is OFF in the real build. The build mode is a constant the
+ * bundler knows, so outside `--mode review` this code is dropped and the
+ * customer never downloads it.
  */
 import type { QuizState, ScreenId } from '../lib/logic';
-import { createState } from '../lib/logic';
-
-export const REVIEW = import.meta.env.VITE_REVIEW === '1';
 
 export interface Jump {
   label: string;
@@ -58,21 +55,3 @@ export const JUMPS: Jump[] = [
     state: { sym: ['sweats'], age: '60-plus', cycle: 'skipping' },
   },
 ];
-
-/* The answers a jump wants the quiz to start from. Held here rather than in
-   sessionStorage, which a shared page may not be allowed to use. */
-let pending: QuizState | null = null;
-
-export function setPreset(state: Partial<QuizState> | undefined): void {
-  pending = { ...createState(), ...state };
-}
-
-/**
- * Read by the quiz as it mounts. Cleared a tick later rather than at once,
- * because React may run a state initialiser twice and both runs must agree.
- */
-export function takePreset(): QuizState | null {
-  const out = pending;
-  if (out) setTimeout(() => { if (pending === out) pending = null; }, 0);
-  return out;
-}

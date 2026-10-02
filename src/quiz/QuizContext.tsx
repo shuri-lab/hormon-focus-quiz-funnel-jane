@@ -7,7 +7,7 @@ import {
 import { track } from '../lib/analytics';
 import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
-import { REVIEW, takePreset } from '../review/review';
+import { REVIEW, takePreset } from '../review/flag';
 
 /* v3: the seven-question quiz. An answer saved by the old quiz does not fit
    the new questions, so it is left behind rather than restored. */

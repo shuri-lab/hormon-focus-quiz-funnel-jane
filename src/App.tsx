@@ -8,11 +8,13 @@ import { OfferPage } from './offer/OfferPage';
 import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { initClarity, pageView } from './lib/analytics';
-import { REVIEW } from './review/review';
+import { REVIEW } from './review/flag';
 
 /* The review build only. With the flag off this is null, the import below is
    dead code, and none of it reaches a customer. */
-const ReviewBar = REVIEW ? lazy(() => import('./review/ReviewBar')) : null;
+const ReviewBar = import.meta.env.MODE === 'review'
+  ? lazy(() => import('./review/ReviewBar'))
+  : null;
 
 /* A shared review page has no address bar of its own to route on, so it keeps
    its place in memory instead. */

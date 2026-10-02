@@ -22,7 +22,7 @@
  */
 import { readAttribution } from './analytics';
 import { mainConcern } from './logic';
-import { REVIEW } from '../review/review';
+import { REVIEW } from '../review/flag';
 import type { QuizState, Outcome } from './logic';
 
 /** Public, and public on purpose. See the note above. */

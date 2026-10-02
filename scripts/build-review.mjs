@@ -5,8 +5,10 @@
  * The result is one page (review.html) plus its files, made to be shared as a
  * single hosted page rather than served from a domain:
  *
- *  - VITE_REVIEW=1 turns on the review bar, in-memory routing and the stub
+ *  - `--mode review` turns on the review bar, in-memory routing and the stub
  *    that stops anything being sent to Klaviyo (see src/review/review.ts).
+ *  - Notes for reviewers are NOT in this repository. Put a review-notes.html
+ *    beside review.html when sharing and the bar will offer it.
  *  - Every asset path is relative, because the page will not sit at the root
  *    of a host. Vite handles its own files; the image paths written as plain
  *    strings in the source ("/img/…") are rewritten here.
@@ -19,10 +21,7 @@ import { join } from 'node:path';
 
 const OUT = 'dist-review';
 
-execSync(`npx vite build --base ./ --outDir ${OUT} --emptyOutDir`, {
-  stdio: 'inherit',
-  env: { ...process.env, VITE_REVIEW: '1' },
-});
+execSync(`npx vite build --mode review --base ./ --outDir ${OUT} --emptyOutDir`, { stdio: 'inherit' });
 
 const assets = join(OUT, 'assets');
 const files = readdirSync(assets);
