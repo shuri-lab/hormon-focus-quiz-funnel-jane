@@ -83,23 +83,6 @@
   color: var(--ink-2); font-weight: 600;
 }
 
-/* ------------------------------------------------------------ result --- */
-
-.resCard {
-  margin: 18px 0 0; padding: 4px 18px; border-radius: var(--radius-lg);
-  background: var(--surface); border: 1.5px solid var(--line-2); box-shadow: var(--shadow);
-}
-.resCard > div { padding: 14px 0; border-bottom: 1px solid var(--line); }
-.resCard > div:last-child { border-bottom: 0; }
-.resCard dt {
-  font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--plum); margin: 0 0 4px;
-}
-.resCard dd {
-  margin: 0; font-size: var(--t-lead); font-weight: 700; line-height: 1.28; color: var(--ink);
-}
-.resCard dd.resSay { font-size: var(--t-body); font-weight: 500; line-height: 1.42; }
-
 .nextList { margin: 4px 0 14px; padding: 0; list-style: none; display: grid; gap: 9px; }
 .nextList li {
   position: relative; padding-left: 30px; font-size: var(--t-body);
@@ -278,13 +261,6 @@
 .kitRev cite { display: block; margin-top: 9px; font-style: normal; font-size: 13px; color: var(--ink-2); }
 .kitRev cite b { color: var(--ink); font-weight: 600; }
 
-.kitRating {
-  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 5px;
-  margin-top: 10px; font-size: var(--t-small); color: var(--ink-2);
-}
-.kitRating svg { width: 16px; height: 16px; }
-.kitRating b { color: var(--ink); font-weight: 800; }
-
 /* -- formula, guarantee, questions ---------------------------------------- */
 
 .kitSec .formula { margin-top: 14px; }
@@ -388,8 +364,6 @@
 }
 .resFacts dd { margin: 3px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ink); }
 
-.resProof { margin-top: 26px; }
-
 /* ------------------------------------------------- proof, from JJ's page --- */
 
 .pfFaces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 12px; }
@@ -409,14 +383,11 @@
 .pfStars svg { width: 16px; height: 16px; }
 .pfRating img { height: 16px; width: auto; }
 
-.resProof .kitRevs, .resProof .kitRev { margin-top: 12px; }
-
 .pfFb { margin: 14px 0 0; }
 .pfFb img {
   display: block; width: 100%; height: auto; border-radius: 14px;
   border: 1px solid var(--line); box-shadow: var(--shadow); background: #fff;
 }
-
 
 /* ------------------------------------------------------- JJ's wordmark --- */
 

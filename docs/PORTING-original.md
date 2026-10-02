@@ -1,3 +1,5 @@
+> **History.** This describes the eleven-question quiz retired on 2 October 2026. The current specification is [routing-table.md](routing-table.md).
+
 # Porting this to React
 
 The screens should be rebuilt. The routing should not.

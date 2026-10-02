@@ -44,10 +44,6 @@ export const CHIP_PROGRAMS = "800K+ women in JJ's programs";
 /** The share image for the cover. Not shown on the cover itself. */
 export const HERO_IMG = '/img/symptom-sleep.jpg';
 
-/** Attribution under any block of reviews. */
-export const REVIEW_SOURCE =
-  'Reviews from verified buyers on JJSmithOnline.com. Individual results vary.';
-
 /* ------------------------------------------------------------ the cover -- */
 
 /* The brief's words. The sub-line and the button are the same on every

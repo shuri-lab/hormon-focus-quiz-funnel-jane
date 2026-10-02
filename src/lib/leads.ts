@@ -11,10 +11,13 @@
  * profile back, list anything, or change what it already wrote. There is no
  * private key in this repository and none is needed for this call.
  *
- * STILL TO COME: subscribing her to the list is a SECOND call, to
- * /client/subscriptions/, and it needs the list id from Moses. Her consent is
- * already captured and timestamped below, so that id is the only thing
- * standing between here and a working subscription.
+ * TWO CALLS, when she ticks the box:
+ *  1. The event, which starts the post-quiz flow and carries her answers.
+ *  2. The subscription, which records her consent on a list. Klaviyo only
+ *     sends marketing email to a profile that has agreed to it, so without
+ *     this call the flow skips her as "not subscribed". It runs only when
+ *     KLAVIYO_LIST_ID is set, and that id has to come from whoever owns
+ *     JJ's Klaviyo lists.
  *
  * NOTHING HERE BLOCKS HER. Every failure path resolves, because a woman who
  * has answered seven questions is owed her result whether or not our
@@ -35,6 +38,57 @@ const KLAVIYO_REVISION = '2024-10-15';
 
 /** The exact metric the flow triggers on. Not a label; a contract. */
 export const KLAVIYO_METRIC = 'HF Quiz Completed';
+
+const KLAVIYO_SUBSCRIPTIONS = 'https://a.klaviyo.com/client/subscriptions/';
+
+/**
+ * The list she is subscribed to when she ticks the box.
+ *
+ * NULL UNTIL THE LIST ID IS SUPPLIED. Set it to the six-character id of the
+ * list the quiz should feed (Klaviyo: Lists & Segments, the list, Settings),
+ * and the subscription call below switches on. Nothing else changes.
+ */
+export const KLAVIYO_LIST_ID: string | null = null;
+
+/** Where the consent came from, as Klaviyo shows it on her profile. */
+export const KLAVIYO_SOURCE = 'Hormone Check quiz';
+
+/** The subscription request, built on its own so a test can hold it to the API. */
+export function subscriptionBody(email: string, listId: string) {
+  return {
+    data: {
+      type: 'subscription',
+      attributes: {
+        custom_source: KLAVIYO_SOURCE,
+        profile: {
+          data: {
+            type: 'profile',
+            attributes: {
+              email,
+              subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } },
+            },
+          },
+        },
+      },
+      relationships: { list: { data: { type: 'list', id: listId } } },
+    },
+  };
+}
+
+/** Records her consent on the list. Never throws: she gets her result regardless. */
+async function subscribe(email: string, listId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${KLAVIYO_SUBSCRIPTIONS}?company_id=${KLAVIYO_PUBLIC_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', revision: KLAVIYO_REVISION },
+      body: JSON.stringify(subscriptionBody(email, listId)),
+      keepalive: true,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The outcome in words, for whoever is reading a flow at nine in the evening.
@@ -58,6 +112,9 @@ const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'] as 
 
 export async function submitLead(
   S: QuizState, outcome: Outcome, angle: string,
+  /* The list to subscribe her to. Defaults to the one configured above; a
+     test passes its own. */
+  listId: string | null = KLAVIYO_LIST_ID,
 ): Promise<{ ok: boolean; delivered: boolean }> {
   /* The last line of defence. The gate will not submit without consent, but
      this module is what actually reaches the network, so it refuses too:
@@ -137,6 +194,7 @@ export async function submitLead(
     },
   };
 
+  let delivered = false;
   try {
     const res = await fetch(`${KLAVIYO_EVENTS}?company_id=${KLAVIYO_PUBLIC_KEY}`, {
       method: 'POST',
@@ -149,11 +207,15 @@ export async function submitLead(
     });
     /* Klaviyo answers 202 with an empty body. Any 2xx is delivered; anything
        else is not, and either way she carries on to her result. */
-    return { ok: true, delivered: res.ok };
+    delivered = res.ok;
   } catch {
     // Never block her from her result because a marketing endpoint is down.
-    return { ok: true, delivered: false };
   }
+
+  /* Her consent, recorded on the list, so the flow is allowed to email her. */
+  if (listId) await subscribe(S.email.trim(), listId);
+
+  return { ok: true, delivered };
 }
 
 /** Deliberately permissive. Rejecting a real address costs more than accepting a typo. */

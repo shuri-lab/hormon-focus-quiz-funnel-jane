@@ -8,7 +8,9 @@
  * written in this file that reaches Klaviyo for real.
  */
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { KLAVIYO_METRIC, KLAVIYO_PUBLIC_KEY, submitLead } from '../src/lib/leads';
+import {
+  KLAVIYO_LIST_ID, KLAVIYO_METRIC, KLAVIYO_PUBLIC_KEY, KLAVIYO_SOURCE, submitLead, subscriptionBody,
+} from '../src/lib/leads';
 import { createState, type QuizState } from '../src/lib/logic';
 
 const EVENTS_URL = `https://a.klaviyo.com/client/events/?company_id=${KLAVIYO_PUBLIC_KEY}`;
@@ -198,4 +200,46 @@ test('a refusal from Klaviyo is recorded, not thrown', async () => {
   /* ok is about her, not about them: she was not blocked. delivered is about
      them, and it is false. */
   expect(result).toEqual({ ok: true, delivered: false });
+});
+
+/* ------------------------------------------------- the subscription -- */
+
+const SUBS_URL = `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`;
+
+test('with no list configured, only the event is sent', async () => {
+  expect(KLAVIYO_LIST_ID, 'set the list id on purpose, and update this test with it').toBe(null);
+  await submitLead(finished(), 'B', '');
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test('with a list, her consent is recorded on it after the event', async () => {
+  await submitLead(finished(), 'C', 'sleep', 'AbC123');
+
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  const [url, init] = fetchMock.mock.calls[1];
+  expect(url).toBe(SUBS_URL);
+  expect(init.method).toBe('POST');
+  expect(init.headers.revision).toBe('2024-10-15');
+  expect(JSON.parse(init.body)).toEqual(subscriptionBody('renee@example.com', 'AbC123'));
+
+  const sub = JSON.parse(init.body).data;
+  expect(sub.type).toBe('subscription');
+  expect(sub.relationships.list.data).toEqual({ type: 'list', id: 'AbC123' });
+  expect(sub.attributes.custom_source).toBe(KLAVIYO_SOURCE);
+  expect(sub.attributes.profile.data.attributes.email).toBe('renee@example.com');
+  expect(sub.attributes.profile.data.attributes.subscriptions.email.marketing.consent).toBe('SUBSCRIBED');
+});
+
+test('no box ticked, or the doctor route: no subscription either', async () => {
+  await submitLead(finished({ consent: false }), 'B', '', 'AbC123');
+  await submitLead(finished(), 'D', '', 'AbC123');
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('a failed subscription never blocks her result', async () => {
+  fetchMock
+    .mockResolvedValueOnce({ ok: true, status: 202 })
+    .mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  const result = await submitLead(finished(), 'B', '', 'AbC123');
+  expect(result).toEqual({ ok: true, delivered: true });
 });

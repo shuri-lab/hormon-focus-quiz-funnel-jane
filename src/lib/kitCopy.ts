@@ -51,11 +51,6 @@ export const PROOF_MORE_HEAD = 'What women are saying';
 export const PROOF_NOTE =
   'Reviews, photos and a comment from verified buyers and JJ’s Facebook page. Individual results vary.';
 
-/* ------------------------------------------------- the kit, piece by piece -- */
-
-export const PARTS_EYEBROW = 'What is in the kit';
-export const PARTS_HEAD = 'What each part does';
-
 /* PLACEHOLDER. */
 export const WHY_EYEBROW = 'Why 60 days';
 export const WHY_HEAD = 'Two bottles, one plan, start to finish';

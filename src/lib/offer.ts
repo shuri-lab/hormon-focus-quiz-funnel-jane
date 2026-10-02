@@ -6,20 +6,15 @@
  * the offer pages at /offer, /offer/:slug and /live all read this file, so
  * there is one offer in the code rather than two that drift apart.
  *
- * OPEN BEFORE ADS RUN (carried over from Jane's note on the offer screen):
- *  - SUBSCRIBE_PRICE is derived from the subscribe-and-save on the live
- *    product page. It is not confirmed, and SUBSCRIPTION_LIVE keeps the
- *    option off the page until the plan exists.
- *  - No 3 or 6-month bundle exists. The ladder shows one.
-
- * THE NAME. She reads "The 60-Day Plan". We write PROTOCOL_ in the constant
- * names because that is what the store, the discount code and the analytics
- * call it, and renaming those would break live links. The word never reaches
- * her: tests/copy.test.ts fails the build if it appears in a string she
- * could read.
+ * THE PRICES ARE JJ'S PAGE'S. The kit at $74.99 with free shipping, one
+ * bottle at $49.99, and the subscription at $39.99 every 30 days, as
+ * hormonefocus.jjsmithonline.com sells them (checked 2 October 2026).
  *
- * The on-screen warning about all three now renders only in development or
- * with ?debug=1, so the team still sees it in review and a customer never does.
+ * THE NAME. She reads "The 60-Day Feel Like YOU Again Kit". We write
+ * PROTOCOL_ in the constant names because that is what the store, the
+ * discount code and the analytics call it, and renaming those would break
+ * live links. The word never reaches her: tests/copy.test.ts fails the build
+ * if it appears in a string she could read.
  */
 
 /* ------------------------------------------------------------- prices -- */
@@ -63,17 +58,6 @@ export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
 export const PLAN_NAME = 'The 60-Day Feel Like YOU Again Kit';
 export const PLAN_SHORT = 'The 60-Day Kit';
 
-/**
- * What is in the kit, in JJ's own names for each piece. One list, read by the
- * quiz and by the offer card, so the two cannot describe different kits.
- */
-export const KIT_CONTENTS: [string, string][] = [
-  ['Two bottles of Hormone Focus', 'A two-month supply. Two capsules a day with a meal.'],
-  ['The 60-Day Hormone Fix', 'JJ\u2019s ebook and her 5-step plan: Eat, Train, Replace, Release, Track.'],
-  ['Hormone Healthy Recipes', 'For the first step, so you are not working out what to cook.'],
-  ['The Daily Symptom Tracker', 'A minute a day, so you can see what is changing.'],
-];
-
 /** The three digital pieces, as one line for a card. */
 export const KIT_BONUS =
   'The 60-Day Hormone Fix ebook, Hormone Healthy Recipes and the Daily Symptom Tracker';
@@ -99,9 +83,6 @@ export const KIT_TAGLINE = 'Better Sleep. Less Stubborn Belly. More Energy. More
 export const SHOT_KIT = '/img/kit-60-day.webp';
 export const SHOT_KIT_BOTTLE = '/img/kit-one-bottle.webp';
 export const MONEY_BACK_BADGE = '/img/money-back-badge.webp';
-
-/** The same name mid-sentence, where a capital article reads like a shout. */
-export const planShortInline = (): string => PLAN_SHORT.replace(/^The /, 'the ');
 
 /* ----------------------------------------------- what the cart needs -- */
 
@@ -247,7 +228,6 @@ export const optionFor = (kind: OfferKind): OfferOption =>
     screen no longer needs a bottle photograph of its own above them. */
 export const SHOT_ONE = '/img/offer-1-bottle.png';
 export const SHOT_TWO = '/img/offer-2-bottles.png';
-export const SHOT_GUIDE = '/img/offer-starter-guide.png';
 /** The seal, which is the guarantee said in one glance. */
 export const GUARANTEE_SEAL = '/img/guarantee-seal.webp';
 
@@ -492,12 +472,3 @@ export function cartPath(kind: OfferKind): string {
   return `/cart/${SINGLE_VARIANT_ID}:1?storefront=true`;
 }
 
-/** True when the internal warning block should render. Never true for a customer. */
-export function showInternalNotes(): boolean {
-  if (import.meta.env.DEV) return true;
-  try {
-    return new URLSearchParams(window.location.search).get('debug') === '1';
-  } catch {
-    return false;
-  }
-}

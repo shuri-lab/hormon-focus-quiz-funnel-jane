@@ -18,9 +18,9 @@ jobs:
       - run: npm ci
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck && npm run lint
 
-      - name: Routing — 560 combinations, and the doctor route is an exit
+      - name: Unit tests — routing, copy rules, cart links, Klaviyo
         run: npm test
 
       - name: Build

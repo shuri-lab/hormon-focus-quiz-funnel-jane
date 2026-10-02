@@ -273,6 +273,3 @@ export function angleBySlug(slug: string | undefined): Angle {
 /** Every angle with an offer page behind it, in the order the routes are built. */
 export const OFFER_ANGLES = ANGLES.filter((a) => a.offer);
 
-/** The slugs /offer/:slug answers to. The default angle's empty slug is not one. */
-export const offerSlugs = (): string[] =>
-  OFFER_ANGLES.map((a) => a.slug).filter(Boolean);

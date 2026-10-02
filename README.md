@@ -1,10 +1,11 @@
 # The Hormone Check
 
-A quiz sales funnel for Hormone Focus. One quiz, many front doors: each ad angle
-gets its own landing page, and hands off to the same twelve questions with the
-symptom that ad promised already selected.
+The quiz funnel for Hormone Focus, JJ Smith's supplement. A woman answers seven
+questions, gets one clear result, and is shown the 60-Day Feel Like YOU Again
+Kit as the way to act on it.
 
-Vite · React 19 · TypeScript · React Router 7. Static build, no server.
+Vite · React 19 · TypeScript · React Router 7. A static build with no server of
+its own: the email goes to Klaviyo and the purchase to Shopify.
 
 ```bash
 npm ci
@@ -13,180 +14,105 @@ npm run dev        # http://localhost:5173
 
 ---
 
-## What this is, and what it came from
+## How it works
 
-This is a production rebuild of [`JaneWangari/hormonefocus-quizfunnel`](https://github.com/JaneWangari/hormonefocus-quizfunnel).
+1. **Cover** (`/`, or `/<angle>` for an ad angle). JJ's logo, a headline, one
+   line, one button. Nothing is sold here.
+2. **Seven questions.** What is bothering her; which one most (only if she
+   picked more than one); age; cycle, with a 12-month follow-up only if her
+   periods have stopped; when she notices it; what she has tried; what she
+   wants most.
+3. **A short loader**, then **the email screen**, with a required consent box.
+4. **Her result.** One named answer, said in one sentence. Her symptoms with
+   the pictures she picked, what it means, what she wants most, and one sourced
+   fact about women at her stage. No product yet.
+5. **The kit page**, one scroll. Her 60-day plan named for her biggest concern,
+   the five things to do, the "how" answered by the kit piece by piece,
+   customer proof, then the offer, as it is on JJ's offer page.
 
-**The routing was ported, not re-authored.** `src/lib/logic.ts` is a typed
-transcription of Jane's `src/logic.js` — same branches, same order, same
-comparisons. Jane's original `js/quiz.js` is kept at `reference/quiz.js` for one
-reason: `tests/logic.test.ts` runs it in a sandbox and asserts both
-implementations agree across **560 combinations** of age, cycle, cause,
-regularity and symptom load. If this port had changed behaviour anywhere, that
-test would fail.
-
-Read [`docs/PORTING-original.md`](docs/PORTING-original.md) — Jane's note on why
-each branch exists — before touching any of it. The short version is below.
-
----
-
-## The part that must not change
-
-`docs/routing-table.md` is the specification. If the code and the table ever
-disagree, **the table wins**.
-
-- **Cancer treatment routes to a doctor at every age.**
-- **Surgery routes to a doctor under 50.** Whether her ovaries still work decides
-  the answer, and the quiz never asks.
-- **Bleeding at 60 or over routes to a doctor.**
-- **Under 30 never returns Perimenopause.**
-- **A coil or the pill means the bleed is suppressed**, so the verdict says the
-  read came from symptoms rather than claiming a cycle we cannot see.
-
-**The doctor route is an exit.** Outcome `D` sees the doctor screen and stops —
-no offer, no price, no upsell, and its only outbound link is the brand site. It
-must never link to the shop. This is asserted twice: once over the whole input
-space in `tests/logic.test.ts`, and once by walking the real interface in
-`e2e/funnel.spec.ts`.
+**The five outcomes:** Hormonal imbalance, Perimenopause, Menopause, Early
+menopause, and the doctor route. Every outcome but the doctor route sees the
+kit. The doctor route is two cases and exits before the email screen. The
+specification is [`docs/routing-table.md`](docs/routing-table.md); if the code
+and the table disagree, the table wins.
 
 ---
 
-## Layout
+## Where things are
 
 ```
-src/lib/logic.ts        routing and scoring. No DOM. The ported part.
-src/lib/content.ts      every word the funnel says
-src/lib/angles.ts       the ad angles. Adding a landing page is adding an entry here
-src/lib/offer.ts        prices, and the three that are not confirmed yet
-src/lib/analytics.ts    pixel and dataLayer events, attribution capture
-src/lib/leads.ts        where the email goes
-src/lib/usePageMeta.ts  per-route title, description, canonical, Open Graph
+src/lib/logic.ts        routing: outcomes, which screens show. No DOM
+src/lib/content.ts      every word of the cover, questions and result
+src/lib/kitCopy.ts      every word of the kit page
+src/lib/offer.ts        prices, variant ids, cart links, the kit's contents
+src/lib/reviews.ts      customer reviews (verbatim), faces, the rating
+src/lib/leads.ts        the two Klaviyo calls: the event and the subscription
+src/lib/analytics.ts    dataLayer and pixel events, attribution, cart links
+src/lib/angles.ts       the ad angles: one entry is one landing route
 
-src/landing/Landing.tsx one component, skinned by the angle
-src/quiz/               the runner, the state, and one file per group of screens
-src/components/         tiles, options, the screen shell, icons
-src/styles/             tokens.css, then global.css
+src/landing/            the cover
+src/quiz/screens/       questions.tsx, gate.tsx, reveal.tsx, offer.tsx
+src/components/         KitOffer (the offer block), Proof, tiles, controls
+src/offer/              the standalone offer pages: /offer, /offer/<angle>, /live
+src/styles/             tokens.css, global.css, kit.css, offer*.css
+src/review/             the review build only; never in the real build
 
-reference/quiz.js       Jane's original. Kept only so the equivalence test can run
-tests/                  15 tests, 560 routing combinations       (npm test)
-e2e/                    65 tests across 5 viewport widths        (npm run e2e)
-docs/                   the routing table, Jane's porting note, deployment
+tests/                  unit tests: routing, copy rules, cart links, Klaviyo
+e2e/                    the interface, walked at five screen widths
+docs/                   the routing table, deployment
 ```
 
 ---
 
-## The ad angles
+## The rules that must not break
 
-| Route | Pre-selects | Angle |
-|---|---|---|
-| `/` | — | Nobody told you this would happen to your body |
-| `/bloating` | Bloating | You cut the foods out. You are still bloated |
-| `/weight` | Weight | You are doing everything you used to do |
-| `/hot-flashes` | Hot flashes | It starts years before anybody calls it menopause |
-| `/sleep` | Poor sleep | You fixed your bedtime. You are still awake at three |
-| `/mood` | Mood and brain fog | You do not feel like yourself |
-| `/energy` | Low energy | Tired in a way that sleeping does not touch |
-
-Each hands off to `/<angle>/quiz`, which starts with that symptom already
-chosen — the woman who clicked the bloating ad is not asked whether she bloats.
-
-To add one, add an entry to `src/lib/angles.ts`. The route, the landing page and
-the e2e coverage all come from that list.
-
----
-
-## What changed from the prototype
-
-**Rebuilt, because the prototype could not do these:**
-
-- **Routes.** The whole point of the funnel is a landing page per ad angle. A
-  single `index.html` cannot have seven.
-- **The nested scroll frame is gone.** The prototype put a scrolling `div` inside
-  a fixed-height device frame. On iOS Safari that fights the address bar, breaks
-  momentum scrolling and can clip the last screen. The document scrolls now, with
-  `100dvh` and safe-area insets.
-
-**Fixed:**
-
-- **Fluid type** from 320px up, rather than one fixed scale.
-- **A sticky action bar** on every question that takes more than one tap, so
-  Continue is never below six options.
-- **Back moved into the header** where it is always reachable, at 44px.
-- **Browser and Android back** now walk the funnel backwards instead of leaving
-  it, because the screen lives in history state.
-- **Answers survive a refresh** via `sessionStorage`.
-- **A double tap on Continue** advances one screen, not two.
-- **The back button cannot re-enter the analysing animation.**
-- **Stretched images.** `width`/`height` are set on every image to reserve space,
-  which silently stretched them until `height: auto` was set to match.
-- **Focus management.** Each screen moves focus to its heading.
-- **Real radio and checkbox semantics** instead of pressed buttons.
-- **The confidence chip** was a white pill that read as a button labelled
-  "Clear". It is a status tag now.
-- **Email validation** is real, with an error message, and the field no longer
-  says "Prototype only".
-
-**Removed:**
-
-- The Phone/Desktop and outcome-jump scaffolding.
-- The `r3` "gap table" screen. It was fully written and styled in the prototype
-  but was **not in `FLOW`**, so it never rendered. Jane's `PUBLISHED` and
-  `NOWSIDE` copy tables existed only to feed it. Worth a decision: restore it, or
-  delete the tables.
-- `img/jj-smith.jpg` was unreferenced. It is used now, on every landing page.
-
-**Moved out of sight, not deleted:** the offer screen's "open before this ships"
-warning was rendering to customers, telling them the price was unconfirmed. It
-now appears only in development or with `?debug=1`, so review still sees it.
+- **Claims.** Hormone Focus "supports" or "helps". It never treats, cures,
+  stops or fixes anything, never promises weight loss, never gives a result by
+  a date. `tests/copy.test.ts` fails the build on most breaks.
+- **No contractions** in our own copy. Customer reviews are quoted exactly,
+  from JJ's store or page, with "Individual results vary".
+- **One clear result.** "Your answers match the pattern of …". Never "you
+  have", never "you may be between two".
+- **Facts carry their source.** The stage facts on the result page name it.
+- **No test reaches Klaviyo.** `e2e/helpers.ts` blocks it.
+- **Nothing about her health goes in a link or an ad pixel.** Her answers go
+  to Klaviyo only, and only when she ticks the box.
+- **The doctor route** never reaches the email screen, a price or a shop link.
+- **800,000** is JJ's books and challenges, never a Hormone Focus customer
+  count. **171** is the review count and travels with **4.9**.
 
 ---
 
-## Before a single ad runs
+## Klaviyo
 
-Three things are wired but not filled in, and one is commercial.
+`src/lib/leads.ts` makes two calls when she ticks the box:
 
-1. **`VITE_LEAD_ENDPOINT` is unset.** The email gate collects an address and
-   drops it. See `.env.example`.
-2. **No pixel is committed.** `index.html` marks where the Meta and GA4 tags go.
-   The events already fire; they no-op until a tag is present.
-3. **Three offer claims are not true yet** — carried over from Jane's note and
-   still open. They live in `src/lib/offer.ts`:
-   - `$44.99` is derived from the 10% subscribe-and-save, not confirmed.
-   - No 3 or 6-month bundle exists. The ladder shows one.
-   - The Starter Guide does not exist. It is promised as step 1.
+1. **The event** `HF Quiz Completed` (`quiz: hf-v3`), which starts the
+   post-quiz flow. It carries `outcome`, `selected_symptoms`,
+   `primary_symptom`, `age_band`, `cycle_status`, `cycle_12_month_status`,
+   `symptom_pattern`, `tried_actions`, `desired_outcome`, and her UTMs.
+2. **The subscription**, which records her consent on a list. Klaviyo only
+   sends marketing email to a profile that has agreed to it. This call runs
+   once `KLAVIYO_LIST_ID` is set to the id of the list the quiz should feed.
 
-See [`docs/DEPLOY.md`](docs/DEPLOY.md).
-
----
-
-## The copy rules, which survive any rewrite
-
-**No contractions** in user-facing copy. House style.
-
-Every product claim is JJ's own published wording. No timeframes, no quantified
-results, no invented percentages.
-
-Two proof numbers do different jobs and **must not be merged**:
-
-- **800,000** is scoped to **books and challenges**, not supplement buyers.
-  "Join 800,000 women" on a Hormone Focus button would read as 800,000 Hormone
-  Focus customers, which is false.
-- **169** is the Hormone Focus **review count**. It belongs beside 4.9, nowhere
-  else.
-
-Check claims by walking the funnel, not by reading the source. One line already
-broke the second rule for two audits because it only appeared mid-animation.
+The key in the file is Klaviyo's public key and belongs in browser code. No
+private key is in this repository, and none is needed.
 
 ---
 
 ## Commands
 
 ```bash
-npm run dev         # dev server
-npm run build       # typecheck and build to dist/
-npm run preview     # serve the build
-npm test            # routing: 15 tests, 560 combinations
-npm run e2e         # interface: 65 tests across 5 widths
-npm run typecheck   # strict, and it passes
+npm run dev           # dev server
+npm run build         # typecheck, then build to dist/
+npm run preview       # serve the build
+npm test              # unit tests
+npm run e2e           # browser tests at 320, 390, 430, 768 and 1440 wide
 npm run lint
+npm run build:review  # a shareable review copy, into dist-review/
 ```
+
+The browser suite is heavy. If it times out, run one width at a time:
+`npx playwright test --project=phone-390`.
+
+See [`docs/DEPLOY.md`](docs/DEPLOY.md) to publish.
