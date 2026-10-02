@@ -1,0 +1,31 @@
+/* The review bar. Deliberately not the funnel's own purple, so nobody takes
+   it for part of the quiz. Only ever rendered in the review build. */
+.rvBar {
+  background: #1f2a2e; color: #f3f6f6;
+  padding: 12px clamp(16px, 5vw, 24px) 14px;
+  font-family: var(--sans); font-size: 13.5px; line-height: 1.45;
+}
+.rvLead { margin: 0 auto 10px; max-width: 1080px; color: #cfd9da; }
+.rvLead b { color: #fff; font-weight: 700; }
+
+.rvJumps { display: flex; flex-wrap: wrap; gap: 7px; max-width: 1080px; margin: 0 auto; }
+.rvJumps button {
+  appearance: none; cursor: pointer; font: inherit; font-weight: 600;
+  min-height: 36px; padding: 7px 12px; border-radius: 999px;
+  background: #2f3e43; color: #f3f6f6; border: 1px solid #47595e;
+}
+.rvJumps button:hover { background: #3a4c52; }
+.rvJumps button:focus-visible { outline: 2px solid #9fe0d6; outline-offset: 2px; }
+.rvJumps .rvNotesBtn { background: #f3f6f6; color: #1f2a2e; border-color: #f3f6f6; }
+
+.rvNotes {
+  max-width: 1080px; margin: 12px auto 0; padding: 4px 16px 14px;
+  background: #283438; border-radius: 12px;
+}
+.rvNotes .rvH {
+  margin: 14px 0 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #9fe0d6;
+}
+.rvNotes ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.rvNotes li { color: #e3eaea; }
+.rvNotes b { color: #fff; }

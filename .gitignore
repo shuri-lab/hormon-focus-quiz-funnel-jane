@@ -33,3 +33,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# the shareable review copy, rebuilt on demand
+dist-review

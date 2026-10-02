@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import {
-  BrowserRouter, Navigate, Route, Routes, useLocation, useParams,
+  BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useParams,
 } from 'react-router-dom';
 import { Landing } from './landing/Landing';
 import { Quiz } from './quiz/Quiz';
@@ -8,6 +8,15 @@ import { OfferPage } from './offer/OfferPage';
 import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { initClarity, pageView } from './lib/analytics';
+import { REVIEW } from './review/review';
+
+/* The review build only. With the flag off this is null, the import below is
+   dead code, and none of it reaches a customer. */
+const ReviewBar = REVIEW ? lazy(() => import('./review/ReviewBar')) : null;
+
+/* A shared review page has no address bar of its own to route on, so it keeps
+   its place in memory instead. */
+const Router = REVIEW ? MemoryRouter : BrowserRouter;
 
 /**
  * Tells GTM about client-side navigations, which it cannot see on its own.
@@ -52,12 +61,20 @@ export default function App() {
     /* Attribution is captured in main.tsx, before the first render, because
        the cart links are built during render and an effect is too late. */
     /* Injects Clarity once. VITE_CLARITY_ID overrides the committed project. */
-    initClarity();
+    if (!REVIEW) initClarity();
   }, []);
 
+  /* Bumped by the review bar, so a jump starts the quiz again from its answers. */
+  const [epoch, setEpoch] = useState(0);
+
   return (
-    <BrowserRouter>
-      <Routes>
+    <Router>
+      {ReviewBar && (
+        <Suspense fallback={null}>
+          <ReviewBar onJump={() => setEpoch((n) => n + 1)} />
+        </Suspense>
+      )}
+      <Routes key={epoch}>
         <Route path="/" element={<Landing />} />
         <Route path="/quiz" element={<Quiz />} />
         {/* The offer, on our own host. A static segment outranks /:slug in the
@@ -74,6 +91,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <RouteTracking />
-    </BrowserRouter>
+    </Router>
   );
 }

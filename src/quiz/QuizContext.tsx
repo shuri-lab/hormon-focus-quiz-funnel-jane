@@ -7,12 +7,18 @@ import {
 import { track } from '../lib/analytics';
 import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
+import { REVIEW, takePreset } from '../review/review';
 
 /* v3: the seven-question quiz. An answer saved by the old quiz does not fit
    the new questions, so it is left behind rather than restored. */
 const STORE_KEY = 'hf_quiz_state_v3';
 
 function load(): QuizState | null {
+  /* The review build's jump buttons hand the quiz a set of answers to start from. */
+  if (REVIEW) {
+    const preset = takePreset();
+    if (preset) return preset;
+  }
   try {
     const raw = sessionStorage.getItem(STORE_KEY);
     if (!raw) return null;

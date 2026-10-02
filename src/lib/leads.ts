@@ -22,6 +22,7 @@
  */
 import { readAttribution } from './analytics';
 import { mainConcern } from './logic';
+import { REVIEW } from '../review/review';
 import type { QuizState, Outcome } from './logic';
 
 /** Public, and public on purpose. See the note above. */
@@ -77,6 +78,9 @@ export async function submitLead(
     }
     return { ok: true, delivered: false };
   }
+
+  /* The review copy is for looking at, not for collecting. Nothing is sent. */
+  if (REVIEW) return { ok: true, delivered: false };
 
   const ad = readAttribution();
   const utm: Record<string, string> = {};
