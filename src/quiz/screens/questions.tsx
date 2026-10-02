@@ -169,7 +169,7 @@ export function Q7() {
   const pick = useAutoAdvance(next);
   return (
     <Screen id="q7">
-      <ScreenTitle>If you could change one thing first, what would it be?</ScreenTitle>
+      <ScreenTitle>What do you want most right now?</ScreenTitle>
       <SingleChoice
         name="What you would choose"
         options={WANT_OPTIONS}

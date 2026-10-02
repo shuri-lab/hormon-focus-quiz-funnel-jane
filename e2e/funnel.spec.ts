@@ -105,7 +105,7 @@ test.describe('the quiz', () => {
     /* 6. What she tried. */
     await page.locator('.opt').nth(0).click();                 // eating differently
     await page.locator('.opt').nth(1).click();                 // exercising more
-    await answerAndWait(page, pressPrimary(page), /change one thing first/);
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
 
     /* 7. What she wants. */
     await expect(page.locator('.stepno')).toHaveText('7 of 7');
@@ -246,7 +246,7 @@ test.describe('the quiz', () => {
     await page.locator('.opt').nth(6).click();
     await expect(page.locator('.opt[aria-pressed="true"]')).toHaveCount(1);
     await expect(page.locator('.opt[aria-pressed="true"]')).toContainText('Nothing yet');
-    await answerAndWait(page, pressPrimary(page), /change one thing first/);
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
     await page.locator('.opt').nth(3).click();                 // stop feeling hot
 
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
@@ -278,14 +278,14 @@ test.describe('the quiz', () => {
     await answerAndWait(page, pickOption(page, 0), /When do you notice/);
     await answerAndWait(page, pickOption(page, 4), /already tried/);
     await page.locator('.opt').nth(6).click();
-    await answerAndWait(page, pressPrimary(page), /change one thing first/);
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
     await page.locator('.opt').nth(5).click();
 
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
     await page.goBack();
     // must land back on a question, never inside the loader
     await expect(page.locator('.loadSpin')).toHaveCount(0);
-    await expect(heading(page)).toHaveText(/change one thing first/);
+    await expect(heading(page)).toHaveText(/want most right now/);
   });
 
   test('a double tap on Continue advances exactly one screen', async ({ page }) => {
@@ -339,7 +339,7 @@ test.describe('the doctor route is an exit', () => {
     await answerAndWait(page, pickOption(page, 4), /When do you notice/);          // birth control, medication or surgery
     await answerAndWait(page, pickOption(page, 1), /already tried/);
     await page.locator('.opt').nth(4).click();
-    await answerAndWait(page, pressPrimary(page), /change one thing first/);
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
     await page.locator('.opt').nth(0).click();
     await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
     await page.fill('#ef', 'dana@example.com');
