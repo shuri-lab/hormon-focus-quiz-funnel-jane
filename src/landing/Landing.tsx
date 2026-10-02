@@ -7,10 +7,6 @@ import {
   COVER_CTA, COVER_SUB, FDA_DISCLAIMER, HERO_IMG, IMG, QUIZ_DISCLAIMER,
 } from '../lib/content';
 
-/* Only what is true of the build: no address is sent anywhere without the
-   ticked box on the email screen. */
-const PRIVACY_LINE = 'Free. We only email you if you tick the box.';
-
 /* Three symptoms, three different women. No product and no review: she has
    not been told anything about herself yet, so nothing is sold here. */
 const STRIP = [IMG.weight, IMG.sweats, IMG.sleep];
@@ -56,7 +52,6 @@ export function Landing() {
               <div className="heroCta">
                 <Link className="cta" to={quizHref}>{COVER_CTA} &nbsp;&rarr;</Link>
               </div>
-              <p className="priv">{PRIVACY_LINE}</p>
 
               <div className="coverStrip" aria-hidden="true">
                 {STRIP.map((src) => (
