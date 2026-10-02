@@ -143,6 +143,11 @@ const EXTRA: Review[] = [
     verified: true,
     body: 'It’s so AMAZING has given me my life back!',
   },
+  {
+    name: 'Adrienne',
+    verified: true,
+    body: 'I have been using the Hormone Focus bundle for almost 2 months. The best way to describe how I feel, I believe only women who are going through it will understand, I feel normal again! I write this a bit teary eyed. The last few years have been tough. My menopause symptoms included anxiety. I felt like fear had me in a choke hold. After I received the bundle, I kid you not, the first night I was able to sleep and wake up the next morning feeling rested. My hot flashes and night sweats became less. My mood has improved and the anxious thoughts and feeling gone. This has been a game changer for my relationship with my husband as well.',
+  },
 ];
 
 const BY_NAME = new Map([...WALL, ...EXTRA].map((r) => [r.name, r]));
@@ -161,6 +166,24 @@ const LEAD_FOR: Record<string, string[]> = {
   energy: ['Lisa', 'Shauna H.', 'Roslind'],
 };
 
+/* ------------------------------------------- THE FACES AND THE BADGE --
+ *
+ * Borrowed from JJ's live offer page (read 2 October 2026), where they
+ * already run: twelve customers holding the bottle, the Okendo mark the
+ * review count is verified by, and one Facebook comment as JJ's page shows
+ * it. The comment is a picture of the comment, so its words are in the alt
+ * text exactly as the page has them.
+ */
+export const PROOF_FACES: string[] =
+  Array.from({ length: 12 }, (_, i) => `/img/proof/selfie-${i + 1}.webp`);
+
+export const OKENDO_MARK = '/img/proof/okendo.webp';
+
+export const FB_COMMENT = {
+  src: '/img/proof/fb-comment.webp',
+  alt: 'Facebook comment from Martinez Sullivan: this is a game changer, I have literally shed some inches and lbs, not to mention the hot flashes are gone when I take it',
+};
+
 export interface KitProof {
   /** Straight under the offer. The first speaks to her main concern. */
   lead: Review[];
@@ -174,6 +197,6 @@ export function kitProof(mainConcern: string): KitProof {
   return {
     lead: named(LEAD_FOR[mainConcern] ?? LEAD_FOR.weight),
     more: named(['Anita F.', 'QUANEZIA M.', 'Mara', 'Kim']),
-    closing: BY_NAME.get('Katina S.') as Review,
+    closing: BY_NAME.get('Adrienne') as Review,
   };
 }

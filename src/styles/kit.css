@@ -316,3 +316,78 @@
 .kitSticky span { font-size: 13px; font-weight: 600; color: var(--ink-2); line-height: 1.25; }
 .kitSticky span b { display: block; font-size: 19px; font-weight: 800; color: var(--ink); }
 .kitSticky .kitBtn { width: auto; flex: 0 1 260px; margin-top: 0; min-height: 52px; padding: 13px 18px; font-size: 16px; }
+
+/* --------------------------------------------- the result, one answer --- */
+
+.resHero {
+  margin: 14px calc(var(--gutter) * -1) 0; padding: 22px var(--gutter) 24px;
+  text-align: center; background: var(--wash); border-bottom: 1px solid var(--line);
+}
+.resKicker {
+  margin: 0; font-size: 12.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--plum-2);
+}
+.resName {
+  margin: 8px 0 0; font-family: var(--sans); font-weight: 800; letter-spacing: -.03em;
+  font-size: clamp(34px, 10vw, 46px); line-height: 1.04; color: var(--plum);
+}
+.resLine {
+  margin: 10px auto 0; max-width: 34ch; font-size: var(--t-body); line-height: 1.4;
+  color: var(--ink); font-weight: 600;
+}
+
+.resSec { margin-top: 24px; }
+.resPics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
+.resPics.n1 { grid-template-columns: 1fr; }
+.resPics figure {
+  margin: 0; border-radius: 16px; overflow: hidden; background: var(--surface);
+  border: 1.5px solid var(--line-2); box-shadow: var(--shadow);
+}
+.resPics figure.main { grid-column: 1 / -1; border: 2.5px solid var(--plum); }
+.resPics img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.resPics figure.main img { aspect-ratio: 16 / 9; }
+.resPics figcaption {
+  padding: 9px 12px 11px; font-size: 15px; font-weight: 700; line-height: 1.25; color: var(--ink);
+}
+.resPics figcaption b {
+  display: block; margin-bottom: 2px; font-size: 11px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--plum);
+}
+
+.resFacts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 0; }
+.resFacts > div {
+  padding: 11px 13px; border-radius: 13px; background: var(--surface); border: 1px solid var(--line);
+}
+.resFacts dt {
+  font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+}
+.resFacts dd { margin: 3px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ink); }
+
+.resProof { margin-top: 26px; }
+
+/* ------------------------------------------------- proof, from JJ's page --- */
+
+.pfFaces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 12px; }
+.pfFaces.n12 { grid-template-columns: repeat(4, 1fr); }
+.pfFaces img {
+  display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center 18%;
+  border-radius: 11px; box-shadow: var(--shadow);
+}
+@media (min-width: 640px) { .pfFaces.n12 { grid-template-columns: repeat(6, 1fr); } }
+
+.pfRating {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px 7px;
+  margin: 14px 0 0; font-size: var(--t-small); color: var(--ink-2);
+}
+.pfRating b { font-size: 17px; font-weight: 800; color: var(--ink); }
+.pfStars { display: inline-flex; gap: 2px; }
+.pfStars svg { width: 16px; height: 16px; }
+.pfRating img { height: 16px; width: auto; }
+
+.resProof .kitRevs, .resProof .kitRev { margin-top: 12px; }
+
+.pfFb { margin: 14px 0 0; }
+.pfFb img {
+  display: block; width: 100%; height: auto; border-radius: 14px;
+  border: 1px solid var(--line); box-shadow: var(--shadow); background: #fff;
+}

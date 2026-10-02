@@ -1,84 +1,95 @@
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
+import { Faces, Quote, RatingBadge } from '../../components/Proof';
 import {
-  TILES, BRAND, docReason, has, mainConcern, masked, otherConcerns, seesOffer, stateKey,
+  TILES, BRAND, docReason, has, mainConcern, masked, otherConcerns, stateKey,
 } from '../../lib/logic';
 import {
-  CANNOT_TELL, DOC, DOC_TITLE, MASKED_NOTE, QUIZ_DISCLAIMER, RESULT, WANT_PHRASE,
-  patternLine,
+  CANNOT_TELL, DOC, DOC_TITLE, IMG, MASKED_NOTE, PATTERN_SHORT, QUIZ_DISCLAIMER, RESULT,
+  WANT_PHRASE, cycleShort, mentioned,
 } from '../../lib/content';
+import { kitProof } from '../../lib/reviews';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
 const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
 
 /* ---------------------------------------------------------------- r1 ---- */
 
-/* WHAT HER ANSWERS MEAN. One page, and nothing is sold on it: she gave an
-   address for a result, and the result is what she is given first.
+/* HER RESULT. One named answer at the top, said in one sentence. Then what
+ * she told us, with the same pictures she tapped, what it means with her own
+ * symptoms in it, and women who have been where she is.
  *
- * It is a pattern and never a diagnosis. Everything on it is one of her own
- * answers said back to her, or a plain sentence about the stage. */
+ * It is a pattern and never "you have", and it never tells her she might be
+ * one thing or another: she gets one of four answers. */
 export function R1() {
-  const { S, next, restart } = useQuiz();
+  const { S, next } = useQuiz();
   const outcome = stateKey(S) as Exclude<Outcome, 'D'>;
   const copy = RESULT[outcome] ?? RESULT.A;
   const main = mainConcern(S);
-  const others = otherConcerns(S);
-  const pattern = patternLine(S);
+  const picked = main ? [main, ...otherConcerns(S)] : [];
+  const cycle = cycleShort(S);
   const name = S.name.trim();
+  const review = kitProof(main).lead[0];
 
   return (
     <Screen id="r1">
-      <p className="eyebrow">Your Hormone Check</p>
-      <ScreenTitle className="rTitle">
-        {name ? `${name}, ${copy.headline.charAt(0).toLowerCase()}${copy.headline.slice(1)}` : copy.headline}
-      </ScreenTitle>
+      <div className="resHero">
+        <p className="resKicker">{name ? `${name}, your Hormone Check result` : 'Your Hormone Check result'}</p>
+        <ScreenTitle className="resName">{copy.name}</ScreenTitle>
+        <p className="resLine">{copy.line}</p>
+      </div>
 
-      <dl className="resCard">
-        {main && (
-          <div>
-            <dt>Your biggest concern</dt>
-            <dd>{LABEL[main]}</dd>
+      {picked.length > 0 && (
+        <section className="resSec">
+          <p className="blabel">What you told us</p>
+          <div className={`resPics n${Math.min(picked.length, 4)}`}>
+            {picked.map((id, i) => (
+              <figure key={id} className={i === 0 ? 'main' : ''}>
+                <img src={IMG[id]} alt="" width={540} height={405} loading="lazy" decoding="async" />
+                <figcaption>
+                  {i === 0 && picked.length > 1 && <b>Bothers you most</b>}
+                  {LABEL[id]}
+                </figcaption>
+              </figure>
+            ))}
           </div>
-        )}
-        {others.length > 0 && (
-          <div>
-            <dt>You are also noticing</dt>
-            <dd>{others.map((id) => LABEL[id]).join(' + ')}</dd>
-          </div>
-        )}
-        {pattern && (
-          <div>
-            <dt>Your pattern</dt>
-            <dd className="resSay">{pattern}</dd>
-          </div>
-        )}
-      </dl>
+          {(S.pattern || cycle) && (
+            <dl className="resFacts">
+              {S.pattern && <div><dt>How often</dt><dd>{PATTERN_SHORT[S.pattern]}</dd></div>}
+              {cycle && <div><dt>Your cycle</dt><dd>{cycle}</dd></div>}
+            </dl>
+          )}
+        </section>
+      )}
 
       <div className="block">
-        <p className="blabel">Here is what that means</p>
-        {copy.means.map((p) => <p key={p}>{p}</p>)}
+        <p className="blabel">What this means</p>
+        <p>{copy.means(mentioned(S) || 'these changes', picked.length > 1)}</p>
         {masked(S) && <p>{MASKED_NOTE}</p>}
       </div>
 
       {S.want && (
         <div className="block key">
-          <p className="blabel">And what you want most is</p>
+          <p className="blabel">What you want most</p>
           <p className="lead">{WANT_PHRASE[S.want]}</p>
         </div>
       )}
 
-      <p className="fine">{CANNOT_TELL} {QUIZ_DISCLAIMER}</p>
+      <section className="resProof" data-proof="result">
+        <p className="blabel">You are not the only one</p>
+        <Faces count={6} />
+        <RatingBadge />
+        {review && <Quote review={review} />}
+        <p className="kitNote">Every review is a customer’s own words. Individual results vary.</p>
+      </section>
 
-      {seesOffer(S) ? (
-        <ActionBar>
-          <button type="button" className="cta" onClick={() => next()}>
-            SHOW ME WHAT TO DO NEXT &rarr;
-          </button>
-        </ActionBar>
-      ) : (
-        <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
-      )}
+      <p className="fine">{CANNOT_TELL}</p>
+
+      <ActionBar>
+        <button type="button" className="cta" onClick={() => next()}>
+          SHOW ME WHAT TO DO NEXT &rarr;
+        </button>
+      </ActionBar>
     </Screen>
   );
 }

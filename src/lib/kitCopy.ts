@@ -44,10 +44,12 @@ export const TRUST_ITEMS: string[] = ['60-day money-back guarantee', 'In stock, 
 
 /* -------------------------------------------------------------- the proof -- */
 
-export const PROOF_EYEBROW = 'In their words';
-export const PROOF_HEAD = 'Women who started where you are';
+export const PROOF_EYEBROW = 'Real women';
+/* JJ's page heading for the same wall of faces. */
+export const PROOF_HEAD = 'Join the women who stopped fighting it, one symptom at a time';
 export const PROOF_MORE_HEAD = 'What women are saying';
-export const PROOF_NOTE = 'Every review is a customer’s own words. Individual results vary.';
+export const PROOF_NOTE =
+  'Reviews, photos and a comment from verified buyers and JJ’s Facebook page. Individual results vary.';
 
 /* ------------------------------------------------- the kit, piece by piece -- */
 

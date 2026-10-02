@@ -43,7 +43,7 @@ export const JUMPS: Jump[] = [
     state: { ...who, sym: ['sleep', 'mood'], main: 'mood', age: '40-44', cycle: 'stopped', twelve: 'yes', pattern: 'comego', tried: ['supps'], want: 'clear' },
   },
   {
-    label: 'Result: hormone changes', route: '/quiz', screen: 'r1',
+    label: 'Result: hormonal imbalance', route: '/quiz', screen: 'r1',
     state: { ...who, sym: ['energy', 'bloat'], main: 'bloat', age: '40-44', cycle: 'same', pattern: 'monthly', tried: ['nothing'], want: 'body' },
   },
   {

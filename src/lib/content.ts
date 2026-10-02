@@ -51,7 +51,7 @@ export const REVIEW_SOURCE =
 /* The brief's words. The sub-line and the button are the same on every
    route; only the headline changes with the ad angle (angles.ts). */
 export const COVER_SUB =
-  'Take this 2-Minute Hormone Check and find out the pattern behind your symptoms.';
+  'Answer 7 quick questions. Find out why you feel this way and what to do next.';
 export const COVER_CTA = 'GET THE HORMONE CHECK';
 
 /* -------------------------------------------------------- the questions -- */
@@ -126,40 +126,6 @@ export const WANT_OPTIONS: [WantId, string][] = [
 
 /* ------------------------------------------- her answers, said back to her -- */
 
-/* "Your pattern: These changes are showing up most weeks, and your cycle has
-   become less predictable." The first half comes from question five. */
-const PATTERN_PHRASE: Record<Pattern, string> = {
-  monthly: 'These changes show up around the same time each month',
-  comego: 'These changes come and go without a clear pattern',
-  weekly: 'These changes are showing up most weeks',
-  daily: 'These changes are showing up almost every day',
-  untracked: 'You have not tracked these changes yet',
-};
-
-/* The second half comes from the cycle question and its follow-up. */
-function cyclePhrase(S: QuizState): string {
-  if (masked(S)) return 'birth control, medication or surgery is affecting your cycle';
-  switch (S.cycle) {
-    case 'same': return 'your cycle is about the same as usual';
-    case 'unpredictable': return 'your cycle has become less predictable';
-    case 'skipping': return 'you have started skipping periods';
-    case 'unsure': return 'you are not sure what your cycle is doing';
-    case 'stopped':
-      if (S.twelve === 'yes') return 'your periods stopped 12 months ago or more';
-      if (S.twelve === 'no') return 'your periods have stopped in the last 12 months';
-      return 'your periods have stopped';
-    default: return '';
-  }
-}
-
-export function patternLine(S: QuizState): string {
-  const a = S.pattern ? PATTERN_PHRASE[S.pattern] : '';
-  const b = cyclePhrase(S);
-  if (a && b) return `${a}, and ${b}.`;
-  if (a) return `${a}.`;
-  return b ? `${b.charAt(0).toUpperCase()}${b.slice(1)}.` : '';
-}
-
 /* "You have already tried exercising more and changing how you eat." */
 const TRIED_PHRASE: Record<Exclude<TriedId, 'nothing'>, string> = {
   food: 'changing how you eat',
@@ -195,53 +161,74 @@ export const WANT_PHRASE: Record<WantId, string> = {
 
 /* ------------------------------------------------------------- the result -- */
 
+/* ONE CLEAR ANSWER. She gets one of four named results, said once, in one
+   sentence, with no "you may be between two" and no list of what she is
+   not. It is still a pattern and never "you have": the sentence says her
+   answers match it. Jane, 2 October 2026. */
+
 export interface ResultCopy {
-  /** The headline. A pattern, never a diagnosis. */
-  headline: string;
-  /** "Here is what that means", in plain paragraphs. */
-  means: string[];
+  /** The answer, big. */
+  name: string;
+  /** One sentence under it. */
+  line: string;
+  /** What it means, said with her own symptoms in it. */
+  means: (symptoms: string, many: boolean) => string;
 }
 
-/* B is the brief's own wording. A, C and E are PLACEHOLDER lines in the same
-   shape, waiting on final copy. */
 export const RESULT: Record<Exclude<Outcome, 'D'>, ResultCopy> = {
   A: {
-    headline: 'Hormone changes may be part of the picture.',
-    means: [
-      'Your answers do not point clearly to perimenopause or menopause yet. Your hormones still shift from month to month, and those shifts can show up in more than one part of your body.',
-      'That is why changes in sleep, energy, mood, bloating and the way your body carries weight can sometimes start showing up around the same time.',
-    ],
+    name: 'Hormonal imbalance',
+    line: 'Your answers match the pattern of a hormonal imbalance.',
+    means: (x) => `Your hormones rise and fall through every month. When they shift out of their usual rhythm, it can show up as ${x}.`,
   },
   B: {
-    headline: 'Your answers show a pattern often seen during the perimenopause years.',
-    means: [
-      'Perimenopause is the transition before menopause, when your hormones begin changing in ways that can affect more than one part of your body.',
-      'That is why changes in sleep, energy, hot flashes, mood, concentration, bloating, and the way your body carries weight can sometimes start showing up around the same time.',
-    ],
+    name: 'Perimenopause',
+    line: 'Your answers match the pattern of perimenopause, the years before your periods stop.',
+    means: (x, many) => `In perimenopause your hormones start to rise and fall unevenly. That is why ${x} can ${many ? 'all show up at the same time' : 'show up'}.`,
   },
   C: {
-    headline: 'Your answers show a pattern often seen around menopause.',
-    means: [
-      'Menopause is the point when your periods have stopped for 12 months. Your hormones settle at a new level after that, and the changes do not always stop when your periods do.',
-      'That is why sleep, energy, hot flashes, mood, concentration, bloating, and the way your body carries weight can still be changing now.',
-    ],
+    name: 'Menopause',
+    line: 'Your answers match the pattern of menopause.',
+    means: (x) => `After your periods stop, your hormones settle at a new, lower level. That is why ${x} can keep showing up.`,
   },
   E: {
-    headline: 'Your answers show a pattern often seen when menopause comes early.',
-    means: [
-      'Your periods stopped 12 months ago or more, and you are under 45. That is earlier than average. It is not rare, and it is worth having confirmed by your doctor so you know where you stand.',
-      'The changes that come with menopause can show up in sleep, energy, hot flashes, mood, concentration, bloating, and the way your body carries weight.',
-    ],
+    name: 'Early menopause',
+    line: 'Your answers match the pattern of early menopause, which starts before 45.',
+    means: (x) => `Your hormones are settling at a new, lower level earlier than most women. That is why ${x} can show up. Ask your doctor to confirm it, so you know where you stand.`,
   },
 };
 
+/* How often, and her cycle, as two short lines under her pictures. */
+export const PATTERN_SHORT: Record<Pattern, string> = {
+  monthly: 'Around the same time each month',
+  comego: 'They come and go',
+  weekly: 'Most weeks',
+  daily: 'Almost every day',
+  untracked: 'Not tracked yet',
+};
+
+export function cycleShort(S: QuizState): string {
+  if (masked(S)) return 'Affected by birth control, medication or surgery';
+  switch (S.cycle) {
+    case 'same': return 'About the same as usual';
+    case 'unpredictable': return 'Less predictable';
+    case 'skipping': return 'Skipping some';
+    case 'unsure': return 'Not sure';
+    case 'stopped':
+      if (S.twelve === 'yes') return 'Stopped 12 months or more';
+      if (S.twelve === 'no') return 'Stopped, less than 12 months';
+      return 'Stopped';
+    default: return '';
+  }
+}
+
 /** Said on the result when her cycle cannot tell us anything. */
 export const MASKED_NOTE =
-  'Birth control, medication or surgery is affecting your cycle, so your cycle cannot tell us much. This result comes from your age and the changes you are noticing.';
+  'Birth control, medication or surgery is affecting your cycle, so this result comes from your age and your symptoms.';
 
-/** What the check cannot do, said once on the result. */
+/** What the check is not, said once, small. */
 export const CANNOT_TELL =
-  'This check cannot measure your hormones, and it cannot rule anything out. If your periods changed suddenly, if you are under 45, or if anything here worries you, talk to your doctor. Any bleeding after 12 months without a period is a reason to see your doctor.';
+  'This check is not a diagnosis. Talk to your doctor if anything worries you, or if you bleed after 12 months without a period.';
 
 /* ---------------------------------------------------------- what to do next -- */
 

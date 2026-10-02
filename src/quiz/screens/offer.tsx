@@ -5,8 +5,8 @@ import { mainConcern, stateKey } from '../../lib/logic';
 import {
   NEXT_BRIDGE, NEXT_INTRO, NEXT_LEAD, NEXT_STEPS, NEXT_TITLE, OFFER_DISCLAIMER, triedLine,
 } from '../../lib/content';
-import { Stars } from '../../components/icons';
-import { RATING, REVIEW_COUNT, kitProof, type Review } from '../../lib/reviews';
+import { FacebookComment, Faces, Quote, RatingBadge } from '../../components/Proof';
+import { kitProof } from '../../lib/reviews';
 import { KIT_CONTENTS, PROTOCOL_PRICE, money } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
 import {
@@ -16,20 +16,6 @@ import {
 } from '../../lib/kitCopy';
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
 import { track } from '../../lib/analytics';
-
-/* A customer's words, exactly as she wrote them. */
-function Quote({ review, long = false }: { review: Review; long?: boolean }) {
-  return (
-    <blockquote className={`kitRev${long ? ' long' : ''}`}>
-      <span className="kitRevStars"><Stars n={5} /></span>
-      <p>&ldquo;{review.body}&rdquo;</p>
-      <cite>
-        <b>{review.name}</b>
-        {review.verified ? ' · verified buyer' : ' · Hormone Focus customer'}
-      </cite>
-    </blockquote>
-  );
-}
 
 /* ---------------------------------------------------------------- r2 ---- */
 
@@ -86,6 +72,8 @@ export function R2() {
       <section className="kitSec">
         <p className="kitEyebrow">{PROOF_EYEBROW}</p>
         <h2 className="kitH2">{PROOF_HEAD}</h2>
+        <Faces count={12} />
+        <RatingBadge />
         <div className="kitRevs" data-proof="lead">
           {proof.lead.map((r) => <Quote key={r.name} review={r} />)}
         </div>
@@ -128,12 +116,11 @@ export function R2() {
       {/* ------------------------------------------- proof, block 2 ---- */}
       <section className="kitSec">
         <h2 className="kitH2">{PROOF_MORE_HEAD}</h2>
-        <div className="kitRating">
-          <Stars n={5} /> <b>{RATING}</b> from {REVIEW_COUNT} reviews of Hormone Focus
-        </div>
+        <RatingBadge />
         <div className="kitRevs" data-proof="more">
           {proof.more.map((r) => <Quote key={r.name} review={r} />)}
         </div>
+        <FacebookComment />
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>
 

@@ -37,7 +37,7 @@ test.describe('the cover', () => {
   test('the cover is one screen: the headline, one line, one button, and nothing sold', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toContainText('Over 40 and struggling with');
-    await expect(page.getByText('Take this 2-Minute Hormone Check')).toBeVisible();
+    await expect(page.locator('.coverSub')).toHaveText('Answer 7 quick questions. Find out why you feel this way and what to do next.');
     await expect(page.locator('a.cta')).toHaveCount(1);
     await expect(page.locator('a.cta')).toContainText('GET THE HORMONE CHECK');
     /* No rating, no review, no bottle, no price before she has a result. */
@@ -124,28 +124,37 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 1. A pattern, not a diagnosis, built from her own answers. */
-    await expect(heading(page)).toHaveText(
-      'Renee, your answers show a pattern often seen during the perimenopause years.',
+    /* RESULT PAGE 1. One named answer, said in one sentence. */
+    await expect(page.locator('.resKicker')).toHaveText('Renee, your Hormone Check result');
+    await expect(heading(page)).toHaveText('Perimenopause');
+    await expect(page.locator('.resLine')).toHaveText(
+      'Your answers match the pattern of perimenopause, the years before your periods stop.',
     );
-    const card = page.locator('.resCard');
-    await expect(card).toContainText('Your biggest concern');
-    await expect(card).toContainText('Poor sleep');
-    await expect(card).toContainText('Stubborn weight gain + Low energy');
-    await expect(card).toContainText(
-      'These changes are showing up most weeks, and your cycle has become less predictable.',
-    );
+
+    /* What she told us, with the pictures she tapped, the one she named first. */
+    const pics = page.locator('.resPics figure');
+    await expect(pics).toHaveCount(3);
+    await expect(pics.first()).toContainText('Bothers you most');
+    await expect(pics.first()).toContainText('Poor sleep');
+    await expect(pics.first().locator('img')).toHaveAttribute('src', /symptom-sleep/);
+    await expect(page.locator('.resFacts')).toContainText('Most weeks');
+    await expect(page.locator('.resFacts')).toContainText('Less predictable');
+    await expect(page.getByText('That is why poor sleep, stubborn weight gain and low energy can all show up at the same time.')).toBeVisible();
     await expect(page.getByText('To sleep through the night.')).toBeVisible();
     await expectNoHorizontalOverflow(page, 'r1 result');
 
-    /* Nothing is sold on it. */
-    await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
-    await expect(page.locator('.kitRev')).toHaveCount(0);
+    /* Women like her, before any price: faces, the 4.9, and a review that
+       speaks to the concern she named. */
+    await expect(page.locator('.resProof .pfFaces img')).toHaveCount(6);
+    await expect(page.locator('.resProof .pfRating')).toContainText('4.9');
+    await expect(page.locator('.resProof .kitRev').first()).toContainText('I sleep better');
+
+    /* It is one answer: no hedging between two, and still nothing to buy. */
     const resultText = await page.locator('.rise').innerText();
-    expect(resultText).not.toContain('$');
-    for (const banned of ['estrogen', 'You have ', 'hormonal imbalance', 'dominance']) {
+    for (const banned of ['between two', 'closer fit', 'may be part of the picture', 'You have ', 'estrogen', '$']) {
       expect(resultText, banned).not.toContain(banned);
     }
+    await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
 
     await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
     await page.locator('.actionBar .cta').click();
@@ -183,7 +192,9 @@ test.describe('the quiz', () => {
     await expect(page.locator('[data-proof="lead"] .kitRev').first()).toContainText('I sleep better');
     await expect(page.locator('[data-proof="more"] .kitRev')).toHaveCount(4);
     await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
-    await expect(page.locator('.kitRating')).toContainText('4.9');
+    await expect(page.locator('.kitSec .pfFaces img')).toHaveCount(12);
+    await expect(page.locator('.kitSec .pfRating').first()).toContainText('171 reviews');
+    await expect(page.locator('.pfFb img')).toHaveAttribute('alt', /Martinez Sullivan/);
 
     /* The guarantee, the questions, and the button again. */
     await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
@@ -229,9 +240,11 @@ test.describe('the quiz', () => {
     await page.locator('.actionBar .cta').click();
 
     /* Menopause, and it is shown the kit like every result but the doctor's. */
-    await expect(heading(page)).toHaveText('Your answers show a pattern often seen around menopause.');
-    await expect(page.locator('.resCard')).toContainText('your periods stopped 12 months ago or more');
-    await expect(page.locator('.resCard')).not.toContainText('You are also noticing');
+    await expect(heading(page)).toHaveText('Menopause');
+    await expect(page.locator('.resKicker')).toHaveText('Your Hormone Check result');
+    await expect(page.locator('.resFacts')).toContainText('Stopped 12 months or more');
+    await expect(page.locator('.resPics figure')).toHaveCount(1);
+    await expect(page.locator('.resPics figure')).not.toContainText('Bothers you most');
     /* Her wish is softened on the way back, so it cannot read as a promise. */
     await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
@@ -317,8 +330,8 @@ test.describe('the doctor route is an exit', () => {
     await page.fill('#ef', 'dana@example.com');
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('perimenopause years');
+    await expect(heading(page)).toHaveText('Perimenopause');
     /* The result says plainly what it was read from. */
-    await expect(page.getByText('so your cycle cannot tell us much')).toBeVisible();
+    await expect(page.getByText('this result comes from your age and your symptoms')).toBeVisible();
   });
 });
