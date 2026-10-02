@@ -3,55 +3,54 @@ import { useAutoAdvance } from '../useAutoAdvance';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { TileGrid } from '../../components/TileGrid';
 import { SingleChoice, MultiChoice } from '../../components/controls';
-import { RatingLine } from '../../components/icons';
 import {
-  AGE_OPTIONS, PERIOD_OPTIONS, CAUSE_OPTIONS, REG_OPTIONS, SEV_OPTIONS,
-  HELPED_OPTIONS, MOOD_LABELS, MARKER_LABELS, TRIED_LABELS, SHORT,
+  AGE_OPTIONS, CYCLE_OPTIONS, PATTERN_OPTIONS, TRIED_OPTIONS, TWELVE_OPTIONS,
+  WANT_OPTIONS, mentioned,
 } from '../../lib/content';
-import { TILES, has, mainConcern } from '../../lib/logic';
-import type {
-  Age, Periods, StopCause, Regularity, Severity, Helped, SymptomId,
-} from '../../lib/logic';
+import { TILES, has } from '../../lib/logic';
+import type { Age, Cycle, Pattern, SymptomId, Twelve, WantId } from '../../lib/logic';
 
-/* ---------------------------------------------------------------- s1 ---- */
+/* SEVEN QUESTIONS, and nothing between them.
+ *
+ * No explainer screens, no reviews, no product. Each question changes her
+ * result, what her result says back to her, or what she is shown next. One
+ * that does none of those does not belong here.
+ */
 
-/* The question is the page. Whatever angle brought her here is handled by
-   the landing page in front of this, so screen one stays the same for every
-   ad — only the pre-selection differs. */
-export function S1() {
+/* ---------------------------------------------------------------- q1 ---- */
+
+/* The lowest-friction way in: she sees herself before she is asked her age
+   or anything about her cycle. Whatever angle brought her here arrives
+   already ticked. */
+export function Q1() {
   const { S, toggle, next } = useQuiz();
   return (
-    <Screen id="s1">
-      <p className="eyebrow">The Hormone Check</p>
-      <ScreenTitle>What changes have frustrated you the most?</ScreenTitle>
+    <Screen id="q1">
+      <ScreenTitle>What has been bothering you lately?</ScreenTitle>
       <p className="qsub">Select all that apply.</p>
       <TileGrid selected={S.sym} onToggle={(id) => toggle('sym', id)} />
-      <div className="footTrust"><RatingLine /></div>
       <ActionBar>
         <button type="button" className="cta" disabled={!S.sym.length} onClick={() => next()}>
-          {S.sym.length ? `Continue with ${S.sym.length} selected` : 'Select at least one'}
+          Continue
         </button>
       </ActionBar>
     </Screen>
   );
 }
 
-/* --------------------------------------------------------------- s1b ---- */
+/* ---------------------------------------------------------------- q2 ---- */
 
-/* Five ticks do not say which one she came here about. This asks, and only
-   when there is something to rank: one symptom skips the screen. The answer
-   never changes her result. It decides which concern her first step is for. */
-export function S1b() {
+/* Question one says what she is living with. This says what she cares about
+   most, and only the ones she ticked are offered. One tick skips the screen. */
+export function Q2() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
   const options = TILES.filter(([id]) => has(S, id)).map(([id, label]) => [id, label] as [string, string]);
   return (
-    <Screen id="s1b">
-      <p className="eyebrow">The Hormone Check</p>
-      <ScreenTitle>Which of these is bothering you most?</ScreenTitle>
-      <p className="qsub">Your result will start with this one.</p>
+    <Screen id="q2">
+      <ScreenTitle>Which one bothers you the most?</ScreenTitle>
       <SingleChoice
-        name="What is bothering you most"
+        name="Which one bothers you the most"
         options={options}
         value={S.main}
         onPick={(v: SymptomId) => pick(() => set({ main: v }))}
@@ -60,18 +59,16 @@ export function S1b() {
   );
 }
 
-/* ---------------------------------------------------------------- s2 ---- */
+/* ---------------------------------------------------------------- q3 ---- */
 
-export function S2() {
+export function Q3() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
   return (
-    <Screen id="s2">
-      <p className="eyebrow">About you</p>
-      <ScreenTitle>What is your age?</ScreenTitle>
-      <p className="qsub">Your age is read together with your cycle, never on its own.</p>
+    <Screen id="q3">
+      <ScreenTitle>How old are you?</ScreenTitle>
       <SingleChoice
-        name="Your age"
+        name="How old are you"
         options={AGE_OPTIONS}
         value={S.age}
         onPick={(v: Age) => pick(() => set({ age: v }))}
@@ -80,211 +77,104 @@ export function S2() {
   );
 }
 
-/* ---------------------------------------------------------------- s3 ---- */
+/* ---------------------------------------------------------------- q4 ---- */
 
-/* Reassurance, and nothing sold. A product review sat here once, before she
-   had been told anything about herself; it is on the proof screen now, where
-   a product is actually being discussed. */
-export function S3() {
-  const { next } = useQuiz();
-  return (
-    <Screen id="s3">
-      <p className="eyebrow">You are in the right place</p>
-      <ScreenTitle>You are not the only one asking.</ScreenTitle>
-      <div className="block key">
-        <p className="lead">These changes are common after 40, and most women are never told what to look for.</p>
-        <p>The next few questions are about your cycle. It is one of the most useful things this check can go on.</p>
-      </div>
-      <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Continue</button>
-      </ActionBar>
-    </Screen>
-  );
-}
-
-/* ---------------------------------------------------------------- s4 ---- */
-
-export function S4() {
+/* One question where there used to be four. Changing her answer clears the
+   follow-up, so an old "yes, twelve months" cannot ride along with a new
+   "less predictable". */
+export function Q4() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
   return (
-    <Screen id="s4">
-      <p className="eyebrow">Your cycle</p>
-      <ScreenTitle>Do you still have periods?</ScreenTitle>
-      <p className="qsub">Changed can mean heavier, lighter, closer together or further apart.</p>
+    <Screen id="q4">
+      <ScreenTitle>What has been happening with your cycle lately?</ScreenTitle>
       <SingleChoice
-        name="Do you still have periods"
-        options={PERIOD_OPTIONS}
-        value={S.periods}
-        onPick={(v: Periods) => pick(() => set({ periods: v }))}
+        name="What has been happening with your cycle"
+        options={CYCLE_OPTIONS}
+        value={S.cycle}
+        onPick={(v: Cycle) => pick(() => set(v === S.cycle ? { cycle: v } : { cycle: v, twelve: '' }))}
       />
     </Screen>
   );
 }
 
-export function S4b() {
+/* Only for "It has stopped completely". */
+export function Q4b() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
   return (
-    <Screen id="s4b">
-      <p className="eyebrow">Your cycle</p>
-      <ScreenTitle>Is anything else likely to be stopping them?</ScreenTitle>
-      <p className="qsub">This changes the answer completely, so it is worth asking.</p>
+    <Screen id="q4b">
+      <ScreenTitle>Has it been at least 12 months since your last one?</ScreenTitle>
       <SingleChoice
-        name="What is stopping your periods"
-        options={CAUSE_OPTIONS}
-        value={S.stopCause}
-        onPick={(v: StopCause) => pick(() => set({ stopCause: v }))}
+        name="Has it been at least 12 months"
+        options={TWELVE_OPTIONS}
+        value={S.twelve}
+        onPick={(v: Twelve) => pick(() => set({ twelve: v }))}
       />
     </Screen>
   );
 }
 
-export function S5() {
+/* ---------------------------------------------------------------- q5 ---- */
+
+/* The check promises a pattern. This is the question that looks for one, and
+   it opens by saying her own answers back to her. */
+export function Q5() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
+  const list = mentioned(S);
   return (
-    <Screen id="s5">
-      <p className="eyebrow">Your cycle</p>
-      <ScreenTitle>And how regular are they?</ScreenTitle>
+    <Screen id="q5">
+      {list && <p className="qlead">You mentioned {list}.</p>}
+      <ScreenTitle>When do you notice these changes most?</ScreenTitle>
       <SingleChoice
-        name="How regular are your periods"
-        options={REG_OPTIONS}
-        value={S.reg}
-        onPick={(v: Regularity) => pick(() => set({ reg: v }))}
+        name="When do you notice these changes most"
+        options={PATTERN_OPTIONS}
+        value={S.pattern}
+        onPick={(v: Pattern) => pick(() => set({ pattern: v }))}
       />
     </Screen>
   );
 }
 
-/* ---------------------------------------------------------------- s6 ---- */
+/* ---------------------------------------------------------------- q6 ---- */
 
-export function S6() {
+/* Asked so her result can acknowledge the effort. It is never turned into
+   "and that is why it failed". */
+export function Q6() {
   const { S, toggle, next } = useQuiz();
   return (
-    <Screen id="s6">
-      <p className="eyebrow">Mood and mind</p>
-      <ScreenTitle>Has your mood changed lately?</ScreenTitle>
-      <p className="qsub">Not how you have always been. What is different now. Select all that apply.</p>
-      <MultiChoice
-        name="Mood changes"
-        options={MOOD_LABELS}
-        values={S.mood}
-        onToggle={(v) => toggle('mood', v as never)}
-      />
-      <ActionBar>
-        <button type="button" className="cta" disabled={!S.mood.length} onClick={() => next()}>Continue</button>
-        <button type="button" className="cta ghost" onClick={() => next()}>None of these</button>
-      </ActionBar>
-    </Screen>
-  );
-}
-
-/* ---------------------------------------------------------------- s7 ---- */
-
-export function S7() {
-  const { S, toggle, next } = useQuiz();
-  return (
-    <Screen id="s7">
-      <p className="eyebrow">A few more</p>
-      <ScreenTitle>Any of these in the last year?</ScreenTitle>
-      <p className="qsub">Changes like these help place where you are. Select all that apply.</p>
-      <MultiChoice
-        name="Cycle markers"
-        options={MARKER_LABELS}
-        values={S.markers}
-        onToggle={(v) => toggle('markers', v as never)}
-      />
-      <ActionBar>
-        <button type="button" className="cta" disabled={!S.markers.length} onClick={() => next()}>Continue</button>
-      </ActionBar>
-    </Screen>
-  );
-}
-
-/* ---------------------------------------------------------------- s8 ---- */
-
-export function S8() {
-  const { S, set, next } = useQuiz();
-  const pick = useAutoAdvance(next);
-  return (
-    <Screen id="s8">
-      <p className="eyebrow">How often</p>
-      <ScreenTitle>How often does it hit you?</ScreenTitle>
-      <p className="qsub">Thinking only about {SHORT[mainConcern(S) as SymptomId] ?? 'what bothers you most'}.</p>
-      <SingleChoice
-        name="How often"
-        options={SEV_OPTIONS}
-        value={S.sev}
-        onPick={(v: Severity) => pick(() => set({ sev: v }))}
-      />
-    </Screen>
-  );
-}
-
-/* ---------------------------------------------------------------- s9 ---- */
-
-/* What these can have in common, said as a possibility. The old screen drew
-   a vessel filling up and told her that was the cause of what she feels. Her
-   answers cannot establish a cause, so this one explains the stage and says
-   plainly what the check can and cannot do. */
-export function S9() {
-  const { next } = useQuiz();
-  return (
-    <Screen id="s9">
-      <p className="eyebrow">While I put this together</p>
-      <ScreenTitle>What these changes can have in common.</ScreenTitle>
-      <div className="block">
-        <p>In the years before your periods stop, your hormone levels start to rise and fall less evenly than they used to.</p>
-        <p>That shift can show up in more than one place at once: heat, sleep, weight that moves to the middle, bloating, mood.</p>
-      </div>
-      <div className="block key">
-        <p className="lead">This check cannot tell you the cause. It can tell you which stage your answers fit.</p>
-      </div>
-      <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Two more questions &rarr;</button>
-      </ActionBar>
-    </Screen>
-  );
-}
-
-/* --------------------------------------------------------------- s10 ---- */
-
-export function S10() {
-  const { S, toggle, next } = useQuiz();
-  return (
-    <Screen id="s10">
-      <p className="eyebrow">What you have tried</p>
+    <Screen id="q6">
       <ScreenTitle>What have you already tried?</ScreenTitle>
       <p className="qsub">Select all that apply.</p>
       <MultiChoice
-        name="What you have tried"
-        options={TRIED_LABELS}
+        name="What you have already tried"
+        options={TRIED_OPTIONS}
         values={S.tried}
         onToggle={(v) => toggle('tried', v as never)}
       />
       <ActionBar>
-        <button type="button" className="cta" disabled={!S.tried.length} onClick={() => next()}>Continue</button>
-        <button type="button" className="cta ghost" onClick={() => next()}>Nothing yet</button>
+        <button type="button" className="cta" disabled={!S.tried.length} onClick={() => next()}>
+          Continue
+        </button>
       </ActionBar>
     </Screen>
   );
 }
 
-/* --------------------------------------------------------------- s11 ---- */
+/* ---------------------------------------------------------------- q7 ---- */
 
-export function S11() {
+export function Q7() {
   const { S, set, next } = useQuiz();
   const pick = useAutoAdvance(next);
   return (
-    <Screen id="s11">
-      <p className="eyebrow">What you have tried</p>
-      <ScreenTitle>Did any of it help?</ScreenTitle>
+    <Screen id="q7">
+      <ScreenTitle>If one thing could feel better again, what would you choose?</ScreenTitle>
       <SingleChoice
-        name="Did any of it help"
-        options={HELPED_OPTIONS}
-        value={S.helped}
-        onPick={(v: Helped) => pick(() => set({ helped: v }))}
+        name="What you would choose"
+        options={WANT_OPTIONS}
+        value={S.want}
+        onPick={(v: WantId) => pick(() => set({ want: v }))}
       />
     </Screen>
   );

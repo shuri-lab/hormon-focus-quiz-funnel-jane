@@ -1,48 +1,53 @@
-/* THE HORMONE CHECK — routing and scoring, with no user interface attached.
+/* THE HORMONE CHECK — routing, with no user interface attached.
  *
- * This is a TYPED PORT of Jane's `src/logic.js`. Same branches, same order,
- * same comparisons. Nothing here was re-authored.
+ * REBUILT 2 OCTOBER 2026. The quiz went from eleven questions to seven. The
+ * five outcomes are the ones it has always had; what changed is the set of
+ * answers they are read from. Three old inputs (how regular, the cycle-marker
+ * list, why her periods stopped) are now one cycle question and one
+ * conditional follow-up.
  *
  * The specification is `docs/routing-table.md`. If the two ever disagree,
- * the table wins and this file is wrong.
- *
- * `tests/logic.equivalence.test.ts` runs Jane's original `reference/quiz.js`
- * in a sandbox and asserts both implementations agree across 560 combinations,
- * so this port cannot have drifted. Read `docs/PORTING.md` before touching it.
+ * the table wins and this file is wrong. `tests/logic.test.ts` walks every
+ * combination of answers that can change the outcome and holds this file to
+ * the table.
  */
 
 /* ---------------------------------------------------------------- types -- */
 
-export type Age = 'u30' | '30s' | '40s' | '50s' | '60';
-export type Periods = 'yes' | 'changing' | 'stopped';
-export type StopCause = 'coil' | 'pill' | 'surgery' | 'treatment' | 'none';
-export type Regularity = 'clock' | 'abit' | 'allover';
-export type Severity = 'rare' | 'monthly' | 'weekly' | 'daily';
-export type Helped = 'still' | 'temp' | 'little' | 'none' | 'worse';
-export type SymptomId = 'sweats' | 'weight' | 'sleep' | 'bloat' | 'mood' | 'energy';
-export type MoodId = 'irritable' | 'anxious' | 'flat' | 'notme';
-export type MarkerId = 'skipped' | 'heavier' | 'closer' | 'pms' | 'tender' | 'none';
-export type TriedId = 'food' | 'gym' | 'sleep' | 'dim' | 'doctor' | 'bloods' | 'wait';
+/** The ids are what Klaviyo stores as `age_band`, so they read as words. */
+export type Age = 'under-40' | '40-44' | '45-49' | '50-54' | '55-59' | '60-plus';
+
+/** "What has been happening with your cycle lately?" */
+export type Cycle = 'same' | 'unpredictable' | 'skipping' | 'stopped' | 'masked' | 'unsure';
+
+/** "Has it been at least 12 months?" Asked only when her periods have stopped. */
+export type Twelve = 'yes' | 'no' | 'unsure' | 'medsurg';
+
+/** "When do you notice these changes most?" Never changes the outcome. */
+export type Pattern = 'monthly' | 'comego' | 'weekly' | 'daily' | 'untracked';
+
+export type SymptomId = 'weight' | 'sleep' | 'energy' | 'sweats' | 'bloat' | 'mood';
+
+/** 'nothing' is exclusive. */
+export type TriedId = 'food' | 'gym' | 'sleep' | 'supps' | 'doctor' | 'wait' | 'nothing';
+
+export type WantId = 'body' | 'sleep' | 'energy' | 'cool' | 'clear' | 'understand';
 
 /** 'A' Imbalance · 'B' Perimenopause · 'C' Menopause · 'D' Doctor · 'E' Early menopause */
 export type Outcome = 'A' | 'B' | 'C' | 'D' | 'E';
-export type DocReason = 'treatment' | 'surgery' | 'young' | 'late' | '';
+export type DocReason = 'young' | 'late' | '';
 
 export interface QuizState {
   sym: SymptomId[];
   /** The one she says bothers her most. Asked only when she picked more than one. */
   main: SymptomId | '';
   age: Age | '';
-  periods: Periods | '';
-  stopCause: StopCause | '';
-  /** Not asked when periods have stopped. */
-  reg: Regularity | '';
-  mood: MoodId[];
-  /** 'none' is exclusive. */
-  markers: MarkerId[];
-  sev: Severity | '';
+  cycle: Cycle | '';
+  /** Asked only when cycle is 'stopped'. */
+  twelve: Twelve | '';
+  pattern: Pattern | '';
   tried: TriedId[];
-  helped: Helped | '';
+  want: WantId | '';
   name: string;
   email: string;
   /** Ticked opt-in. No address is sent anywhere while this is false. */
@@ -52,54 +57,22 @@ export interface QuizState {
 /** The complete shape. Every field, and what it may hold. */
 export function createState(): QuizState {
   return {
-    sym: [], main: '', age: '', periods: '', stopCause: '', reg: '',
-    mood: [], markers: [], sev: '', tried: [], helped: '',
+    sym: [], main: '', age: '', cycle: '', twelve: '', pattern: '',
+    tried: [], want: '',
     name: '', email: '', consent: false,
   };
 }
 
 /* ----------------------------------------------------------- the tables -- */
 
-type Weight = 'peri' | 'shared' | 'none';
-
-/* [id, label, weighting, group] — order is the order she sees them, and it
-   follows the 114 customer reviews rather than the store page. */
-export const TILES: [SymptomId, string, Weight, string][] = [
-  ['sweats', 'Hot flashes or night sweats', 'peri', 'nights'],
-  ['weight', 'Weight that will not shift', 'shared', 'body'],
-  ['sleep', 'Poor sleep', 'shared', 'nights'],
-  ['bloat', 'Bloating most days', 'shared', 'body'],
-  ['mood', 'Mood swings and brain fog', 'shared', 'head'],
-  ['energy', 'Low energy', 'shared', 'energy'],
-];
-
-export const MOOD: [MoodId, string, Weight][] = [
-  ['irritable', 'Snapping at people, when I never used to', 'shared'],
-  ['anxious', 'Anxious in a way I did not used to be', 'shared'],
-  ['flat', 'Flat, or crying at nothing', 'shared'],
-  ['notme', 'I do not feel like myself any more', 'shared'],
-];
-
-export const MARKERS: [MarkerId, string, Weight][] = [
-  ['skipped', 'I have skipped a period', 'peri'],
-  ['heavier', 'My periods are heavier or longer', 'peri'],
-  ['closer', 'They come closer together, or further apart', 'peri'],
-  ['pms', 'My PMS is worse than it used to be', 'shared'],
-  ['tender', 'Breast tenderness before my period', 'shared'],
-  ['none', 'None of these', 'none'],
-];
-
-export const SEVERITY_WEIGHT: Record<Severity, number> = {
-  rare: 1, monthly: 2, weekly: 3, daily: 4,
-};
-
-export interface Group { k: string; name: string; ids: SymptomId[] }
-
-export const GROUPS: Group[] = [
-  { k: 'body', name: 'Weight and bloating', ids: ['weight', 'bloat'] },
-  { k: 'nights', name: 'Sleep and temperature', ids: ['sleep', 'sweats'] },
-  { k: 'head', name: 'Mood and mind', ids: ['mood'] },
-  { k: 'energy', name: 'Energy', ids: ['energy'] },
+/* [id, label] — the order is the order she sees them. */
+export const TILES: [SymptomId, string][] = [
+  ['weight', 'Stubborn weight gain'],
+  ['sleep', 'Poor sleep'],
+  ['energy', 'Low energy'],
+  ['sweats', 'Hot flashes or night sweats'],
+  ['bloat', 'Bloating'],
+  ['mood', 'Mood swings or brain fog'],
 ];
 
 /* ------------------------------------------------------------ predicates -- */
@@ -113,7 +86,7 @@ export function has(S: QuizState, id: SymptomId): boolean {
  *
  * Her own answer where she gave one and it is still ticked; otherwise the
  * first thing she picked, in the order the tiles are shown. It never changes
- * the outcome. It only decides which concern her next step is written for.
+ * the outcome. It only decides what her result opens on.
  */
 export function mainConcern(S: QuizState): SymptomId | '' {
   if (S.main && has(S, S.main)) return S.main;
@@ -121,172 +94,155 @@ export function mainConcern(S: QuizState): SymptomId | '' {
   return first ? first[0] : '';
 }
 
-export function periScore(S: QuizState): number {
-  let n = 0;
-  if (has(S, 'sweats')) n += 2;
-  S.markers.forEach((m) => {
-    const r = MARKERS.filter((x) => x[0] === m)[0];
-    if (r && r[2] === 'peri') n++;
-  });
-  if (S.reg === 'allover') n += 2;
-  else if (S.reg === 'abit') n++;
-  if (S.age === '40s') n++;
-  if (S.age === '50s') n += 2;
-  if (S.age === '60') n += 2;
-  return n;
-}
-
-export function explained(S: QuizState): boolean {
-  return Boolean(S.stopCause) && S.stopCause !== 'none';
-}
-
-export function older(S: QuizState): boolean {
-  return S.age === '50s' || S.age === '60';
+/** Everything else she ticked, in tile order. */
+export function otherConcerns(S: QuizState): SymptomId[] {
+  const main = mainConcern(S);
+  return TILES.map(([id]) => id).filter((id) => has(S, id) && id !== main);
 }
 
 export function under40(S: QuizState): boolean {
-  return S.age === 'u30' || S.age === '30s';
+  return S.age === 'under-40';
+}
+
+export function forties(S: QuizState): boolean {
+  return S.age === '40-44' || S.age === '45-49';
+}
+
+export function fifties(S: QuizState): boolean {
+  return S.age === '50-54' || S.age === '55-59';
+}
+
+/** Fifty or over. */
+export function older(S: QuizState): boolean {
+  return fifties(S) || S.age === '60-plus';
+}
+
+/**
+ * How strongly her answers lean towards perimenopause.
+ *
+ * The same idea the eleven-question quiz scored, read from fewer answers:
+ * hot flashes or night sweats (+2), a cycle that is less predictable (+2) or
+ * skipping (+3), and her age (forties +1, fifty and over +2).
+ */
+export function periScore(S: QuizState): number {
+  let n = 0;
+  if (has(S, 'sweats')) n += 2;
+  if (S.cycle === 'unpredictable') n += 2;
+  if (S.cycle === 'skipping') n += 3;
+  if (forties(S)) n += 1;
+  if (older(S)) n += 2;
+  return n;
+}
+
+/**
+ * Something other than her stage is deciding what her cycle does: birth
+ * control, medication or surgery. Her cycle cannot tell us anything, so she
+ * is read on her age and what she is noticing, and the result says so.
+ */
+export function masked(S: QuizState): boolean {
+  return S.cycle === 'masked' || (S.cycle === 'stopped' && S.twelve === 'medsurg');
 }
 
 /**
  * Why we would send her to a doctor instead of giving her a read.
- * Returns '' when we are confident enough to answer her ourselves.
+ *
+ * KEPT TO TWO CASES, on Jane's instruction of 2 October 2026 to keep the
+ * doctor route as small as it can be. Both are things no supplement page
+ * should talk over:
+ *
+ *  - 'young': her periods have stopped and she is under forty, with no birth
+ *    control, medication or surgery to explain it.
+ *  - 'late': she is sixty or over and still having periods that come and go.
+ *
+ * Everything else that used to be sent here (surgery, medication) is now read
+ * on age and symptoms, with the talk-to-your-doctor line on the kit page.
  */
 export function docReason(S: QuizState): DocReason {
-  if (S.periods !== 'stopped') return S.age === '60' ? 'late' : '';
-  if (S.stopCause === 'treatment') return 'treatment';          // not our call, at any age
-  if (S.stopCause === 'surgery' && !older(S)) return 'surgery';  // we never asked about her ovaries
-  if (!explained(S) && under40(S)) return 'young';               // stopping before forty is not menopause
+  if (S.cycle === 'stopped' && S.twelve && S.twelve !== 'medsurg' && under40(S)) return 'young';
+  if (S.age === '60-plus' && (S.cycle === 'unpredictable' || S.cycle === 'skipping')) return 'late';
   return '';
-}
-
-/**
- * When the bleed is being suppressed, her cycle cannot tell us anything.
- * Read her by symptoms and age instead, and say so on the result.
- */
-export function masked(S: QuizState): boolean {
-  return S.periods === 'stopped' && (S.stopCause === 'coil' || S.stopCause === 'pill');
 }
 
 /* -------------------------------------------------------------- routing -- */
 
 /** The one function this whole file exists for. */
 export function stateKey(S: QuizState): Outcome {
-  if (S.periods === 'stopped') {
-    if (docReason(S)) return 'D';
-    if (masked(S)) {
-      if (older(S)) return 'C';
-      if (S.age === '40s') return 'B';
-      if (S.age === '30s') return periScore(S) >= 5 ? 'B' : 'A';
-      return 'A';
-    }
-    if (S.stopCause === 'surgery') return 'C';  // fifties and over; younger went to D above
-    if (S.age === '40s') return 'E';
-    if (under40(S)) return 'D';
-    return 'C';
-  }
-  /* she still has periods, changed or not */
   if (docReason(S)) return 'D';
-  if (older(S)) return 'B';
-  if (S.age === '40s') return periScore(S) >= 3 ? 'B' : 'A';
-  if (S.age === '30s') return periScore(S) >= 5 ? 'B' : 'A';
-  return 'A';                                   // under thirty is never perimenopause
-}
 
-/** The same read, said as a sentence she can use. */
-export function confidenceNote(S: QuizState): string {
-  const c = confidence(S);
-  if (c === 'Clear') return 'Your answers point one way.';
-  if (c === 'Two things overlapping') {
-    return 'Your answers sit between two stages. This is the closer fit.';
+  /* Birth control, medication or surgery: read on age and symptoms. */
+  if (masked(S)) {
+    if (older(S)) return 'C';
+    if (forties(S)) return 'B';
+    return periScore(S) >= 5 ? 'B' : 'A';
   }
-  if (c === 'Read from your symptoms') {
-    return 'Read from your symptoms and your age, because your cycle cannot tell us.';
+
+  if (S.cycle === 'stopped') {
+    /* Under forty went to the doctor above. */
+    if (S.twelve === 'yes') return S.age === '40-44' ? 'E' : 'C';
+    /* Under twelve months, or she cannot say how long. */
+    if (S.age === '60-plus') return 'C';
+    if (S.twelve === 'unsure' && fifties(S)) return 'C';
+    return 'B';
   }
-  return c;
-}
 
-export function confidence(S: QuizState): string {
-  const p = periScore(S);
-  if (stateKey(S) === 'D') return 'Worth checking properly';
-  if (masked(S)) return 'Read from your symptoms';
-  if (S.periods === 'stopped') return 'Clear';
-  if (p >= 5 || p <= 1) return 'Clear';
-  return 'Two things overlapping';
-}
-
-/* -------------------------------------------------------------- scoring -- */
-
-export interface Score { raw: number; max: number; pct: number }
-
-export function score(S: QuizState): Score {
-  const raw = S.sym.length + S.mood.length +
-    S.markers.filter((m) => m !== 'none').length;
-  return {
-    raw,
-    max: 14,
-    pct: Math.min(100, Math.round((raw / 14) * 70 + ((SEVERITY_WEIGHT[S.sev as Severity] || 1) / 4) * 30)),
-  };
-}
-
-export function groupCount(S: QuizState, g: Group): number {
-  let n = 0;
-  g.ids.forEach((i) => { if (has(S, i)) n++; });
-  if (g.k === 'head') n += S.mood.length;
-  return n;
-}
-
-export function groupMax(g: Group): number {
-  return g.k === 'head' ? 1 + MOOD.length : g.ids.length;
+  /* She still has a cycle, or she is not sure what it is doing. */
+  if (S.age === '60-plus') return 'C';
+  if (fifties(S)) return 'B';
+  if (forties(S)) return periScore(S) >= 3 ? 'B' : 'A';
+  return periScore(S) >= 5 ? 'B' : 'A';
 }
 
 /* --------------------------------------------------------------- flow ---- */
 
 export type ScreenId =
-  | 's1' | 's1b' | 's2' | 's3' | 's4' | 's4b' | 's5' | 's6' | 's7' | 's8' | 's9'
-  | 's10' | 's11' | 's12' | 's13'
-  | 'r1' | 'r2' | 'rDoc' | 'r4' | 'r4b' | 'r5' | 'r6' | 'r7';
+  | 'q1' | 'q2' | 'q3' | 'q4' | 'q4b' | 'q5' | 'q6' | 'q7'
+  | 'load' | 'gate'
+  | 'r1' | 'r2' | 'rDoc';
 
 export const FLOW: ScreenId[] = [
-  's1', 's1b', 's2', 's3', 's4', 's4b', 's5', 's6', 's7', 's8', 's9',
-  's10', 's11', 's12', 's13',
-  'r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 'r7',
+  'q1', 'q2', 'q3', 'q4', 'q4b', 'q5', 'q6', 'q7',
+  'load', 'gate',
+  'r1', 'r2', 'rDoc',
 ];
 
-/** The screens that count toward the progress bar. */
-export const QUESTIONS: ScreenId[] = ['s1', 's1b', 's2', 's4', 's4b', 's5', 's6', 's7', 's8', 's10', 's11'];
-
-/** The reveal, which is paced differently from the questions. */
-export const REVEAL: ScreenId[] = ['r1', 'r2', 'rDoc', 'r4', 'r4b', 'r5', 'r6', 'r7'];
-
-/** Everything between s4b and rDoc. A doctor-route state sees none of it. */
-const EXIT_AT_S4B: ScreenId[] = [
-  's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 'r1', 'r2',
-];
+/** The seven she is told about. */
+export const QUESTION_TOTAL = 7;
 
 /**
- * Is docReason() settled yet? It needs her age and whether her periods have
- * stopped. Mid-quiz the state is half empty, so this guards the exit from
- * firing on an answer she has not given: a sixty-year-old is only 'late'
- * once we know she is still bleeding.
+ * Where each question sits in "2 of 7".
  *
- * It deliberately does NOT wait on stopCause. Every screen the exit skips
- * sits after s4b in FLOW, so by the time one is evaluated s4b has already
- * been shown or skipped; and a stopped state with no cause given still
- * routes to D, which must exit like any other.
+ * Fixed rather than counted from what she will be asked, so the total never
+ * changes under her and the number never goes backwards. The follow-up shares
+ * its parent's number; a skipped question is a step she simply does not see.
+ */
+export const QUESTION_NUMBER: Partial<Record<ScreenId, number>> = {
+  q1: 1, q2: 2, q3: 3, q4: 4, q4b: 4, q5: 5, q6: 6, q7: 7,
+};
+
+/** The two result pages. */
+export const REVEAL: ScreenId[] = ['r1', 'r2'];
+
+/** Everything between the cycle questions and rDoc. A doctor-route state sees none of it. */
+const AFTER_CYCLE: ScreenId[] = ['q5', 'q6', 'q7', 'load', 'gate', 'r1', 'r2'];
+
+/**
+ * Is docReason() settled yet? It needs her age and her cycle answer, and the
+ * follow-up when her periods have stopped. Mid-quiz the state is half empty,
+ * so this guards the exit from firing on an answer she has not given.
  */
 export function docDecided(S: QuizState): boolean {
-  return Boolean(S.age && S.periods);
+  if (!S.age || !S.cycle) return false;
+  return S.cycle !== 'stopped' || Boolean(S.twelve);
 }
 
 /**
  * WHICH RESULTS ARE SHOWN THE KIT.
  *
- * JJ's decision of 22 September 2026: only a perimenopause result sees the
- * offer. Everybody else still gets her result, the reasons for it and a first
- * step; she is simply not sold to. One line to change if that decision moves.
+ * Jane's decision of 2 October 2026: every result but the doctor route. It
+ * replaces the rule of 22 September, which showed the kit to perimenopause
+ * only. One line to change if the decision moves again.
  */
-export const OFFER_OUTCOMES: Outcome[] = ['B'];
+export const OFFER_OUTCOMES: Outcome[] = ['A', 'B', 'C', 'E'];
 
 export function seesOffer(S: QuizState): boolean {
   return OFFER_OUTCOMES.includes(stateKey(S));
@@ -301,29 +257,17 @@ export function doctorExit(S: QuizState): boolean {
  * Should this screen be skipped for this state?
  *
  * The doctor route is the important one: `D` sees `rDoc` and nothing after
- * it — no offer, no price, no upsell. Everyone else skips `rDoc` and sees
- * the offer sequence. The two are mutually exclusive by construction.
+ * her cycle answer. No more questions, no name, NO EMAIL GATE, no result
+ * page, no kit. Everyone else skips `rDoc`. The two are mutually exclusive by
+ * construction.
  */
 export function shouldSkip(S: QuizState, id: ScreenId): boolean {
   /* One symptom needs no ranking. */
-  if (id === 's1b') return S.sym.length < 2;
-  if (id === 's4b') return S.periods !== 'stopped';
-  /* THE DOCTOR EXIT. docReason() is settled by s2 (age), s4 (periods) and,
-     where she has stopped, s4b (why). The moment it is settled and the
-     answer is D, she leaves: no further questions, no name, NO EMAIL GATE,
-     and no reveal but rDoc. Taking an address from a woman we are about to
-     refuse, in order to market to her later, was the bug this closes. */
-  if (doctorExit(S) && EXIT_AT_S4B.includes(id)) return true;
-  if (id === 's5') return S.periods === 'stopped';
-  /* "Did any of it help?" has no meaning when she has tried nothing. */
-  if (id === 's11') return S.tried.length === 0;
+  if (id === 'q2') return S.sym.length < 2;
+  if (id === 'q4b') return S.cycle !== 'stopped';
+  if (doctorExit(S) && AFTER_CYCLE.includes(id)) return true;
   if (id === 'rDoc') return stateKey(S) !== 'D';
-  /* Where to start: everybody but the doctor route. */
-  if (id === 'r4') return stateKey(S) === 'D';
-  /* The kit: only the outcomes it is offered to. */
-  if (id === 'r4b' || id === 'r5' || id === 'r6' || id === 'r7') {
-    return !seesOffer(S);
-  }
+  if (id === 'r2') return !seesOffer(S);
   return false;
 }
 

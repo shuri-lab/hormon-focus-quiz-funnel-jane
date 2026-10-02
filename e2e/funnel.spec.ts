@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
 import {
   expectNoHorizontalOverflow, expectTapTargets, startQuiz, heading,
-  answerAndWait, pickOption, pressPrimary, pressSecondary,
+  answerAndWait, pickOption, pressPrimary,
 } from './helpers';
 
 /* Must match src/lib/angles.ts. A slug that no longer exists would otherwise
    redirect to the default page and pass silently, so the URL is asserted. */
 const ANGLES = ['', 'bloating', 'hot-flashes', 'night-sweats', 'sleep', 'weight', 'mood'];
 
-test.describe('landing pages', () => {
+test.describe('the cover', () => {
   for (const slug of ANGLES) {
     test(`/${slug} lays out and offers a way in`, async ({ page }) => {
       await page.goto(`/${slug}`);
@@ -20,13 +20,10 @@ test.describe('landing pages', () => {
       await expectNoHorizontalOverflow(page, `/${slug}`);
       await expectTapTargets(page, `/${slug}`);
 
-      // exactly one call to action is reachable without scrolling
-      const hero = page.locator('.heroCta .cta').first();
-      const sticky = page.locator('.stickyCta .cta');
-      const heroVisible = await hero.isVisible();
-      const stickyVisible = await sticky.isVisible().catch(() => false);
-      expect(heroVisible || stickyVisible, 'no call to action on screen at load').toBe(true);
-
+      /* One button, and she can reach it without scrolling. */
+      const cta = page.locator('.heroCta .cta');
+      await expect(cta).toHaveCount(1);
+      await expect(cta).toBeInViewport();
       await expect(page.locator('h1')).toBeVisible();
     });
   }
@@ -37,268 +34,253 @@ test.describe('landing pages', () => {
     await expect(page.locator('h1')).toBeVisible();
   });
 
+  test('the cover is one screen: the headline, one line, one button, and nothing sold', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('h1')).toContainText('Over 40 and struggling with');
+    await expect(page.getByText('Take this 2-Minute Hormone Check')).toBeVisible();
+    await expect(page.locator('a.cta')).toHaveCount(1);
+    await expect(page.locator('a.cta')).toContainText('GET THE HORMONE CHECK');
+    /* No rating, no review, no bottle, no price before she has a result. */
+    await expect(page.getByText('4.9')).toHaveCount(0);
+    await expect(page.locator('.rev')).toHaveCount(0);
+    expect(await page.content()).not.toContain('customer-1.jpg');
+    /* And the stage is the reveal, not the premise. */
+    await expect(page.locator('h1')).not.toContainText(/menopause/i);
+    await expect(page.locator('.coverSub')).not.toContainText(/menopause/i);
+  });
+
   test('the ad angle seeds its symptom into the quiz', async ({ page }) => {
     await page.goto('/bloating');
     await page.evaluate(() => sessionStorage.clear());
     await page.goto('/bloating');
-    /* Tap whichever call to action is actually on screen, the way she would.
-       Scrolling the hero button into view would dismiss the sticky bar
-       mid-click and race the navigation. */
-    const sticky = page.locator('.stickyCta .cta');
-    const entry = (await sticky.isVisible()) ? sticky : page.locator('.heroCta .cta').first();
-    await entry.click();
+    await page.locator('.heroCta .cta').first().click();
 
     await expect(page).toHaveURL(/\/bloating\/quiz$/);
-    await expect(heading(page)).toContainText('What changes have frustrated you');
-    // 'Bloating most days' is the fourth tile and arrives already chosen
+    await expect(heading(page)).toContainText('What has been bothering you lately');
     await expect(page.locator('.tile[aria-pressed="true"]')).toHaveCount(1);
     await expect(page.locator('.tile[aria-pressed="true"]')).toContainText('Bloating');
   });
 });
 
+/* Tiles, in order: weight, sleep, energy, hot flashes, bloating, mood. */
+
 test.describe('the quiz', () => {
-  test('walks from first question to the offer', async ({ page }) => {
+  test('seven questions, the email unlock, her result, then one kit page', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
 
     await startQuiz(page);
 
-    await expect(heading(page)).toContainText('What changes have frustrated you');
-    await expectTapTargets(page, 's1');
-    await page.locator('.tile').nth(0).click();
-    await page.locator('.tile').nth(1).click();
-    await page.locator('.actionBar .cta').click();
+    /* 1. What is bothering her. No product, rating or review on the screen. */
+    await expect(heading(page)).toContainText('What has been bothering you lately');
+    await expect(page.locator('.stepno')).toHaveText('1 of 7');
+    await expect(page.locator('.footTrust')).toHaveCount(0);
+    await expectTapTargets(page, 'q1');
+    await page.locator('.tile').nth(0).click();                // weight
+    await page.locator('.tile').nth(1).click();                // sleep
+    await page.locator('.tile').nth(2).click();                // energy
+    await answerAndWait(page, pressPrimary(page), /Which one bothers you the most/);
 
-    /* Two ticks, so she is asked which one bothers her most, and offered only
-       the two she ticked. */
-    await expect(heading(page)).toContainText('bothering you most');
-    await expect(page.locator('.opt')).toHaveCount(2);
-    await page.locator('.opt').nth(1).click();                 // the weight
+    /* 2. Only the three she ticked are offered. */
+    await expect(page.locator('.stepno')).toHaveText('2 of 7');
+    await expect(page.locator('.opt')).toHaveCount(3);
+    await answerAndWait(page, pickOption(page, 1), /How old are you/);       // sleep
 
-    await expect(heading(page)).toContainText('What is your age');
-    await page.locator('.opt').nth(2).click();                 // 40 to 49
+    /* 3. Six age bands. */
+    await expect(page.locator('.opt')).toHaveCount(6);
+    await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);   // 45–49
 
-    /* Reassurance, with no product review before she has a result. */
-    await expect(heading(page)).toContainText('not the only one');
-    await expect(page.locator('.rev')).toHaveCount(0);
-    await page.locator('.actionBar .cta').click();
+    /* 4. One cycle question. "Less predictable" needs no follow-up. */
+    await expect(page.locator('.stepno')).toHaveText('4 of 7');
+    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
 
-    await expect(heading(page)).toContainText('Do you still have periods');
-    await page.locator('.opt').nth(1).click();                 // changed
+    /* 5. Her own answers are said back to her, the one she named first. */
+    await expect(page.locator('.stepno')).toHaveText('5 of 7');
+    await expect(page.locator('.qlead'))
+      .toHaveText('You mentioned poor sleep, stubborn weight gain and low energy.');
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);  // most weeks
 
-    await expect(heading(page)).toContainText('how regular');
-    await page.locator('.opt').nth(2).click();                 // all over the place
+    /* 6. What she tried. */
+    await page.locator('.opt').nth(0).click();                 // eating differently
+    await page.locator('.opt').nth(1).click();                 // exercising more
+    await answerAndWait(page, pressPrimary(page), /If one thing could feel better again/);
 
-    await expect(heading(page)).toContainText('mood changed');
-    await page.locator('.opt').nth(0).click();
-    await page.locator('.actionBar .cta').first().click();
+    /* 7. What she wants. */
+    await expect(page.locator('.stepno')).toHaveText('7 of 7');
+    await page.locator('.opt').nth(1).click();                 // sleep through the night
 
-    await expect(heading(page)).toContainText('last year');
-    await page.locator('.opt').nth(0).click();
-    await page.locator('.actionBar .cta').first().click();
-
-    await expect(heading(page)).toContainText('How often');
-    await page.locator('.opt').nth(2).click();
-
-    await expect(heading(page)).toContainText('have in common');
-    await expect(page.getByText('This check cannot tell you the cause')).toBeVisible();
-    await expectNoHorizontalOverflow(page, 's9 explanation');
-    await page.locator('.actionBar .cta').click();
-
-    await expect(heading(page)).toContainText('already tried');
-    await page.locator('.opt').nth(0).click();
-    await page.locator('.actionBar .cta').first().click();
-
-    await expect(heading(page)).toContainText('Did any of it help');
-    await page.locator('.opt').nth(1).click();
-
-    // the loader hands off on its own
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
+    /* The loader is short and hands off on its own. */
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await expect(heading(page)).toHaveText('Your Hormone Check is ready.');
+    await expect(page.getByText('Your results will appear immediately.')).toBeVisible();
+    await expect(page.getByText('Where should')).toHaveCount(0);
     await page.fill('#nf', 'Renee');
     await page.fill('#ef', 'renee@example.com');
 
-    /* A valid address is not enough: the opt-in is unticked and required, so
-       the button stays disabled until she agrees to be emailed. */
+    /* A valid address is not enough: the opt-in is unticked and required. */
     await expect(page.locator('#cf')).not.toBeChecked();
     await expect(page.locator('.actionBar .cta')).toBeDisabled();
     await page.locator('#cf').check();
-    await expect(page.locator('.actionBar .cta')).toBeEnabled();
-
+    await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
     await page.locator('.actionBar .cta').click();
 
-    await expect(page.locator('.verdict .name')).toHaveText('Perimenopause');
-    await expectNoHorizontalOverflow(page, 'r1 verdict');
+    /* RESULT PAGE 1. A pattern, not a diagnosis, built from her own answers. */
+    await expect(heading(page)).toHaveText(
+      'Renee, your answers show a pattern often seen during the perimenopause years.',
+    );
+    const card = page.locator('.resCard');
+    await expect(card).toContainText('Your biggest concern');
+    await expect(card).toContainText('Poor sleep');
+    await expect(card).toContainText('Stubborn weight gain + Low energy');
+    await expect(card).toContainText(
+      'These changes are showing up most weeks, and your cycle has become less predictable.',
+    );
+    await expect(page.getByText('To sleep through the night.')).toBeVisible();
+    await expectNoHorizontalOverflow(page, 'r1 result');
 
-    /* The first reveal sells nothing: she gave an address for a result. */
-    await expect(page.locator('.guideCard')).toHaveCount(0);
-    await page.locator('.actionBar .cta').click();
-
-    /* Why: her own answers, what the check cannot tell her, and no score. */
-    await expect(heading(page)).toContainText('What you told me');
-    await expect(page.locator('.scoreCard')).toHaveCount(0);
-    await expect(page.locator('.gauge')).toHaveCount(0);
-    await expect(page.getByText('What this check cannot tell you')).toBeVisible();
-    await page.locator('.actionBar .cta').click();
-
-    /* One first step, for the concern she named, before any product. */
-    await expect(heading(page)).toContainText('Where to start');
-    await expect(page.getByText('One thing to start with, for the weight')).toBeVisible();
-    await expect(page.getByText('It was never')).toHaveCount(0);
-    await page.locator('.actionBar .cta').click();
-
-    await expect(heading(page)).toContainText('Feel Like YOU Again Kit');
-    await expect(page.getByText('No diet changes')).toHaveCount(0);
-    await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('asks of you');
-    await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('good company');
-    await page.locator('.actionBar .cta').click();
-
-    await expect(heading(page)).toContainText('where I would start you, Renee');
-    await expectNoHorizontalOverflow(page, 'r7 offer');
-    /* Three complete offers, each ending in its own cart link, rather than
-       three rows feeding one button. */
-    await expect(page.locator('.ocCta')).toHaveCount(3);
-    for (const kind of ['single', 'protocol', 'subscribe']) {
-      await expect(
-        page.locator(`.ocCta[data-offer="${kind}"]`), kind,
-      ).toHaveAttribute('href', /shop\.jjsmithonline\.com/);
+    /* Nothing is sold on it. */
+    await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
+    await expect(page.locator('.kitRev')).toHaveCount(0);
+    const resultText = await page.locator('.rise').innerText();
+    expect(resultText).not.toContain('$');
+    for (const banned of ['estrogen', 'You have ', 'hormonal imbalance', 'dominance']) {
+      expect(resultText, banned).not.toContain(banned);
     }
 
-    /* One product photograph per card and none above them: a fourth picture
-       of the same bottle was the biggest thing on the screen. */
-    await expect(page.locator('.shot')).toHaveCount(0);
+    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
+    await page.locator('.actionBar .cta').click();
 
-    /* The kit's three digital pieces are named inside the kit card, in JJ's
-       own titles, and the kit is priced as it is on her page. */
-    await expect(page.locator('.ocBonus')).toBeVisible();
-    await expect(page.locator('.ocBonus')).toContainText('60-Day Hormone Fix');
-    await expect(page.locator('.ocBonus')).not.toContainText('Starter Guide');
-    await expect(page.locator('.ocBonus a')).toHaveCount(0);
-    await expect(page.locator('.oc-protocol .ocNow')).toHaveText('$74.99');
-    await expect(page.locator('.ocCta[data-offer="protocol"]'))
+    /* RESULT PAGE 2. What to do, then the kit, on one page she scrolls. */
+    await expect(heading(page)).toHaveText('So what do you do now?');
+    await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
+    await expect(page.locator('.nextList li')).toHaveCount(5);
+    await expect(page.getByText('This is exactly why I created the 60-Day Feel Like YOU Again Kit.')).toBeVisible();
+    await expect(page.locator('.actionBar'), 'no Continue button once the offer begins').toHaveCount(0);
+    await expectNoHorizontalOverflow(page, 'r2 kit page');
+    await expectTapTargets(page, 'r2 kit page');
+
+    /* The offer is the one on JJ's page: the kit first, one bottle under it. */
+    const kit = page.locator('.kitLead');
+    await expect(kit.locator('.kitVs li')).toHaveCount(4);
+    await expect(kit).toContainText('$196.99');
+    await expect(kit.locator('.kitNow')).toHaveText('$74.99');
+    await expect(kit.locator('.kitDay')).toHaveText('$1.25 a day');
+    await expect(kit.locator('a.kitBtn')).toContainText('Get the 60-Day Kit');
+    await expect(kit.locator('a.kitBtn'))
+      .toHaveAttribute('href', /shop\.jjsmithonline\.com\/cart\/54330638663791:1.*discount=HF60FREESHIP/);
+
+    const bottle = page.locator('.kitQuiet');
+    await expect(bottle.locator('a.kitBtn')).toContainText('Get 1 bottle · $49.99');
+    await expect(bottle.locator('a.kitBtn')).toHaveAttribute('href', /cart\/41200079175791:1/);
+    await bottle.locator('.kitOpt').nth(1).click();
+    await expect(bottle.locator('a.kitBtn')).toContainText('Subscribe & save · $39.99');
+    await expect(bottle.locator('a.kitBtn'))
+      .toHaveAttribute('href', /cart\/add\?id=54355951845487.*selling_plan=5529010287/);
+
+    /* Proof comes after the offer, in three places. She said sleep bothers
+       her most, so the first review she reads is about sleep. */
+    await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(3);
+    await expect(page.locator('[data-proof="lead"] .kitRev').first()).toContainText('I sleep better');
+    await expect(page.locator('[data-proof="more"] .kitRev')).toHaveCount(4);
+    await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
+    await expect(page.locator('.kitRating')).toContainText('4.9');
+
+    /* The guarantee, the questions, and the button again. */
+    await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
+    await expect(page.locator('.kitFaq details')).toHaveCount(5);
+    await expect(page.locator('a[data-close]')).toHaveText(/START MY 60 DAYS/);
+    await expect(page.locator('a[data-close]'))
       .toHaveAttribute('href', /54330638663791:1.*discount=HF60FREESHIP/);
 
-    /* The guarantee is said once, under all three, with the seal beside it. */
-    await expect(page.locator('.ocGuard')).toBeVisible();
-    await expect(page.locator('.ocSeal')).toBeVisible();
-
-    /* THE VALUE STACK IS DELIBERATELY ABSENT HERE. By this screen the cards
-       have already named the price, the bonus and the guarantee, and she has
-       read the whole reveal to get here. It stays on the offer pages, where
-       she may have arrived cold from an ad. */
-    await expect(page.locator('.stack')).toHaveCount(0);
-    await expect(page.getByText('What is in it')).toHaveCount(0);
-    const quizHrefs = await page.locator('a[href]').evaluateAll(
+    /* No health answer or result rides in any link out. */
+    const out = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
       (as) => as.map((a) => a.getAttribute('href') ?? ''),
     );
-    expect(quizHrefs.filter((h) => h.includes('/plan')), 'the quiz must not link to the plan')
-      .toEqual([]);
+    expect(out.length).toBeGreaterThanOrEqual(3);
+    for (const h of out) expect(h).not.toMatch(/outcome|perimenopause|sleep|symptom/i);
+
     expect(errors, 'javascript errors during the run').toEqual([]);
   });
 
-  test('a menopause result gets her read and a first step, and is not sold to', async ({ page }) => {
+  test('one symptom skips the ranking, and stopped periods ask the twelve-month question', async ({ page }) => {
     await startQuiz(page);
-    await page.locator('.tile').nth(2).click();                // poor sleep, one tick
-    await page.locator('.actionBar .cta').click();
+    await page.locator('.tile').nth(3).click();                // hot flashes, one tick
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await expect(page.locator('.stepno')).toHaveText('3 of 7');
+    await answerAndWait(page, pickOption(page, 3), /happening with your cycle/);   // 50–54
+    await answerAndWait(page, pickOption(page, 3), /at least 12 months/);          // stopped
+    await expect(page.locator('.stepno')).toHaveText('4 of 7');
+    await expect(page.locator('.opt')).toHaveCount(4);
+    await answerAndWait(page, pickOption(page, 0), /When do you notice/);          // yes
+    await expect(page.locator('.qlead')).toHaveText('You mentioned hot flashes or night sweats.');
+    await answerAndWait(page, pickOption(page, 3), /already tried/);
 
-    /* One tick, so nothing to rank: straight to her age. */
-    await expect(heading(page)).toContainText('What is your age');
-    await page.locator('.opt').nth(3).click();                 // 50 to 59
-    await expect(heading(page)).toContainText('not the only one');
-    await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('Do you still have periods');
-    await page.locator('.opt').nth(2).click();                 // stopped
-    await expect(heading(page)).toContainText('anything else');
-    await page.locator('.opt').nth(4).click();                 // nothing like that
-    await expect(heading(page)).toContainText('mood changed');
-    await page.locator('.actionBar .cta.ghost').click();       // none of these
-    await expect(heading(page)).toContainText('last year');
-    await page.locator('.opt').nth(5).click();                 // none of these
-    await page.locator('.actionBar .cta').first().click();
-    await expect(heading(page)).toContainText('How often');
-    await page.locator('.opt').nth(2).click();
-    await expect(heading(page)).toContainText('have in common');
-    await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('already tried');
-    await page.locator('.actionBar .cta.ghost').click();       // nothing yet
+    /* "Nothing yet" is exclusive in both directions. */
+    await page.locator('.opt').nth(0).click();
+    await page.locator('.opt').nth(6).click();
+    await expect(page.locator('.opt[aria-pressed="true"]')).toHaveCount(1);
+    await expect(page.locator('.opt[aria-pressed="true"]')).toContainText('Nothing yet');
+    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await page.locator('.opt').nth(3).click();                 // stop feeling hot
 
-    /* Nothing tried, so "did any of it help" is not asked. */
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
-    await page.fill('#nf', 'Dana');
-    await page.fill('#ef', 'dana@example.com');
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await page.fill('#ef', 'dana@example.com');                // no name given
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
 
-    await expect(page.locator('.verdict .name')).toHaveText('Menopause');
-    await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toContainText('What you told me');
+    /* Menopause, and it is shown the kit like every result but the doctor's. */
+    await expect(heading(page)).toHaveText('Your answers show a pattern often seen around menopause.');
+    await expect(page.locator('.resCard')).toContainText('your periods stopped 12 months ago or more');
+    await expect(page.locator('.resCard')).not.toContainText('You are also noticing');
+    /* Her wish is softened on the way back, so it cannot read as a promise. */
+    await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
 
-    /* Her first step is the last screen. No price, no kit, no shop link. */
-    await expect(heading(page)).toContainText('Where to start');
-    await expect(page.getByText('One thing to start with, for the poor sleep')).toBeVisible();
-    await expect(page.locator('.actionBar')).toHaveCount(0);
-    await expect(page.locator('.ocCta')).toHaveCount(0);
-    const hrefs = await page.locator('a[href]').evaluateAll(
-      (as) => as.map((a) => a.getAttribute('href') ?? ''),
-    );
-    expect(hrefs.filter((h) => h.includes('shop.jjsmithonline.com')), 'no shop link').toEqual([]);
-    await expect(page.getByText('$')).toHaveCount(0);
+    await expect(heading(page)).toHaveText('So what do you do now?');
+    await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
+    await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
+    await expect(page.locator('[data-proof="lead"] .kitRev').first()).toContainText('hot flashes');
   });
 
   test('the loader is not re-entered by the back button', async ({ page }) => {
     await startQuiz(page);
-
     await page.locator('.tile').nth(1).click();
-    await answerAndWait(page, pressPrimary(page), /What is your age/);
-    await answerAndWait(page, pickOption(page, 2), /not the only one/);
-    await answerAndWait(page, pressPrimary(page), /Do you still have periods/);
-    await answerAndWait(page, pickOption(page, 1), /how regular/);
-    await answerAndWait(page, pickOption(page, 0), /mood changed/);
-    await answerAndWait(page, pressSecondary(page), /last year/);
-    await page.locator('.opt').nth(3).click();
-    await answerAndWait(page, pressPrimary(page), /How often/);
-    await answerAndWait(page, pickOption(page, 2), /have in common/);
-    await answerAndWait(page, pressPrimary(page), /already tried/);
-    /* She has to have tried something, or the next question is skipped. */
-    await page.locator('.opt').nth(0).click();
-    await answerAndWait(page, pressPrimary(page), /Did any of it help/);
-    await page.locator('.opt').nth(1).click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 1), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 0), /When do you notice/);
+    await answerAndWait(page, pickOption(page, 4), /already tried/);
+    await page.locator('.opt').nth(6).click();
+    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await page.locator('.opt').nth(5).click();
 
-    // the analysing screen hands off on its own
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 25_000 });
-
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
     await page.goBack();
-    // must land back on a question, never inside the analysing animation
-    await expect(page.locator('.ring')).toHaveCount(0);
-    await expect(heading(page)).toHaveText(/Did any of it help/);
+    // must land back on a question, never inside the loader
+    await expect(page.locator('.loadSpin')).toHaveCount(0);
+    await expect(heading(page)).toHaveText(/If one thing could feel better/);
   });
 
   test('a double tap on Continue advances exactly one screen', async ({ page }) => {
     await startQuiz(page);
     await page.locator('.tile').nth(0).click();
-    const cta = page.locator('.actionBar .cta').first();
-    await cta.dblclick();
-    // s1 -> s2, and never s1 -> s3
-    await expect(heading(page)).toHaveText(/What is your age/);
+    await page.locator('.tile').nth(1).click();
+    await page.locator('.actionBar .cta').first().dblclick();
+    // q1 -> q2, and never q1 -> q3
+    await expect(heading(page)).toHaveText(/Which one bothers you the most/);
   });
 });
 
 /* The one test that is not about polish. */
 test.describe('the doctor route is an exit', () => {
-  test('exits at s4b, shows no gate, no price and no shop link', async ({ page }) => {
+  test('exits at the cycle question, shows no gate, no price and no shop link', async ({ page }) => {
     await startQuiz(page);
     await page.locator('.tile').nth(0).click();
-    await answerAndWait(page, pressPrimary(page), /What is your age/);
-    await answerAndWait(page, pickOption(page, 4), /not the only one/);          // 60+
-    await answerAndWait(page, pressPrimary(page), /Do you still have periods/);
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 5), /happening with your cycle/);   // 60+
 
-    /* Still bleeding at sixty is D, and docReason is settled right here. She
-       goes straight to rDoc: no regularity question, no name, and above all
-       no email gate. Before the exit she walked nine more screens and handed
-       over an address, and was then refused. */
-    await answerAndWait(page, pickOption(page, 0), /Take this to your doctor/);
+    /* Periods still coming and going at sixty or over. She goes straight to
+       the doctor screen: no more questions, no name, and above all no email. */
+    await answerAndWait(page, pickOption(page, 1), /Talk to your healthcare professional first/);
 
     await expect(page.locator('#ef'), 'the email gate must never appear on the doctor route')
       .toHaveCount(0);
@@ -306,7 +288,37 @@ test.describe('the doctor route is an exit', () => {
 
     const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
     expect(hrefs.filter((h) => h.includes('shop.jjsmithonline.com')), 'the doctor route must never link to the shop').toEqual([]);
+    expect(await page.content()).not.toContain('74.99');
     expect(await page.content()).not.toContain('49.99');
     await expectNoHorizontalOverflow(page, 'rDoc');
+  });
+
+  test('under forty with periods stopped waits for the follow-up, then exits', async ({ page }) => {
+    await startQuiz(page);
+    await page.locator('.tile').nth(1).click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 0), /happening with your cycle/);   // under 40
+    await answerAndWait(page, pickOption(page, 3), /at least 12 months/);          // stopped
+    await answerAndWait(page, pickOption(page, 0), /Talk to your healthcare professional first/);
+    await expect(page.locator('#ef')).toHaveCount(0);
+  });
+
+  test('medication or surgery is not a doctor exit: she gets her result', async ({ page }) => {
+    await startQuiz(page);
+    await page.locator('.tile').nth(1).click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 1), /happening with your cycle/);   // 40–44
+    await answerAndWait(page, pickOption(page, 4), /When do you notice/);          // birth control, medication or surgery
+    await answerAndWait(page, pickOption(page, 1), /already tried/);
+    await page.locator('.opt').nth(4).click();
+    await answerAndWait(page, pressPrimary(page), /If one thing could feel better/);
+    await page.locator('.opt').nth(0).click();
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await page.fill('#ef', 'dana@example.com');
+    await page.locator('#cf').check();
+    await page.locator('.actionBar .cta').click();
+    await expect(heading(page)).toContainText('perimenopause years');
+    /* The result says plainly what it was read from. */
+    await expect(page.getByText('so your cycle cannot tell us much')).toBeVisible();
   });
 });

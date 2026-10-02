@@ -29,6 +29,8 @@ import { FDA_DISCLAIMER } from '../src/lib/content';
 import * as offer from '../src/lib/offer';
 import * as copy from '../src/lib/offerCopy';
 import * as plan from '../src/lib/planCopy';
+import * as kit from '../src/lib/kitCopy';
+import * as quiz from '../src/lib/content';
 
 /* ------------------------------------------------- collecting the copy -- */
 
@@ -52,6 +54,10 @@ const AUTHORED: [string, string][] = [
   ...strings(ANGLES, 'angles.ts'),
   ...strings(copy, 'offerCopy.ts'),
   ...strings(plan, 'planCopy.ts'),
+  /* The rebuilt quiz, 2 October 2026: every question, the result pages and
+     the kit page at the end are held to the same gate as the offer pages. */
+  ...strings(kit, 'kitCopy.ts'),
+  ...strings(quiz, 'content.ts'),
 ];
 
 /**

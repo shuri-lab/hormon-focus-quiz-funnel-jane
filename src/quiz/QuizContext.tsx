@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  createState, nextId, prevId, stateKey, QUESTIONS, REVEAL, shouldSkip,
-  type QuizState, type ScreenId,
+  createState, docReason, nextId, prevId, stateKey, QUESTION_NUMBER, QUESTION_TOTAL, REVEAL,
+  shouldSkip, type QuizState, type ScreenId,
 } from '../lib/logic';
 import { track } from '../lib/analytics';
 import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
 
-const STORE_KEY = 'hf_quiz_state';
+/* v3: the seven-question quiz. An answer saved by the old quiz does not fit
+   the new questions, so it is left behind rather than restored. */
+const STORE_KEY = 'hf_quiz_state_v3';
 
 function load(): QuizState | null {
   try {
@@ -37,7 +39,7 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
 
   /* The screen lives in history state, so the device back button walks the
      funnel backwards instead of leaving it. */
-  const here = ((location.state as { screen?: ScreenId } | null)?.screen ?? 's1') as ScreenId;
+  const here = ((location.state as { screen?: ScreenId } | null)?.screen ?? 'q1') as ScreenId;
 
   useEffect(() => { save(S); }, [S]);
 
@@ -45,7 +47,7 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     setS((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const toggle = useCallback(<K extends 'sym' | 'mood' | 'markers' | 'tried'>(
+  const toggle = useCallback(<K extends 'sym' | 'tried'>(
     key: K, value: QuizState[K][number],
   ) => {
     setS((prev) => {
@@ -53,10 +55,10 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
       const i = list.indexOf(value as string);
       let out = i > -1 ? [...list.slice(0, i), ...list.slice(i + 1)] : [...list, value as string];
 
-      // 'None of these' is exclusive, in both directions.
-      if (key === 'markers') {
-        if (value === 'none') out = i > -1 ? [] : ['none'];
-        else out = out.filter((m) => m !== 'none');
+      // 'Nothing yet' is exclusive, in both directions.
+      if (key === 'tried') {
+        if (value === 'nothing') out = i > -1 ? [] : ['nothing'];
+        else out = out.filter((m) => m !== 'nothing');
       }
       return { ...prev, [key]: out } as QuizState;
     });
@@ -94,7 +96,7 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     const fresh = { ...createState(), sym: [...angle.preselect] };
     setS(fresh);
     try { sessionStorage.removeItem(STORE_KEY); } catch { /* ignore */ }
-    goTo('s1');
+    goTo('q1');
   }, [angle.preselect, goTo]);
 
   /* -------------------------------------------------------- progress --- */
@@ -102,10 +104,9 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
   const live = useCallback((ids: ScreenId[]) => ids.filter((k) => !shouldSkip(S, k)), [S]);
 
   const questionStep = useMemo(() => {
-    const asked = live(QUESTIONS);
-    const i = asked.indexOf(here);
-    return i > -1 ? { index: i + 1, total: asked.length } : null;
-  }, [live, here]);
+    const n = QUESTION_NUMBER[here];
+    return n ? { index: n, total: QUESTION_TOTAL } : null;
+  }, [here]);
 
   const revealStep = useMemo(() => {
     const shown = live(REVEAL);
@@ -120,17 +121,18 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     if (seen.current.has(here)) return;
     seen.current.add(here);
 
-    if (here === 's1') track.quizStart(angle.slug);
+    if (here === 'q1') track.quizStart(angle.slug);
     if (questionStep) track.quizStep(here, questionStep.index, questionStep.total);
+    if (here === 'load') track.quizComplete(stateKey(latest.current));
     if (here === 'r1') track.resultView(stateKey(latest.current));
-    if (here === 'r7') track.offerView(stateKey(latest.current));
-    if (here === 'rDoc') track.doctorRoute(stateKey(latest.current));
+    if (here === 'r2') track.offerView(stateKey(latest.current));
+    if (here === 'rDoc') track.doctorRoute(docReason(latest.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here]);
 
   const value = useMemo<QuizApi>(() => ({
     S, angle, here, set, toggle, next, back, restart,
-    canBack: here !== 's1' && here !== 's12',
+    canBack: here !== 'q1' && here !== 'load',
     questionStep, revealStep,
   }), [S, angle, here, set, toggle, next, back, restart, questionStep, revealStep]);
 

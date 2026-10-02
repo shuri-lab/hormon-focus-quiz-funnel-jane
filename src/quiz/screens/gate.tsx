@@ -5,83 +5,66 @@ import { stateKey } from '../../lib/logic';
 import { isEmail, submitLead } from '../../lib/leads';
 import { track } from '../../lib/analytics';
 
-/* --------------------------------------------------------------- s12 ---- */
+/* -------------------------------------------------------------- load ---- */
 
-/* Only what actually happens. The result is worked out from her answers by
-   fixed rules; nothing is matched against other women, and there is no plan
-   being built, so neither is claimed. */
+/* A short pause, and only what actually happens. Nothing is matched against
+   other women and nothing is measured, so neither is claimed. */
 const LOAD_STEPS = [
-  'Reading what you told me',
-  'Looking at your cycle',
-  'Looking at your age',
-  'Putting your result together',
+  'Looking at your symptoms',
+  'Checking the pattern',
+  'Preparing your Hormone Check',
 ];
 
-const RING = 364;
+/** About two and a half seconds, end to end. */
+const LOAD_MS = 2400;
 
-export function S12() {
+export function Load() {
   const { next } = useQuiz();
-  const [n, setN] = useState(0);
+  const [k, setK] = useState(0);
   const done = useRef(false);
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tick = reduced ? 12 : 55;
+    const total = reduced ? 600 : LOAD_MS;
+    const step = total / LOAD_STEPS.length;
 
-    const t = setInterval(() => {
-      setN((v) => {
-        const nv = Math.min(100, v + 1);
-        if (nv >= 100 && !done.current) {
-          done.current = true;
-          clearInterval(t);
-          /* replace, so the back button from the next screen returns to the
-             last question rather than re-running this animation */
-          setTimeout(() => next({ replace: true }), reduced ? 200 : 700);
-        }
-        return nv;
-      });
-    }, tick);
+    const timers = LOAD_STEPS.map((_, i) => setTimeout(() => setK(i + 1), step * (i + 1)));
+    const finish = setTimeout(() => {
+      if (done.current) return;
+      done.current = true;
+      /* replace, so the back button from the next screen returns to the last
+         question rather than re-running this animation */
+      next({ replace: true });
+    }, total + 250);
 
-    return () => clearInterval(t);
+    return () => { timers.forEach(clearTimeout); clearTimeout(finish); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const k = Math.floor(n / 25);
-
   return (
-    <Screen id="s12">
+    <Screen id="load">
       <div className="loadWrap">
-        <ScreenTitle className="q" >Putting your result together.</ScreenTitle>
-        <p className="qsub">This takes a few seconds.</p>
-        <div className="ring">
-          <svg width="132" height="132" aria-hidden="true">
-            <circle cx="66" cy="66" r="58" stroke="var(--wash-2)" strokeWidth="11" fill="none" />
-            <circle
-              cx="66" cy="66" r="58" stroke="var(--plum)" strokeWidth="11" fill="none"
-              strokeLinecap="round" strokeDasharray={RING}
-              strokeDashoffset={RING - (RING * n) / 100}
-            />
-          </svg>
-          <div className="pct">{n}%</div>
-        </div>
+        <ScreenTitle className="q">Putting your answers together…</ScreenTitle>
+        <div className="loadSpin" aria-hidden="true" />
         <ul className="loadList">
           {LOAD_STEPS.map((label, i) => (
-            <li key={label} className={
-              i < k || n >= 100 ? 'done' : i === Math.min(k, LOAD_STEPS.length - 1) && n < 100 ? 'now' : ''
-            }>
+            <li key={label} className={i < k ? 'done' : i === k ? 'now' : ''}>
               <span className="ld" />{label}
             </li>
           ))}
         </ul>
-        <p className="srOnly" role="status" aria-live="polite">{n}% complete</p>
+        <p className="srOnly" role="status" aria-live="polite">Putting your answers together</p>
       </div>
     </Screen>
   );
 }
 
-/* --------------------------------------------------------------- s13 ---- */
+/* -------------------------------------------------------------- gate ---- */
 
-export function S13() {
+/* THE EMAIL UNLOCK. It says what is true: her result opens on this screen's
+   button, now. It does not say "where should we send it", because nothing is
+   being sent before she sees it. */
+export function Gate() {
   const { S, set, next, angle } = useQuiz();
   const outcome = stateKey(S);
 
@@ -101,25 +84,23 @@ export function S13() {
   }
 
   return (
-    <Screen id="s13">
-      <p className="eyebrow">Almost there</p>
-      <ScreenTitle className="rTitle">Your result is ready.</ScreenTitle>
+    <Screen id="gate">
+      <ScreenTitle className="rTitle">Your Hormone Check is ready.</ScreenTitle>
       <p className="rDeck">
-        On the next screen you will see what your answers point to, why, and
-        one thing to start with. Where should I send it?
+        Enter your first name and email to see your personalized result now.
       </p>
 
       <form onSubmit={(e) => { e.preventDefault(); void submit(); }} noValidate>
-        <label className="srOnly" htmlFor="nf">Your first name</label>
+        <label className="srOnly" htmlFor="nf">First name</label>
         <input
-          className="field" id="nf" type="text" placeholder="Your first name"
+          className="field" id="nf" type="text" placeholder="First name"
           autoComplete="given-name" enterKeyHint="next"
           value={S.name} onChange={(e) => set({ name: e.target.value })}
         />
 
-        <label className="srOnly" htmlFor="ef">Your email address</label>
+        <label className="srOnly" htmlFor="ef">Email</label>
         <input
-          className="field" id="ef" type="email" placeholder="you@email.com"
+          className="field" id="ef" type="email" placeholder="Email"
           autoComplete="email" inputMode="email" enterKeyHint="go"
           aria-invalid={touched && !valid}
           aria-describedby={touched && !valid ? 'ef-err' : undefined}
@@ -128,7 +109,7 @@ export function S13() {
           onBlur={() => setTouched(true)}
         />
         {touched && !valid && (
-          <p className="fieldErr" id="ef-err">Please check that address — we cannot send your result without it.</p>
+          <p className="fieldErr" id="ef-err">Please check that address.</p>
         )}
 
         {/* Unticked, and required. An unsubscribe link is a way out of
@@ -142,8 +123,8 @@ export function S13() {
             onChange={(e) => set({ consent: e.target.checked })}
           />
           <span>
-            Yes, send my result and keep me posted from JJ Smith. I can
-            unsubscribe at any time.
+            Yes, email me my result and tips from JJ Smith. I can unsubscribe
+            at any time.
           </span>
         </label>
         {touched && !S.consent && (
@@ -154,15 +135,12 @@ export function S13() {
 
         <ActionBar>
           <button type="submit" className="cta" disabled={busy || !ready}>
-            {busy ? 'One moment…' : 'Show me my results'}
+            {busy ? 'One moment…' : 'SHOW ME MY RESULTS'}
           </button>
         </ActionBar>
       </form>
 
-      <p className="fine">
-        We use your address to send your result and to keep you posted from JJ
-        Smith. Nothing is sent unless you tick the box above.
-      </p>
+      <p className="gateNow">Your results will appear immediately.</p>
     </Screen>
   );
 }

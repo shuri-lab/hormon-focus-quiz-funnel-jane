@@ -73,8 +73,9 @@ export const ANGLES: Angle[] = [
     preselect: [],
     label: 'Default',
     chip1: '',
-    h1a: 'Why nothing feels',
-    h1b: 'the same any more',
+    /* The cover, from the quiz rebuild brief of 2 October 2026. */
+    h1a: 'Over 40 and struggling with',
+    h1b: 'stubborn weight, poor sleep, low energy or hot flashes?',
     paren: 'and what your answers may point to',
     lines: [
       'Breakouts you have not had since your twenties.',
@@ -84,7 +85,7 @@ export const ANGLES: Angle[] = [
       'Snapping at people you love.',
     ],
     closer: 'The check looks at them together and tells you which stage your answers fit.',
-    description: 'A two-minute symptom check that tells you which stage your answers fit: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    description: 'Over 40 and noticing changes? Take the 2-Minute Hormone Check and find out the pattern behind your symptoms. From JJ Smith.',
     offer: {
       h1a: 'Feel like yourself again, ',
       h1b: 'in your own clothes',
@@ -155,7 +156,7 @@ export const ANGLES: Angle[] = [
     closer: 'The check tells you which stage your answers fit, and where to start.',
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
-    description: 'A two-minute symptom check that tells you which stage your answers fit: hormonal imbalance, perimenopause or menopause. From JJ Smith.',
+    description: 'Waking up soaked after 40? Take the 2-Minute Hormone Check and find out the pattern behind your symptoms. From JJ Smith.',
     offer: {
       sub: 'Tired of waking soaked at three, throwing the covers off, and changing sheets you never used to change? Hormone Focus helps ease occasional night sweats and supports restful sleep through perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Quieter nights start with two capsules.',

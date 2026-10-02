@@ -114,4 +114,66 @@ export const SCALE_QUOTE: Review = {
 
 /** The rating and the count travel together and appear nowhere else. */
 export const RATING = '4.9';
-export const REVIEW_COUNT = 170;
+export const REVIEW_COUNT = 171;
+
+/* ------------------------------------------------ PROOF ON THE KIT PAGE --
+ *
+ * The quiz shows no review until she has her result. After it, the kit page
+ * carries three blocks: a few reviews straight under the offer, led by one
+ * that speaks to the concern she named; a row of shorter ones further down;
+ * and one longer one before the last button.
+ *
+ * The same rules as the wall. Every body below is verbatim. These four are
+ * on JJ's own offer page (read 2 October 2026) or were already quoted in the
+ * quiz, and they are added here rather than rewritten into the wall.
+ */
+const EXTRA: Review[] = [
+  {
+    name: 'Lisa',
+    verified: true,
+    body: 'I finally shed this hormonal weight gain! My energy and moods are so much better. Starting to feel like myself again.',
+  },
+  {
+    name: 'Roslind',
+    verified: true,
+    body: 'This has made a tremendous change in my perimenopause symptoms... I sleep better, no night sweat, mood is great and less flashes! Fast results.',
+  },
+  {
+    name: 'Anita F.',
+    verified: true,
+    body: 'It’s so AMAZING has given me my life back!',
+  },
+];
+
+const BY_NAME = new Map([...WALL, ...EXTRA].map((r) => [r.name, r]));
+
+function named(names: string[]): Review[] {
+  return names.map((n) => BY_NAME.get(n)).filter((r): r is Review => Boolean(r));
+}
+
+/** Which three open the proof, by the concern she said bothers her most. */
+const LEAD_FOR: Record<string, string[]> = {
+  weight: ['Lisa', 'Catonne J.', 'Toya H.'],
+  bloat: ['Toya H.', 'Roslind', 'Lisa'],
+  sleep: ['Roslind', 'Catonne J.', 'Lisa'],
+  sweats: ['Toya H.', 'Roslind', 'Stephanie L.'],
+  mood: ['Roslind', 'Lisa', 'Shauna H.'],
+  energy: ['Lisa', 'Shauna H.', 'Roslind'],
+};
+
+export interface KitProof {
+  /** Straight under the offer. The first speaks to her main concern. */
+  lead: Review[];
+  /** Further down, after the kit is explained. */
+  more: Review[];
+  /** One longer review before the last button. */
+  closing: Review;
+}
+
+export function kitProof(mainConcern: string): KitProof {
+  return {
+    lead: named(LEAD_FOR[mainConcern] ?? LEAD_FOR.weight),
+    more: named(['Anita F.', 'QUANEZIA M.', 'Mara', 'Kim']),
+    closing: BY_NAME.get('Katina S.') as Review,
+  };
+}

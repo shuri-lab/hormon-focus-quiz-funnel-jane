@@ -2,115 +2,108 @@
 type: C
 lane: paid
 created: 2026-09-11
+rebuilt: 2026-10-02
 status: current
-supersedes: the routing described in (C)-2026-09-10-three-states-to-product.md
+supersedes: the eleven-question routing of 11 September to 1 October 2026 (in git history)
 ---
 
 # Hormone Check — the routing table of record
 
-Five outcomes. Three are the read she came for. Two are exits.
+The quiz was rebuilt on 2 October 2026 from eleven questions to seven. **The five outcomes did not change.** What changed is the answers they are read from, who is shown the kit, and how small the doctor route is.
 
-| Key | Outcome | What it is |
-|-----|---------|-----------|
-| A | Hormonal imbalance | Estrogen building up faster than her body clears it. The product route. |
-| B | Perimenopause | The years before periods stop. The product route. |
-| C | Menopause | Periods have stopped. The product route. |
-| E | Early menopause | Periods stopped in her forties. Product route, with "have it confirmed". |
-| D | This one needs a doctor | We stop. No offer, no upsell, no email follow-up into a sale. |
+| Key | Outcome (Klaviyo `outcome`) | What she is told | Sees the kit |
+|-----|-----------------------------|------------------|--------------|
+| A | hormonal-imbalance | "Hormone changes may be part of the picture." | **yes** |
+| B | perimenopause | "A pattern often seen during the perimenopause years." | **yes** |
+| C | menopause | "A pattern often seen around menopause." | **yes** |
+| E | early-menopause | "A pattern often seen when menopause comes early", with "have it confirmed by your doctor". | **yes** |
+| D | (never sent) | "Talk to your healthcare professional first." No email asked, no price, no shop link. | no |
+
+The outcome names in Klaviyo are the ones the live flow already branches on. The words on screen never say "you have": a result is a pattern, not a diagnosis.
 
 ## Inputs
 
-- **age**: under 30 / 30 to 39 / 40 to 49 / 50 to 59 / 60+
-- **periods**: still have them / have them but changed / stopped
-- **stopCause** (asked only when stopped): hormonal coil, implant or injection / the pill without a break / hysterectomy or other surgery / cancer treatment or another medication / nothing like that
-- **periScore**: hot flashes or night sweats (+2), each perimenopause marker skipped, heavier, closer or further apart (+1 each), cycle all over the place (+2) or a bit off (+1), age 40s (+1), 50s or 60+ (+2)
+- **age**: under 40 / 40–44 / 45–49 / 50–54 / 55–59 / 60+
+- **cycle** ("What has been happening with your cycle lately?"): about the same as usual / less predictable / skipping some / stopped completely / birth control, medication or surgery affects it / not sure
+- **twelve** (asked only when stopped: "Has it been at least 12 months since your last one?"): yes / no / not sure / medication or surgery may be the reason
+- **hot flashes or night sweats**: ticked or not, from question one
+- **periScore**: hot flashes or night sweats (+2), cycle less predictable (+2) or skipping (+3), age in her forties (+1), fifty or over (+2)
+
+The pattern question, what she has tried and what she wants **never change the outcome**. They change the words on her result.
 
 ## The rules, in order
 
-**1. She still has periods (changed or not)**
+**1. The doctor route. Two cases only.**
+
+| Case | Why |
+|------|-----|
+| Under 40, periods stopped, and the follow-up is anything but "medication or surgery" | Periods stopping before forty is not menopause in the ordinary sense. |
+| 60+, and her cycle is "less predictable" or "skipping some" | Periods still coming and going at sixty or over are worth having looked at. |
+
+Jane's instruction of 2 October 2026: keep the doctor route as small as it can be. Surgery and medication used to be sent here and no longer are (rule 2). `tests/logic.test.ts` asserts the doctor route is exactly these two cases.
+
+**2. Birth control, medication or surgery** (the cycle answer, or the follow-up answer)
+
+Her cycle cannot tell us anything, so she is read on age and symptoms, and **the result says so**.
 
 | Age | Outcome |
 |-----|---------|
-| 60+ | **D** — bleeding at sixty or over is uncommon and gets looked at, not explained away |
-| 50 to 59 | **B** |
-| 40 to 49 | **B** if periScore is 3 or more, otherwise **A** |
-| 30 to 39 | **B** if periScore is 5 or more, otherwise **A** |
-| Under 30 | **A** always. Under thirty is never perimenopause. |
+| 50 and over | **C** |
+| 40–49 | **B** |
+| Under 40 | **B** if periScore is 5 or more, otherwise **A** (in practice always A) |
 
-**2. Periods stopped, nothing else explains it**
+**3. Periods stopped completely**
 
-| Age | Outcome |
-|-----|---------|
-| 50+ | **C** |
-| 40 to 49 | **E** |
-| Under 40 | **D** — stopping before forty is not menopause in the ordinary sense |
+| Follow-up | Age | Outcome |
+|-----------|-----|---------|
+| 12 months or more | 45 and over | **C** |
+| 12 months or more | 40–44 | **E** |
+| Under 12 months | 40–59 | **B** |
+| Under 12 months | 60+ | **C** |
+| Not sure | 40–49 | **B** |
+| Not sure | 50 and over | **C** |
+| Any but medication or surgery | Under 40 | **D** |
 
-**3. Periods stopped because of a coil, implant, injection, or the pill without a break**
-
-The bleed is suppressed. Her cycle cannot tell us anything, so we read her on symptoms and age and **say so on the result screen**.
-
-| Age | Outcome |
-|-----|---------|
-| 50+ | **C** |
-| 40 to 49 | **B** |
-| 30 to 39 | **B** if periScore is 5 or more, otherwise **A** |
-| Under 30 | **A** |
-
-The verdict copy for A and C is rewritten in this case so it does not claim a cycle we cannot see.
-
-**4. Periods stopped after a hysterectomy or other surgery**
+**4. She still has a cycle, or she is not sure**
 
 | Age | Outcome |
 |-----|---------|
-| 50+ | **C** |
-| Under 50 | **D** — whether her ovaries are still working decides this, and we never asked |
-
-**5. Periods stopped after cancer treatment or another medication**
-
-**D at every age.** Treatment-induced absence can be temporary or lasting, she already has a clinical team, and estrogen metabolism is exactly where we do not sell.
+| 60+ ("same as usual" or "not sure") | **C**. "The same as usual" from a woman of 62 most likely means nothing has changed since her periods stopped. It is not evidence of bleeding. |
+| 50–59 | **B** |
+| 40–49 | **B** if periScore is 3 or more, otherwise **A** |
+| Under 40 | **B** if periScore is 5 or more, otherwise **A** |
 
 ## What D does
 
-No product, no price, no upsell. A scripted opening line for the appointment, her ticked symptoms to read out, what they may look at, and a restart button. The copy is specific to the reason: young, surgery, treatment, or late bleeding.
+No product, no price, no kit. A scripted opening line for the appointment, her ticked symptoms to read out, what they may look at, and a restart button.
 
-**She exits at s4b, and there is no email gate.** `docReason()` is settled by
-s2, s4 and s4b, so the moment the answer is D the quiz stops: no further
-questions, no name, no address, and no reveal screen but `rDoc`.
+**She exits at the cycle question, and there is no email gate.** The moment the answer is settled as D the quiz stops: no further questions, no name, no address, nothing sent to Klaviyo. For "under 40 and stopped" the exit waits for the follow-up, because "medication or surgery" there is rule 2, not the doctor route.
 
-This replaced the earlier behaviour, in which D walked the whole quiz, handed
-over an email at s13, and was then refused. The gate merely said "your read is
-ready" instead of "your plan is ready". Collecting an address from a woman in
-order to market to her, seconds before telling her we will not sell to her, is
-not a copy problem. `tests/logic.test.ts` now asserts across the whole input
-space that a D state reaches neither s12 nor s13.
+## Who is shown the kit
 
-## The bug this replaced
+`OFFER_OUTCOMES` in `src/lib/logic.ts` reads `['A', 'B', 'C', 'E']`: Jane's decision of 2 October 2026 that every result but the doctor route sees the 60-Day Feel Like YOU Again Kit. It replaces the rule of 22 September (perimenopause only). Changing it is one line and one test.
 
-Periods stopped **plus any named cause** fell straight through to `periScore() >= 3`. Age alone contributes 2 points at 50+, so a woman in her fifties who had a hysterectomy, or who has a coil, was told **Perimenopause**. The stopped-periods group also never gets asked the cycle-regularity question, so their score was systematically built from age and hot flashes alone.
+Because every result is now sold to, the Klaviyo flow no longer has to withhold the kit from A, C and E.
 
-## Two judgement calls still open for Jane
+## The seven questions
 
-1. **30 to 39 can reach Perimenopause** on a heavy symptom load. Late-thirties perimenopause is real, but the band is 30 to 39, so a woman of 31 can land there. Splitting the age question into 30 to 34 and 35 to 39 would close it.
-2. **Under 30 never gets Perimenopause**, by design. If she wants that door open, it needs its own threshold rather than the shared one.
+1. What has been bothering you lately? (select all)
+2. Which one bothers you the most? (only the ones she ticked; skipped when she ticked one)
+3. How old are you?
+4. What has been happening with your cycle lately? (+ the 12-month follow-up when stopped)
+5. You mentioned … When do you notice these changes most?
+6. What have you already tried? ("Nothing yet" is exclusive)
+7. If one thing could feel better again, what would you choose?
 
-## Who is shown the kit (1 October 2026)
+Then a short loader, the email unlock, result page 1 (what her answers mean) and result page 2 (what to do next, and the kit, on one scrolling page).
 
-The outcome decides what she is told. A separate rule decides whether she is sold to.
+## What rides to Klaviyo
 
-| Outcome | Sees her result and why | Sees a first step | Sees the kit |
-|---|---|---|---|
-| B Perimenopause | yes | yes | **yes** |
-| A Hormonal imbalance | yes | yes | no |
-| C Menopause | yes | yes | no |
-| E Early menopause | yes | yes | no |
-| D Doctor | the doctor screen only | no | no |
+Metric `HF Quiz Completed`, unchanged. Properties: `outcome`, `outcome_code`, `result_route` (same value as `outcome`), `quiz` = `hf-v3`, `angle`, the UTMs she arrived with, `selected_symptoms`, `primary_symptom` (also as `main_concern`), `age_band`, `cycle_status`, `cycle_12_month_status` (only when asked), `symptom_pattern`, `tried_actions`, `desired_outcome`, `signs`, `consent_at`. Sent only when she ticks the box, and never for outcome D. None of it is put in a link or sent to an ad pixel.
 
-`OFFER_OUTCOMES` in `src/lib/logic.ts` holds the rule, and it reads `['B']`: JJ's decision of 22 September 2026 that only a perimenopause result sees the offer. A, C and E end on "Where to start" with no price and no shop link. Changing the rule is one line and one test, and it is JJ's call, not a build decision.
+## Judgement calls still open
 
-A, C and E still post the `HF Quiz Completed` event with their outcome, so the Klaviyo flow has to branch on `outcome` before it promotes the kit to them.
-
-## Three more judgement calls, raised by the content review of 1 October
-
-3. **40 to 49 is one band.** It cannot tell 43 from 48, and possible menopause symptoms before 45 are a reason to see a doctor. The result now says so in words ("if you are under 45, talk to your doctor"). Splitting the band into 40 to 44 and 45 to 49 would let the routing say it too; it changes this table and the equivalence tests.
-4. **"Hormonal imbalance" is a label, not a finding.** It is where everyone lands who is not one of the other four. The copy under it no longer names a mechanism. Whether the name itself should change is open.
-5. **What she said bothers her most** (`main`, screen s1b) never changes the outcome. It decides which concern her first step is written for, and it rides with the Klaviyo event as `main_concern`.
+1. **The consent tick box stays.** The rebuild brief's email screen has no tick box. Removing it changes the basis on which her address and her health answers are stored, so it waits for a yes from David or JJ. One line in `gate.tsx` and one in `leads.ts`.
+2. **Under 40 can reach perimenopause** only with skipping periods and hot flashes together. One band covers 25 and 39; the result carries "if you are under 45, talk to your doctor".
+3. **"Unexpected bleeding after a long time without a period"** has no question behind it. It is said as one line on every result instead.
+4. **One merged option** covers birth control, medication and surgery, so the quiz cannot tell the pill from cancer treatment. Both are read on age and symptoms; the kit page carries the talk-to-your-doctor line for anyone on medication or with a history of breast, uterine or ovarian cancer.

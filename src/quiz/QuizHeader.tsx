@@ -38,7 +38,7 @@ export function QuizHeader() {
           </div>
         ) : (
           <div className="progress" role="progressbar"
-            aria-valuenow={questionStep?.index ?? (here === 's1' ? 0 : 100)}
+            aria-valuenow={questionStep?.index ?? (here === 'q1' ? 0 : 100)}
             aria-valuemin={0}
             aria-valuemax={questionStep?.total ?? 100}
             aria-label="Quiz progress">

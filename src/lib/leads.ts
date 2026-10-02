@@ -17,11 +17,11 @@
  * standing between here and a working subscription.
  *
  * NOTHING HERE BLOCKS HER. Every failure path resolves, because a woman who
- * has answered fourteen questions is owed her result whether or not our
+ * has answered seven questions is owed her result whether or not our
  * marketing stack is having a good afternoon.
  */
 import { readAttribution } from './analytics';
-import { mainConcern, score } from './logic';
+import { mainConcern } from './logic';
 import type { QuizState, Outcome } from './logic';
 
 /** Public, and public on purpose. See the note above. */
@@ -95,12 +95,26 @@ export async function submitLead(
         properties: {
           outcome: OUTCOME_NAME[outcome],
           outcome_code: outcome,
-          quiz: 'hf-v2',
+          /* The same value under the name the rebuild brief asks for. `outcome`
+             stays, because the live flow already branches on it. */
+          result_route: OUTCOME_NAME[outcome],
+          quiz: 'hf-v3',
           angle,
           ...utm,
-          signs: score(S).raw,
-          /* What she said bothers her most, so the first email can lead with it. */
+          /* Her answers, so an email can say them back to her. They go to
+             Klaviyo with her consent and nowhere else: never into a link,
+             never to an ad pixel. */
+          selected_symptoms: S.sym,
+          primary_symptom: mainConcern(S),
+          /* The v4 name for the same thing, kept for anything already reading it. */
           main_concern: mainConcern(S),
+          age_band: S.age,
+          cycle_status: S.cycle,
+          ...(S.twelve ? { cycle_12_month_status: S.twelve } : {}),
+          symptom_pattern: S.pattern,
+          tried_actions: S.tried,
+          desired_outcome: S.want,
+          signs: S.sym.length,
           consent_at: consentAt,
         },
         metric: {

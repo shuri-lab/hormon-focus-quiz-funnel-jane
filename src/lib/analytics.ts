@@ -131,6 +131,13 @@ export const track = {
     meta('QuizStep', { screen, step: index });
   },
 
+  /** The last question answered. Fired before the email gate, so the gap
+      between this and generate_lead is the gate's own drop-off. */
+  quizComplete(outcome: string) {
+    push('quiz_complete', { outcome });
+    meta('QuizComplete', { outcome });
+  },
+
   /** The email gate. This is the lead. */
   lead(outcome: string) {
     push('generate_lead', { outcome });

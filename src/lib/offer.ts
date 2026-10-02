@@ -78,6 +78,28 @@ export const KIT_CONTENTS: [string, string][] = [
 export const KIT_BONUS =
   'The 60-Day Hormone Fix ebook, Hormone Healthy Recipes and the Daily Symptom Tracker';
 
+/**
+ * JJ's own value stack, line for line as it reads on her offer page
+ * (hormonefocus.jjsmithonline.com, read 2 October 2026). The quiz shows the
+ * same kit at the same price with the same arithmetic, so the two doors
+ * cannot describe two different offers.
+ */
+export const KIT_VALUE: [string, string][] = [
+  ['2 Bottles of Hormone Focus', '$99.99'],
+  ['The 60-Day Hormone Fix eBook', '$49'],
+  ['Hormone Healthy Recipes eBook', '$29'],
+  ['Daily Symptom Tracker', '$19'],
+];
+export const KIT_TOTAL_VALUE = '$196.99';
+
+/** The line under the kit's name, on her page and on the kit image. */
+export const KIT_TAGLINE = 'Better Sleep. Less Stubborn Belly. More Energy. More YOU.';
+
+/** The kit shot and the one-bottle shot, as on her page. */
+export const SHOT_KIT = '/img/kit-60-day.webp';
+export const SHOT_KIT_BOTTLE = '/img/kit-one-bottle.webp';
+export const MONEY_BACK_BADGE = '/img/money-back-badge.webp';
+
 /** The same name mid-sentence, where a capital article reads like a shout. */
 export const planShortInline = (): string => PLAN_SHORT.replace(/^The /, 'the ');
 

@@ -13,14 +13,18 @@ import { createState, type QuizState } from '../src/lib/logic';
 
 const EVENTS_URL = `https://a.klaviyo.com/client/events/?company_id=${KLAVIYO_PUBLIC_KEY}`;
 
-/** A finished quiz: four of the fourteen signs, consent given. */
+/** A finished quiz: all seven answers, consent given. */
 function finished(over: Partial<QuizState> = {}): QuizState {
   return {
     ...createState(),
     sym: ['sweats', 'sleep'],
-    mood: ['irritable'],
-    markers: ['skipped'],
-    sev: 'weekly',
+    main: 'sleep',
+    age: '45-49',
+    cycle: 'stopped',
+    twelve: 'no',
+    pattern: 'weekly',
+    tried: ['food', 'gym'],
+    want: 'sleep',
     name: '  Renee  ',
     email: '  renee@example.com  ',
     consent: true,
@@ -116,9 +120,21 @@ test('a completed quiz posts one event Klaviyo can trigger on', async () => {
 
   expect(attrs.properties.outcome).toBe('perimenopause');
   expect(attrs.properties.outcome_code).toBe('B');
-  expect(attrs.properties.quiz).toBe('hf-v2');
+  expect(attrs.properties.result_route).toBe('perimenopause');
+  expect(attrs.properties.quiz).toBe('hf-v3');
   expect(attrs.properties.angle).toBe('night-sweats');
-  expect(attrs.properties.signs).toBe(4);
+  expect(attrs.properties.signs).toBe(2);
+
+  /* Every answer the rebuild brief asks to be stored, under its own name. */
+  expect(attrs.properties.selected_symptoms).toEqual(['sweats', 'sleep']);
+  expect(attrs.properties.primary_symptom).toBe('sleep');
+  expect(attrs.properties.main_concern).toBe('sleep');
+  expect(attrs.properties.age_band).toBe('45-49');
+  expect(attrs.properties.cycle_status).toBe('stopped');
+  expect(attrs.properties.cycle_12_month_status).toBe('no');
+  expect(attrs.properties.symptom_pattern).toBe('weekly');
+  expect(attrs.properties.tried_actions).toEqual(['food', 'gym']);
+  expect(attrs.properties.desired_outcome).toBe('sleep');
   expect(attrs.properties.consent_at).toMatch(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/);
 });
 
@@ -138,6 +154,13 @@ test('the ad parameters it has are carried, and the ones it lacks are absent', a
      things in a report, and only one of them is true. */
   expect('utm_medium' in props, 'an unset parameter must not be sent empty').toBe(false);
   expect('utm_content' in props).toBe(false);
+});
+
+test('the twelve-month answer is sent only when it was asked', async () => {
+  await submitLead(finished({ cycle: 'unpredictable', twelve: '' }), 'B', '');
+  const props = sentBody().properties;
+  expect(props.cycle_status).toBe('unpredictable');
+  expect('cycle_12_month_status' in props).toBe(false);
 });
 
 test('each outcome is named in the long form a person can read', async () => {

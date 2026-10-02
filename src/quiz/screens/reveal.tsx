@@ -1,107 +1,84 @@
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import {
-  MARKERS, MOOD, TILES, BRAND, confidenceNote, docReason, has, masked, stateKey,
+  TILES, BRAND, docReason, has, mainConcern, masked, otherConcerns, seesOffer, stateKey,
 } from '../../lib/logic';
 import {
-  AGE_PHRASE, CANNOT_TELL, DOC, IMG, PERIOD_PHRASE, QUIZ_DISCLAIMER, REG_PHRASE, VERDICT,
+  CANNOT_TELL, DOC, DOC_TITLE, MASKED_NOTE, QUIZ_DISCLAIMER, RESULT, WANT_PHRASE,
+  patternLine,
 } from '../../lib/content';
+import type { Outcome, SymptomId } from '../../lib/logic';
 
-function displayName(name: string) {
-  return name.trim() || 'you';
-}
+const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
 
 /* ---------------------------------------------------------------- r1 ---- */
 
-/* What her answers point to, said as a read and not as an answer. Nothing is
-   sold on this screen: she has just handed over her email for a result, and
-   the result is what she is given first. */
+/* WHAT HER ANSWERS MEAN. One page, and nothing is sold on it: she gave an
+   address for a result, and the result is what she is given first.
+ *
+ * It is a pattern and never a diagnosis. Everything on it is one of her own
+ * answers said back to her, or a plain sentence about the stage. */
 export function R1() {
-  const { S, next } = useQuiz();
-  const v = VERDICT[stateKey(S)];
+  const { S, next, restart } = useQuiz();
+  const outcome = stateKey(S) as Exclude<Outcome, 'D'>;
+  const copy = RESULT[outcome] ?? RESULT.A;
+  const main = mainConcern(S);
+  const others = otherConcerns(S);
+  const pattern = patternLine(S);
+  const name = S.name.trim();
 
   return (
     <Screen id="r1">
-      <p className="eyebrow">Your hormone check</p>
-      <ScreenTitle className="rTitle">{displayName(S.name)}, here is what your answers point to.</ScreenTitle>
+      <p className="eyebrow">Your Hormone Check</p>
+      <ScreenTitle className="rTitle">
+        {name ? `${name}, ${copy.headline.charAt(0).toLowerCase()}${copy.headline.slice(1)}` : copy.headline}
+      </ScreenTitle>
 
-      <div className="verdict">
-        <p className="lab">The closest fit</p>
-        <p className="name">{v.name}</p>
-        <p className="sub">{v.sub(S)}</p>
-        <p className="conf">{confidenceNote(S)}</p>
-      </div>
-
-      {masked(S) && (
-        <div className="block key">
-          <p className="blabel">One thing to say plainly</p>
-          <p>
-            {S.stopCause === 'coil'
-              ? 'Your coil, implant or injection is stopping the bleed.'
-              : 'Taking the pill without a break is stopping the bleed.'}
-            {' '}So your periods cannot tell us anything here. This read is built from
-            your symptoms and your age instead.
-          </p>
-        </div>
-      )}
-
-      <p className="fine">{QUIZ_DISCLAIMER}</p>
-
-      <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Show me why &rarr;</button>
-      </ActionBar>
-    </Screen>
-  );
-}
-
-/* ---------------------------------------------------------------- r2 ---- */
-
-/* Why this result: her own answers, said back to her, and then what the
-   check cannot establish. There is no score. A number out of a hundred with
-   mild, moderate and severe under it looked like a measurement and was not
-   one. */
-export function R2() {
-  const { S, next } = useQuiz();
-  const picked = TILES.filter(([id]) => has(S, id));
-  const moods = MOOD.filter(([id]) => S.mood.includes(id)).map(([, label]) => label);
-  const marks = MARKERS.filter(([id]) => id !== 'none' && S.markers.includes(id)).map(([, label]) => label);
-  const cycle = [
-    PERIOD_PHRASE[S.periods],
-    S.reg ? `and they are ${REG_PHRASE[S.reg]}` : '',
-  ].filter(Boolean).join(', ');
-
-  return (
-    <Screen id="r2">
-      <p className="eyebrow">Here is why</p>
-      <ScreenTitle className="rTitle">What you told me.</ScreenTitle>
-
-      {picked.length > 0 && (
-        <div className="symStrip">
-          {picked.map(([id, label]) => (
-            <figure key={id}>
-              <img src={IMG[id]} alt="" width={540} height={405} loading="lazy" decoding="async" />
-              <figcaption>{label}</figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
+      <dl className="resCard">
+        {main && (
+          <div>
+            <dt>Your biggest concern</dt>
+            <dd>{LABEL[main]}</dd>
+          </div>
+        )}
+        {others.length > 0 && (
+          <div>
+            <dt>You are also noticing</dt>
+            <dd>{others.map((id) => LABEL[id]).join(' + ')}</dd>
+          </div>
+        )}
+        {pattern && (
+          <div>
+            <dt>Your pattern</dt>
+            <dd className="resSay">{pattern}</dd>
+          </div>
+        )}
+      </dl>
 
       <div className="block">
-        <p className="blabel">The answers this read rests on</p>
-        {S.age && <p><strong>Your age.</strong> You are {AGE_PHRASE[S.age]}.</p>}
-        {cycle && <p><strong>Your cycle.</strong> {cycle}.</p>}
-        {marks.length > 0 && <p><strong>In the last year.</strong> {marks.join('. ')}.</p>}
-        {moods.length > 0 && <p><strong>What is different now.</strong> {moods.join('. ')}.</p>}
+        <p className="blabel">Here is what that means</p>
+        {copy.means.map((p) => <p key={p}>{p}</p>)}
+        {masked(S) && <p>{MASKED_NOTE}</p>}
       </div>
 
-      <div className="block key">
-        <p className="blabel">What this check cannot tell you</p>
-        <p>{CANNOT_TELL}</p>
-      </div>
+      {S.want && (
+        <div className="block key">
+          <p className="blabel">And what you want most is</p>
+          <p className="lead">{WANT_PHRASE[S.want]}</p>
+        </div>
+      )}
 
-      <ActionBar>
-        <button type="button" className="cta" onClick={() => next()}>Where do I start? &rarr;</button>
-      </ActionBar>
+      <p className="fine">{CANNOT_TELL} {QUIZ_DISCLAIMER}</p>
+
+      {seesOffer(S) ? (
+        <ActionBar>
+          <button type="button" className="cta" onClick={() => next()}>
+            SHOW ME WHAT TO DO NEXT &rarr;
+          </button>
+        </ActionBar>
+      ) : (
+        <button type="button" className="cta ghost" onClick={restart}>Start the check again</button>
+      )}
     </Screen>
   );
 }
@@ -119,8 +96,8 @@ export function RDoc() {
 
   return (
     <Screen id="rDoc">
-      <p className="eyebrow">What to do now</p>
-      <ScreenTitle className="rTitle">Take this to your doctor.</ScreenTitle>
+      <p className="eyebrow">Your Hormone Check</p>
+      <ScreenTitle className="rTitle">{DOC_TITLE}</ScreenTitle>
       <p className="rDeck">{copy.deck}</p>
 
       <div className="block key">
