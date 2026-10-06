@@ -157,7 +157,18 @@ test.describe('the quiz', () => {
     await expect(pics.first().locator('img')).toHaveAttribute('src', /symptom-sleep/);
     await expect(page.locator('.resFacts')).toContainText('Most weeks');
     await expect(page.locator('.resFacts')).toContainText('Less predictable');
-    await expect(page.getByText('That is why poor sleep, stubborn weight gain and low energy can all show up at the same time.')).toBeVisible();
+    /* WHAT THIS MEANS, 6 October 2026. The one generated sentence became
+       Jane's block for her outcome, then the line for the symptom she said
+       bothers her most, then the line for how often it hits her, then a fixed
+       heading and paragraph for that symptom. She is perimenopause, her main
+       concern is sleep, and she sees it most weeks. */
+    await expect(page.getByText('Menopause is when your periods stop for good.', { exact: false })).toBeVisible();
+    await expect(page.getByText("That's why your sleep changed, even though your bedtime didn't.")).toBeVisible();
+    await expect(page.getByText('Most weeks is often enough to spot a pattern. Start writing it down.')).toBeVisible();
+    await expect(page.getByText('Why your sleep has changed')).toBeVisible();
+    await expect(page.getByText('In this stage, sleep gets easier to break.', { exact: false })).toBeVisible();
+    /* Sleep IS her main concern, so the extra sleep sentence is not appended. */
+    await expect(page.getByText('Your sleep is poor too', { exact: false })).toHaveCount(0);
     await expect(page.getByText('To sleep through the night.')).toBeVisible();
     await expectNoHorizontalOverflow(page, 'r1 result');
 
@@ -181,9 +192,26 @@ test.describe('the quiz', () => {
        answered by the kit, then women who did it, all before the price. */
     await expect(heading(page)).toHaveText('Your 60-day plan for better sleep');
     await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
-    await expect(page.locator('.nextList li')).toHaveCount(5);
-    await expect(page.locator('.nextHowQ')).toContainText('The hard part is the how.');
-    await expect(page.getByText('That is exactly why I created the 60-Day Feel Like YOU Again Kit.')).toBeVisible();
+
+    /* HER FIRST THREE THINGS replaced the five generic steps. Sleep first
+       because she named it, then the other two she ticked in tile order. */
+    await expect(page.getByText('Your first three things')).toBeVisible();
+    const cards = page.locator('.priCard');
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(0)).toContainText('Protect your sleep');
+    await expect(cards.nth(1)).toContainText('Build meals that keep you full');
+    await expect(cards.nth(2)).toContainText('Build steadier energy');
+
+    /* What she already tried is acknowledged inside the card it belongs to:
+       eating differently on the weight card, exercising more on the energy
+       card. She did not say she had worked on her sleep, so that card has no
+       acknowledgement on it. */
+    await expect(cards.nth(1)).toContainText("You've already changed how you eat");
+    await expect(cards.nth(2)).toContainText("More cardio won't work.");
+    await expect(cards.nth(0)).not.toContainText('already worked on your sleep');
+
+    await expect(page.locator('.nextHowQ')).toContainText('This is why I made the 60-Day Kit');
+    await expect(page.getByText('Knowing what to do is one thing.', { exact: false })).toBeVisible();
     await expect(page.locator('.nextPieces > div')).toHaveCount(4);
     await expect(page.locator('[data-proof="pre"] .pfFaces img')).toHaveCount(6);
     /* THE LEAD REVIEW IS NO LONGER PERSONALISED. It used to answer her main
