@@ -38,7 +38,10 @@ test.describe('the cover', () => {
     await page.goto('/');
     await expect(page.locator('h1')).toContainText('Struggling with');
     await expect(page.locator('h1')).not.toContainText('Over 40');
-    await expect(page.locator('.lpLogo img')).toHaveAttribute('alt', 'JJ Smith');
+    /* The wordmark sits in a bar of its own now, the way JJ's page has it,
+       rather than floating above the copy. */
+    await expect(page.locator('.masthead img')).toHaveAttribute('alt', 'JJ Smith');
+    await expect(page.locator('.proofPill')).toContainText('Thousands of women helped');
     await expect(page.locator('.coverSub')).toHaveText('Take a 1-minute check. Find out why you feel this way and what to do next.');
     await expect(page.locator('a.cta')).toHaveCount(1);
     await expect(page.locator('a.cta')).toContainText('Get my hormone check');

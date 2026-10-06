@@ -433,7 +433,7 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 .landing .appMain { padding: 0; }
 .landing .screen { padding: 22px 20px 26px; }
 
-.lpHero { padding: 22px 0 0; }
+.lpHero { padding: 24px 0 0; }
 .lpLogo { text-align: center; margin: 4px 0 15px; }
 .lpLogo b { display: block; font-size: var(--t-body); font-weight: 800; letter-spacing: .16em; color: var(--ink); }
 .lpLogo b i { font-style: normal; font-weight: 500; }
@@ -647,33 +647,62 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 
 /* ======================================================= the cover, v2 === */
 
-/* The bar JJ's own page carries above everything. Says the one thing this
-   page asks, so a woman who lands mid-scroll still knows what it is. */
+/* THE TOP OF THE PAGE, as JJ's own has it: a coloured announcement strip,
+   then a white bar with the wordmark in it. Two bands, not one floating
+   logo — which is what made ours read as a page that had not started yet. */
 .alertBar {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 10px var(--gutter) calc(10px + var(--safe-top));
-  background: linear-gradient(90deg, var(--plum) 0%, var(--plum-2) 100%);
-  color: #fff; font-size: var(--t-small); font-weight: 700;
-  letter-spacing: .04em; text-align: center;
-}
-.alertStar { font-size: 13px; opacity: .9; }
-
-/* Faces, then the claim. Overlapped the way a rating badge stacks them. */
-.proofRow {
   display: flex; align-items: center; justify-content: center;
-  gap: 10px; margin: 0 0 14px;
-  font-size: var(--t-small); font-weight: 700; color: var(--ink-2);
+  gap: 9px; flex-wrap: wrap;
+  padding: calc(7px + var(--safe-top)) 18px 7px;
+  /* Her three stops, not our two: the pink end is what stops it reading as
+     a flat purple block. */
+  background: linear-gradient(90deg, #5B2A80 0%, #7E36A6 48%, #C0468C 100%);
+  color: #fff; font-size: 11.5px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; text-align: center;
 }
-.proofFaces { display: flex; }
+.alertStar { color: #F6C9E4; font-size: 12px; }
+
+.masthead {
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.masthead .jjLogo { display: block; height: 25px; width: auto; }
+
+/* THE PILL. Faces tucked into the left, the claim against white, a hairline
+   and a soft shadow — so it is one object she can take in, not a line of
+   loose text under a logo. Her .badge, in our tokens. */
+.proofPill {
+  display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 0 auto 16px;
+  padding: 7px 16px 7px 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: var(--t-small); font-weight: 700; color: var(--ink);
+}
+.proofFaces { display: inline-flex; }
 .proofFaces i {
   width: 30px; height: 30px; border-radius: 50%;
   background-size: cover; background-position: center 28%;
-  border: 2px solid var(--surface); margin-left: -9px;
+  border: 2px solid var(--surface); margin-left: -11px;
   box-shadow: 0 2px 6px -2px rgba(36, 31, 46, .5);
 }
 .proofFaces i:first-child { margin-left: 0; }
 
 /* What the button costs her, under the button. */
+/* The pill is inline-flex, so it is centred by the column rather than by
+   text-align, and the hero gets a little more room above it now the logo
+   has a bar of its own. */
+.landing .coverBody { display: flex; flex-direction: column; align-items: center; }
+.landing .coverBody > * { width: 100%; }
+/* 24px under the bar, which puts it in the same rhythm as everything
+   below it. It was 56 — the hero's own top padding plus a margin of its
+   own — and read as a gap the page had forgotten to fill. */
+.landing .coverBody > .proofPill { width: auto; margin-top: 0; }
+
 .ctaNote {
   margin: 9px 0 0; text-align: center;
   font-size: var(--t-small); font-weight: 600; color: var(--ink-3);

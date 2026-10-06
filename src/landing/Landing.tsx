@@ -52,19 +52,23 @@ export function Landing() {
         <span>{ALERT_BAR}</span>
       </div>
 
+      {/* A bar of its own, as JJ's page has: white, a hairline under it, and
+          the wordmark sitting in it rather than floating above the copy. */}
+      <header className="masthead">
+        <img className="jjLogo" src={JJ_LOGO} alt="JJ Smith" width={132} height={25} />
+      </header>
+
       <main className="appMain">
         <section className="lpHero">
           <div className="screen">
-            {/* JJ's wordmark, as her offer page carries it. */}
-            <div className="lpLogo">
-              <img className="jjLogo" src={JJ_LOGO} alt="JJ Smith" width={132} height={25} />
-            </div>
-
             <div className="coverBody">
               {/* Faces before the headline: she sees women before she reads a
                   claim. Scoped to JJ's programmes, as the copy rules require —
                   never to Hormone Focus customers. */}
-              <p className="proofRow">
+              {/* A pill, the way her rating badge is a pill: faces tucked
+                  into the left of it, the claim set against white so it
+                  reads as one object rather than a line of loose text. */}
+              <p className="proofPill">
                 <span className="proofFaces" aria-hidden="true">
                   {FACES.map((src) => (
                     <i key={src} style={{ backgroundImage: `url(${src})` }} />
