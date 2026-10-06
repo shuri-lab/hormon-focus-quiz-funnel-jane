@@ -4,6 +4,7 @@ import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { stateKey } from '../../lib/logic';
 import { isEmail, submitLead } from '../../lib/leads';
 import { track } from '../../lib/analytics';
+import { GATE_LINE } from '../../lib/resultCopy';
 
 /* -------------------------------------------------------------- load ---- */
 
@@ -86,9 +87,7 @@ export function Gate() {
   return (
     <Screen id="gate">
       <ScreenTitle className="rTitle">Your Hormone Check is ready.</ScreenTitle>
-      <p className="rDeck">
-        Enter your first name and email to see your personalized result now.
-      </p>
+      <p className="rDeck">{GATE_LINE}</p>
 
       <form onSubmit={(e) => { e.preventDefault(); void submit(); }} noValidate>
         <label className="srOnly" htmlFor="nf">First name</label>

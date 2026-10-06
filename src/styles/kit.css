@@ -500,3 +500,16 @@
 @media (min-width: 900px) {
   .okList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Her first three things. Same furniture as .nextPieces so the kit page keeps
+   one voice, with room for the acknowledgement of what she has already tried
+   sitting above the body of the card it belongs to. */
+.priCards { display: grid; gap: 8px; margin-top: 12px; }
+.priCard {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 14px; padding: 13px 15px;
+  display: grid; gap: 3px;
+}
+.priCard b { font-size: 15.5px; font-weight: 700; color: var(--plum); }
+.priCard span { font-size: 14.5px; line-height: 1.4; color: var(--ink-2); }
+.priCard .priAck { color: var(--ink); font-weight: 600; }

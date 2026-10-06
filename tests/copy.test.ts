@@ -31,6 +31,7 @@ import * as copy from '../src/lib/offerCopy';
 import * as plan from '../src/lib/planCopy';
 import * as kit from '../src/lib/kitCopy';
 import * as quiz from '../src/lib/content';
+import * as result from '../src/lib/resultCopy';
 
 /* ------------------------------------------------- collecting the copy -- */
 
@@ -58,6 +59,9 @@ const AUTHORED: [string, string][] = [
      the kit page at the end are held to the same gate as the offer pages. */
   ...strings(kit, 'kitCopy.ts'),
   ...strings(quiz, 'content.ts'),
+  /* The results update, 6 October 2026: what this means, her first three
+     things, and why JJ made the Kit. */
+  ...strings(result, 'resultCopy.ts'),
 ];
 
 /**
@@ -102,8 +106,23 @@ const CONTRACTIONS = [
   /\b(i|you|we|they|he|she|who|would|could|should|might|must|do|does|did|is|are|was|were|has|have|had|will|can)['’](s|re|ve|ll|d|m|t)\b/i,
 ];
 
+/**
+ * resultCopy.ts is exempt from THIS rule and no other.
+ *
+ * The house style has had no contractions since 1 September 2026. The results
+ * copy pack of 6 October overrides it in writing, in Jane's own note on the
+ * brief: "That is the voice: short, direct, no softening, contractions fine
+ * (JJ's voice)." Her text is used word for word, so the words arrive with
+ * contractions in them.
+ *
+ * The claim gate below still reads every string in that module. This carve-out
+ * is about house style, never about what the brand may say.
+ */
+const CONTRACTIONS_EXEMPT = (path: string) => path.startsWith('resultCopy.ts');
+
 test('no authored string uses a contraction', () => {
   for (const [where, value] of AUTHORED) {
+    if (CONTRACTIONS_EXEMPT(where)) continue;
     for (const pattern of CONTRACTIONS) {
       expect(
         pattern.test(value),
@@ -296,9 +315,27 @@ test('the Plan is named the same way everywhere she sees it', () => {
 const CLOCK = /\b(two weeks|sixty days)\b/i;
 const ATTRIBUTED = /as customers report|customers report|women tell us|women report|women notice/i;
 
+/**
+ * The clock rule is about a PROMISE, and these two sentences are not one.
+ *
+ * Both are instructions for her own notebook: two weeks of writing things down
+ * is how long it takes HER to see HER pattern. Neither says a supplement does
+ * anything in two weeks, which is the thing the rule exists to stop, and no
+ * regular expression can tell the two apart.
+ *
+ * Listed in full rather than by path, exactly as SIGNED_OFF is, so changing a
+ * single character of either one puts it straight back under the gate.
+ */
+const CLOCK_EXEMPT = new Set([
+  'Write it down for two weeks',
+  'When it shows up, what you ate, where you are in your cycle. Two weeks shows the pattern.',
+  'Sleep, energy, mood, cravings, how your clothes fit. Two weeks on paper beats months of guessing.',
+]);
+
 test('no timeline is stated without saying whose timeline it is', () => {
   for (const [where, value] of CUSTOMER_FACING) {
     if (!CLOCK.test(value)) continue;
+    if (CLOCK_EXEMPT.has(value)) continue;
     expect(
       ATTRIBUTED.test(value),
       `${where} names ${CLOCK.exec(value)?.[0]} as though it were a promise. `

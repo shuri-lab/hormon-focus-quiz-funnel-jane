@@ -5,8 +5,9 @@ import {
 } from '../../lib/logic';
 import {
   CANNOT_TELL, DOC, DOC_TITLE, IMG, MASKED_NOTE, PATTERN_SHORT, QUIZ_DISCLAIMER, RESULT,
-  STAGE_FACT, WANT_PHRASE, cycleShort, mentioned,
+  STAGE_FACT, WANT_PHRASE, cycleShort,
 } from '../../lib/content';
+import { CLOSE, HEAD, PAT, SYM, meansFor, symExtra } from '../../lib/resultCopy';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
 const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
@@ -60,11 +61,25 @@ export function R1() {
         </section>
       )}
 
+      {/* What this means: the stage in Jane's words, then the one line that
+          ties it to the thing she said bothers her most, then how often it
+          hits her. All of it is data in resultCopy.ts, keyed by outcome,
+          symptom and pattern. None of it is built from her tile label. */}
       <div className="block">
         <p className="blabel">What this means</p>
-        <p>{copy.means(mentioned(S) || 'these changes', picked.length > 1)}</p>
+        {meansFor(outcome).map((para) => <p key={para}>{para}</p>)}
         {masked(S) && <p>{MASKED_NOTE}</p>}
+        {main && <p>{CLOSE[main]}</p>}
+        {S.pattern && <p>{PAT[S.pattern]}</p>}
       </div>
+
+      {main && (
+        <div className="block">
+          <p className="blabel">{HEAD[main]}</p>
+          <p>{SYM[main]}</p>
+          {symExtra(S, main) && <p>{symExtra(S, main)}</p>}
+        </div>
+      )}
 
       {S.want && (
         <div className="block key">
