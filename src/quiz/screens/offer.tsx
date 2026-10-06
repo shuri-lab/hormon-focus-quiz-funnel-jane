@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle } from '../../components/Screen';
 import { OkendoWall } from '../../components/OkendoWall';
@@ -203,7 +204,15 @@ export function R2() {
 
       <p className="fine" ref={foot}>*{OFFER_DISCLAIMER}</p>
 
-      {sticky && (
+      {/* PORTALLED TO <body> ON PURPOSE, and this is not a style choice.
+          The screen wrapper .rise keeps a transform after its entrance
+          animation — matrix(1,0,0,1,0,0), an identity, but not `none`. A
+          transformed ancestor becomes the containing block for its fixed
+          descendants, so position:fixed anchored to .rise instead of the
+          viewport and this bar rendered 8,694px down the page, present and
+          visible in the DOM and never once on screen. Out here it cannot
+          happen again whatever an ancestor does. */}
+      {sticky && createPortal((
         <div className="kitSticky">
           <span><b>{money(PROTOCOL_PRICE)}</b> free shipping</span>
           {/* THIS TAKES HER TO THE OFFER, IT DOES NOT BUY. She is somewhere
@@ -221,7 +230,7 @@ export function R2() {
             {KIT_CTA}
           </button>
         </div>
-      )}
+      ), document.body)}
     </Screen>
   );
 }

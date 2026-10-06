@@ -468,6 +468,48 @@ test.describe('the kit page', () => {
     }
   });
 
+  test('the sticky bar is actually on screen, not merely in the DOM', async ({ page }) => {
+    /* THE BUG THIS EXISTS FOR. The screen wrapper .rise keeps a transform
+       after its entrance animation — an identity matrix, but not `none` — and
+       a transformed ancestor becomes the containing block for its fixed
+       descendants. So position:fixed anchored to .rise instead of the
+       viewport and this bar sat 8,694px down the page: present, visible,
+       z-index 30, and never once on a screen. Counting it in the DOM said
+       yes. Only its rectangle said no, so that is what this measures. */
+    await page.goto('/quiz/kit');
+    const h = await page.evaluate(() => document.body.scrollHeight);
+    await page.evaluate((y) => window.scrollTo(0, y), Math.round(h * 0.5));
+    await page.waitForTimeout(400);
+
+    const bar = page.locator('.kitSticky');
+    await expect(bar).toBeVisible();
+
+    const box = (await bar.boundingBox())!;
+    const vh = page.viewportSize()!.height;
+    expect(
+      box.y < vh && box.y + box.height > 0,
+      `the sticky bar is off screen: it sits at ${Math.round(box.y)}px in a ${vh}px viewport`,
+    ).toBe(true);
+    /* And at the foot of the screen, which is the whole point of it. */
+    expect(Math.round(box.y + box.height)).toBeGreaterThan(vh - 120);
+  });
+
+  test('the sticky bar takes her to the offer and then gets out of the way',
+    async ({ page }) => {
+      await page.goto('/quiz/kit');
+      const h = await page.evaluate(() => document.body.scrollHeight);
+      await page.evaluate((y) => window.scrollTo(0, y), Math.round(h * 0.6));
+      await page.waitForTimeout(400);
+
+      await page.locator('.kitSticky button').click();
+      await page.waitForTimeout(1200);
+
+      const offer = (await page.locator('.kitBand').first().boundingBox())!;
+      expect(Math.abs(offer.y), 'she did not land on the offer').toBeLessThan(140);
+      /* The offer is on screen, so the bar stands down. */
+      await expect(page.locator('.kitSticky')).toHaveCount(0);
+    });
+
   test('the top bar does not follow her down the kit page', async ({ page }) => {
     await page.goto('/quiz/kit');
     const pos = await page.locator('.appHeader')
