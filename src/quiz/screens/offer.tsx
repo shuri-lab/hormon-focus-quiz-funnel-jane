@@ -36,19 +36,38 @@ export function R2() {
   const tried = triedLine(S);
   const href = kitHref(outcome, angle.slug);
 
-  /* The bar appears once the offer has scrolled away above her, so there is
-     never a second buy button on screen beside the first. */
+  /* The bar shows wherever the page has no call to action of its own in
+     view, and stays off the legal text at the foot.
+   *
+   * It used to watch only the offer block, with an IntersectionObserver that
+   * fired on `boundingClientRect.bottom < 0`. That is true only once the
+   * block is entirely above the viewport, which on this page meant the bar
+   * appeared at the very bottom and nowhere else — and there it sat on top
+   * of the disclaimer. Both regions are measured now, the way Jane's
+   * landing page does it. */
   const offer = useRef<HTMLDivElement>(null);
+  const foot = useRef<HTMLParagraphElement>(null);
   const [sticky, setSticky] = useState(false);
+
   useEffect(() => {
-    const el = offer.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => setSticky(!entry.isIntersecting && entry.boundingClientRect.bottom < 0),
-      { threshold: 0 },
+    const onScreen = (el: Element | null, bottomBias: number) => {
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      return r.bottom > 0 && r.top < vh * bottomBias;
+    };
+
+    const update = () => setSticky(
+      !onScreen(offer.current, 0.85) && !onScreen(foot.current, 1),
     );
-    io.observe(el);
-    return () => io.disconnect();
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   return (
@@ -166,7 +185,7 @@ export function R2() {
         <p className="kitNote">{money(PROTOCOL_PRICE)} · free shipping · 60-day money-back guarantee</p>
       </section>
 
-      <p className="fine">*{OFFER_DISCLAIMER}</p>
+      <p className="fine" ref={foot}>*{OFFER_DISCLAIMER}</p>
 
       {sticky && (
         <div className="kitSticky">
