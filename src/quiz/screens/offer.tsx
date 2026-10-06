@@ -28,6 +28,11 @@ import { track } from '../../lib/analytics';
  * piece by piece; women who have done it, before the price; the offer; more
  * proof, why sixty days, the formula, the guarantee, questions, one last
  * review and the button again. */
+/** Respect the setting rather than animate over it. */
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined'
+  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export function R2() {
   const { S, angle } = useQuiz();
   const outcome = stateKey(S);
@@ -190,12 +195,20 @@ export function R2() {
       {sticky && (
         <div className="kitSticky">
           <span><b>{money(PROTOCOL_PRICE)}</b> free shipping</span>
-          <a
-            className="cta kitBtn" href={href} data-offer="protocol" data-sticky
-            onClick={() => track.checkout(outcome, PROTOCOL_PRICE)}
+          {/* THIS TAKES HER TO THE OFFER, IT DOES NOT BUY. She is somewhere
+              down a long page with no price in view; the honest move is to
+              put the choice back in front of her and let her pick, not to
+              decide for her from a bar she half-read. The buy events still
+              come from the cards themselves, so nothing double-counts. */}
+          <button
+            type="button" className="cta kitBtn" data-sticky
+            onClick={() => offer.current?.scrollIntoView({
+              behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+              block: 'start',
+            })}
           >
             {KIT_CTA}
-          </a>
+          </button>
         </div>
       )}
     </Screen>

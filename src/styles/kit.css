@@ -444,3 +444,18 @@
   border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
 }
 .consentBox:focus-visible { outline: 3px solid var(--lilac); outline-offset: 2px; }
+
+/* ------------------------------------------- the kit page's own chrome --- */
+
+/* THE TOP BAR DOES NOT FOLLOW HER DOWN THE KIT PAGE.
+ *
+ * Every other screen is one decision tall and the bar is useful there. This
+ * page is a long scroll with its own sticky call to action at the foot, and
+ * two fixed bars eat the small screen from both ends at once. David's call,
+ * and the right one: the bar scrolls away and the buy bar stays. */
+.appHeader[data-step='r2'] {
+  position: static;
+  background: var(--ground);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

@@ -15,7 +15,7 @@ export function QuizHeader() {
   }, []);
 
   return (
-    <header className="appHeader" data-scrolled={scrolled}>
+    <header className="appHeader" data-scrolled={scrolled} data-step={here}>
       <div className="headerInner">
         <button
           type="button"

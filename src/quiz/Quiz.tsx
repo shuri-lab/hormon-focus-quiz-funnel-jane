@@ -23,7 +23,7 @@ function Stage() {
   const { here } = useQuiz();
   const Current = SCREENS[here] ?? Q1;
   return (
-    <main className="appMain">
+    <main className="appMain" data-step={here}>
       <div className="container">
         <Current />
       </div>
