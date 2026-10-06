@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { QuizProvider } from './QuizContext';
 import { useQuiz } from './context';
 import { QuizHeader } from './QuizHeader';
 import { angleBySlug } from '../lib/angles';
 import { usePageMeta } from '../lib/usePageMeta';
 import type { ScreenId } from '../lib/logic';
+import { FIRST_STEP, STEP_SLUG, screenFromSlug } from './steps';
 
 import { Q1, Q2, Q3, Q4, Q4b, Q5, Q6, Q7 } from './screens/questions';
 import { Load, Gate } from './screens/gate';
@@ -31,7 +32,16 @@ function Stage() {
 }
 
 export function Quiz() {
-  const { slug } = useParams();
+  const { slug, step } = useParams();
+
+  /* A step we do not have is a mistyped or stale link. Send her to the first
+     question rather than rendering it under an address that means nothing —
+     a URL people can share is only useful if a wrong one is obvious. */
+  if (step && !screenFromSlug(step)) {
+    const base = slug ? `/${slug}` : '';
+    return <Navigate to={`${base}/quiz/${STEP_SLUG[FIRST_STEP]}`} replace />;
+  }
+
   const angle = angleBySlug(slug);
 
   usePageMeta({

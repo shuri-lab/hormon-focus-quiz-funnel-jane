@@ -57,7 +57,9 @@ test.describe('the cover', () => {
     await page.goto('/bloating');
     await page.locator('.heroCta .cta').first().click();
 
-    await expect(page).toHaveURL(/\/bloating\/quiz$/);
+    /* Every step has an address now, so the cover lands on the first one by
+       name rather than on a bare /quiz that could be any screen. */
+    await expect(page).toHaveURL(/\/bloating\/quiz\/symptoms$/);
     await expect(heading(page)).toContainText('What has been bothering you lately');
     await expect(page.locator('.tile[aria-pressed="true"]')).toHaveCount(1);
     await expect(page.locator('.tile[aria-pressed="true"]')).toContainText('Bloating');
@@ -348,5 +350,68 @@ test.describe('the doctor route is an exit', () => {
     await expect(heading(page)).toHaveText('Perimenopause');
     /* The result says plainly what it was read from. */
     await expect(page.getByText('this result comes from your age and your symptoms')).toBeVisible();
+  });
+});
+
+/* ------------------------------------------------- every screen has a URL -- */
+
+test.describe('the addresses', () => {
+  /* The review build used to need a bar of jump buttons across the top to
+     reach these, which ate two thirds of a phone screen and could not ship.
+     A URL does the same job in production. */
+  const STEPS = [
+    ['symptoms', 'What has been bothering you lately'],
+    ['what-bothers-you-most', 'Which one bothers you the most'],
+    ['your-age', 'How old are you'],
+    ['your-cycle', 'What has been happening with your cycle'],
+    ['when-you-notice-it', 'When do you notice these changes most'],
+    ['what-you-have-tried', 'What have you already tried'],
+    ['what-you-want', 'What do you want most right now'],
+    ['your-result', 'Your Hormone Check is ready'],
+    ['result', ''],
+    ['kit', 'Your 60-day plan'],
+    ['speak-to-your-doctor', 'Talk to your healthcare professional'],
+  ] as const;
+
+  for (const [slug, heading] of STEPS) {
+    test(`/quiz/${slug} opens that screen directly`, async ({ page }) => {
+      await page.goto(`/quiz/${slug}`);
+      await expect(page).toHaveURL(new RegExp(`/quiz/${slug}$`));
+      if (heading) await expect(page.locator('body')).toContainText(heading);
+      await expectNoHorizontalOverflow(page, `/quiz/${slug}`);
+    });
+  }
+
+  test('a bare /quiz and a mistyped step both land on the first question', async ({ page }) => {
+    await page.goto('/quiz');
+    await expect(page).toHaveURL(/\/quiz\/symptoms$/);
+
+    await page.goto('/quiz/not-a-step');
+    await expect(page).toHaveURL(/\/quiz\/symptoms$/);
+
+    await page.goto('/bloating/quiz/not-a-step');
+    await expect(page).toHaveURL(/\/bloating\/quiz\/symptoms$/);
+  });
+
+  test('the ad parameters ride along in the address bar, step to step', async ({ page }) => {
+    const ad = 'utm_source=instagram&utm_medium=dm&utm_campaign=hf-260924-sweats';
+    await page.goto(`/quiz/symptoms?${ad}`);
+    await page.evaluate(() => sessionStorage.clear());
+    await page.goto(`/quiz/symptoms?${ad}`);
+
+    await page.locator('.tile').first().click();
+    await page.locator('.actionBar .cta').first().click();
+
+    /* The step moved and the attribution came with it. */
+    await expect(page).not.toHaveURL(/\/quiz\/symptoms/);
+    for (const pair of ad.split('&')) {
+      await expect(page).toHaveURL(new RegExp(pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    }
+  });
+
+  test('the review jump bar is gone', async ({ page }) => {
+    await page.goto('/quiz/kit');
+    await expect(page.locator('.reviewBar')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Kit page$/ })).toHaveCount(0);
   });
 });

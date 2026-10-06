@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useParams,
 } from 'react-router-dom';
@@ -8,13 +8,8 @@ import { OfferPage } from './offer/OfferPage';
 import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { initClarity, pageView } from './lib/analytics';
+import { FIRST_STEP, STEP_SLUG } from './quiz/steps';
 import { REVIEW } from './review/flag';
-
-/* The review build only. With the flag off this is null, the import below is
-   dead code, and none of it reaches a customer. */
-const ReviewBar = import.meta.env.MODE === 'review'
-  ? lazy(() => import('./review/ReviewBar'))
-  : null;
 
 /* A shared review page has no address bar of its own to route on, so it keeps
    its place in memory instead. */
@@ -51,6 +46,12 @@ function KnownOffer({ children }: { children: React.JSX.Element }) {
   return known ? children : <Navigate to="/offer" replace />;
 }
 
+/** /:slug/quiz with no step: send her to the first one, keeping the angle. */
+function FirstStep() {
+  const { slug } = useParams();
+  return <Navigate to={`/${slug}/quiz/${STEP_SLUG[FIRST_STEP]}`} replace />;
+}
+
 /** An unknown slug is a bad ad link. Send her to the default page, not a 404. */
 function KnownAngle({ children }: { children: React.JSX.Element }) {
   const { slug } = useParams();
@@ -66,19 +67,18 @@ export default function App() {
     if (!REVIEW) initClarity();
   }, []);
 
-  /* Bumped by the review bar, so a jump starts the quiz again from its answers. */
-  const [epoch, setEpoch] = useState(0);
-
   return (
     <Router>
-      {ReviewBar && (
-        <Suspense fallback={null}>
-          <ReviewBar onJump={() => setEpoch((n) => n + 1)} />
-        </Suspense>
-      )}
-      <Routes key={epoch}>
+      {/* The review bar used to sit here. Every screen has an address now,
+          so jumping to one is a URL rather than a strip of buttons that ate
+          two thirds of a phone screen and could never ship. */}
+      <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/quiz" element={<Quiz />} />
+        {/* THE STEP IS IN THE PATH. A bare /quiz redirects to the first
+            question rather than rendering it at an address that cannot be
+            linked back to. */}
+        <Route path="/quiz" element={<Navigate to={`/quiz/${STEP_SLUG[FIRST_STEP]}`} replace />} />
+        <Route path="/quiz/:step" element={<Quiz />} />
         {/* The offer, on our own host. A static segment outranks /:slug in the
             router, so these are matched before the landing pages whatever
             order they are written in. */}
@@ -89,7 +89,8 @@ export default function App() {
             anything we did not write a plan for goes to the front door. */}
         <Route path="/plan/:archetype" element={<PlanPage />} />
         <Route path="/:slug" element={<KnownAngle><Landing /></KnownAngle>} />
-        <Route path="/:slug/quiz" element={<KnownAngle><Quiz /></KnownAngle>} />
+        <Route path="/:slug/quiz" element={<KnownAngle><FirstStep /></KnownAngle>} />
+        <Route path="/:slug/quiz/:step" element={<KnownAngle><Quiz /></KnownAngle>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <RouteTracking />

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   createState, docReason, nextId, prevId, stateKey, QUESTION_NUMBER, QUESTION_TOTAL, REVEAL,
   shouldSkip, type QuizState, type ScreenId,
@@ -7,6 +7,7 @@ import {
 import { track } from '../lib/analytics';
 import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
+import { FIRST_STEP, screenFromSlug, stepPath } from './steps';
 import { REVIEW, takePreset } from '../review/flag';
 
 /* v3: the seven-question quiz. An answer saved by the old quiz does not fit
@@ -34,7 +35,7 @@ function save(S: QuizState) {
 
 export function QuizProvider({ angle, children }: { angle: Angle; children: ReactNode }) {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { step } = useParams();
 
   const [S, setS] = useState<QuizState>(() => {
     const restored = load();
@@ -43,9 +44,14 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     return { ...createState(), sym: [...angle.preselect] };
   });
 
-  /* The screen lives in history state, so the device back button walks the
-     funnel backwards instead of leaving it. */
-  const here = ((location.state as { screen?: ScreenId } | null)?.screen ?? 'q1') as ScreenId;
+  /* THE SCREEN IS THE URL. It used to live in history state, which meant
+     every step read /quiz and nothing in the funnel could be linked to.
+     Reading it from the path gives the device back button the same walk it
+     had before, and gives everything else an address. */
+  const here: ScreenId = screenFromSlug(step) ?? FIRST_STEP;
+
+  /* The angle prefix, so a woman inside /bloating stays inside it. */
+  const base = angle.slug ? `/${angle.slug}` : '';
 
   useEffect(() => { save(S); }, [S]);
 
@@ -77,8 +83,10 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
 
   const goTo = useCallback((id: ScreenId | undefined, replace = false) => {
     if (!id) return;
-    navigate(location.pathname + location.search, { state: { screen: id }, replace });
-  }, [navigate, location.pathname, location.search]);
+    /* The query is carried across every step: an ad's utm_* must survive the
+       walk, and the address bar is now the thing that holds it. */
+    navigate({ pathname: stepPath(base, id), search: window.location.search }, { replace });
+  }, [navigate, base]);
 
   /* A double-tap on Continue used to fire two navigations and skip a screen —
      easy to do on a phone, and invisible until somebody lands on the offer
