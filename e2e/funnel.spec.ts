@@ -183,7 +183,13 @@ test.describe('the quiz', () => {
     await expect(page.getByText('That is exactly why I created the 60-Day Feel Like YOU Again Kit.')).toBeVisible();
     await expect(page.locator('.nextPieces > div')).toHaveCount(4);
     await expect(page.locator('[data-proof="pre"] .pfFaces img')).toHaveCount(6);
-    await expect(page.locator('[data-proof="pre"] .kitRev').first()).toContainText('I sleep better');
+    /* THE LEAD REVIEW IS NO LONGER PERSONALISED. It used to answer her main
+       concern — a woman who said sleep met a woman who slept. David asked for
+       the four from JJ's own "Join the women" section, which are the same for
+       everyone, so this asserts those instead. LEAD_FOR is still exported, so
+       putting the personalised set back is one line in reviews.ts. */
+    await expect(page.locator('[data-proof="pre"] .kitRev').first())
+      .toContainText('given me my life back');
     /* The proof comes before the offer on the page. */
     const order = await page.evaluate(() => {
       const pre = document.querySelector('[data-proof="pre"]');
@@ -215,7 +221,9 @@ test.describe('the quiz', () => {
 
     /* Proof comes after the offer, in three places. She said sleep bothers
        her most, so the first review she reads is about sleep. */
-    await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(2);
+    /* Four from JJ's page: the first stands alone above the offer, the other
+       three sit under it. */
+    await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(3);
     await expect(page.locator('[data-proof="more"] .kitRev')).toHaveCount(4);
     await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
     await expect(page.locator("[data-proof=\"lead\"]").locator("xpath=..").locator(".pfFaces img")).toHaveCount(12);
@@ -224,7 +232,8 @@ test.describe('the quiz', () => {
 
     /* The guarantee, the questions, and the button again. */
     await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
-    await expect(page.locator('.kitFaq details')).toHaveCount(5);
+    /* JJ's own six questions now, at David's request. */
+    await expect(page.locator('.kitFaq details')).toHaveCount(6);
     await expect(page.locator('a[data-close]')).toHaveText(/START MY 60 DAYS/);
     await expect(page.locator('a[data-close]'))
       .toHaveAttribute('href', /54330638663791:1.*discount=HF60FREESHIP/);
@@ -278,7 +287,9 @@ test.describe('the quiz', () => {
     await expect(heading(page)).toHaveText('Your 60-day plan for cooler days and nights');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
-    await expect(page.locator('[data-proof="pre"] .kitRev').first()).toContainText('hot flashes');
+    /* Same four whatever she answered — see the note on the lead review above. */
+    await expect(page.locator('[data-proof="pre"] .kitRev').first())
+      .toContainText('given me my life back');
   });
 
   test('the loader is not re-entered by the back button', async ({ page }) => {
@@ -423,4 +434,53 @@ test.describe('the addresses', () => {
     await expect(page.locator('.reviewBar')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Kit page$/ })).toHaveCount(0);
   });
+});
+
+/* ------------------------------------------------- the kit page, reworked -- */
+
+test.describe('the kit page', () => {
+  test('the proof block is the four from JJ\'s own page, in her order', async ({ page }) => {
+    await page.goto('/quiz/kit');
+    const names = await page.locator('[data-proof="pre"] .kitRev, [data-proof="lead"] .kitRev')
+      .evaluateAll((els) => els.map((e) => e.textContent ?? ''));
+    const joined = names.join(' ');
+    for (const who of ['Anita F.', 'Katina S.', 'Adrienne', 'Roslind']) {
+      expect(joined, `${who} is missing from the proof block`).toContain(who);
+    }
+  });
+
+  test('"Before you start" asks JJ\'s own six questions', async ({ page }) => {
+    await page.goto('/quiz/kit');
+    const faq = page.locator('.kitFaq');
+    await expect(faq).toBeVisible();
+    for (const q of [
+      'What are the benefits of Hormone Focus?',
+      'Does Hormone Focus replace the other Focus supplements',
+      'How should you take Hormone Focus?',
+      'How long should you take Hormone Focus?',
+      'How quickly does Hormone Focus work?',
+      'What are the ingredients in Hormone Focus?',
+    ]) {
+      await expect(faq, q).toContainText(q);
+    }
+  });
+
+  test('the top bar does not follow her down the kit page', async ({ page }) => {
+    await page.goto('/quiz/kit');
+    const pos = await page.locator('.appHeader')
+      .evaluate((el) => getComputedStyle(el).position);
+    expect(pos, 'the header is fixed on a page that already has a sticky bar').toBe('static');
+  });
+
+  test('"What women are saying" shows customers whether or not Okendo answers',
+    async ({ page }) => {
+      /* The live wall is a network call, so this asserts the contract rather
+         than the content: either real reviews render, or the authored ones
+         do. What must never happen is an empty section or an apology. */
+      await page.goto('/quiz/kit');
+      const wall = page.locator('.okWall');
+      await expect(wall).toBeVisible();
+      await wall.scrollIntoViewIfNeeded();
+      await expect(wall.locator('.okRev, .kitRev').first()).toBeVisible({ timeout: 15000 });
+    });
 });

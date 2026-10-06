@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle } from '../../components/Screen';
+import { OkendoWall } from '../../components/OkendoWall';
 import { mainConcern, stateKey } from '../../lib/logic';
 import {
   NEXT_BRIDGE, NEXT_EYEBROW, NEXT_HOW, NEXT_HOW_PIECES, NEXT_INTRO, NEXT_LEAD, NEXT_STEPS,
@@ -147,13 +148,23 @@ export function R2() {
         </div>
       </section>
 
-      {/* ------------------------------------------- proof, block 2 ---- */}
+      {/* ------------------------------------------- proof, block 2 ----
+          LIVE FROM OKENDO, the same store and product JJ's page reads, so the
+          two cannot disagree about what customers said. The authored reviews
+          below are the fallback: if Okendo is slow, blocked or down she reads
+          customers rather than a spinner. */}
       <section className="kitSec">
         <h2 className="kitH2">{PROOF_MORE_HEAD}</h2>
-        <RatingBadge />
-        <div className="kitRevs" data-proof="more">
-          {proof.more.map((r) => <Quote key={r.name} review={r} />)}
-        </div>
+        <OkendoWall
+          fallback={(
+            <>
+              <RatingBadge />
+              <div className="kitRevs" data-proof="more">
+                {proof.more.map((r) => <Quote key={r.name} review={r} />)}
+              </div>
+            </>
+          )}
+        />
         <FacebookComment />
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>

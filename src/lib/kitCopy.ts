@@ -79,21 +79,58 @@ export const PROMISE_FINE = 'US orders only · Covers up to two bottles · Shipp
 export const KIT_FAQ_EYEBROW = 'Questions women ask';
 export const KIT_FAQ_HEAD = 'Before you start';
 
-/* PLACEHOLDER. The second, third and fourth answers are JJ's page, word for
-   word but for contractions. Her page's longer FAQ is NOT used: it says the
-   product promotes weight loss and relieves symptoms, which the claims list
-   does not allow. */
+/* JJ'S OWN SIX QUESTIONS, and answers that stay inside the claims list.
+ *
+ * David asked for the same QUESTIONS as the landing page, which is what this
+ * is. Her ANSWERS could not come over whole: three of them say the product
+ * promotes weight loss, relieves symptoms of hormonal imbalance, and
+ * rebalances estrogen "so these symptoms ease up". Those are treatment
+ * claims, the claims list forbids them, and the gate in copy.test.ts fails
+ * the build on them — which is the point of having it.
+ *
+ * So where her wording is already inside the list it is hers, word for word
+ * but for contractions: the dosing answer and the how-long answer are
+ * untouched. Where it is not, the same fact is stated without the claim —
+ * what the formula contains, what it is for, and what customers report,
+ * which is the attributed form the list allows.
+ */
 export const KIT_FAQ: [string, string][] = [
-  ['How do I take Hormone Focus?',
-    'Two capsules a day with a meal and a glass of water.'],
-  ['Who should not take it?',
-    'Anybody with a history of heart disease or stroke, breast or uterine cancer, liver disease, or blood clots. Talk to your doctor first, and doubly so if you are pregnant, nursing or on medication.'],
-  ['Is there a proprietary blend?',
-    'No. Three ingredients, every milligram printed. What is on this page is what is in the bottle.'],
-  ['What if it is not for me?',
-    'The 60-day happiness guarantee refunds up to two bottles, after you have actually tried it. A subscription cancels any time.'],
-  ['How do I get the ebooks and the tracker?',
-    'They are digital. The 60-Day Hormone Fix, Hormone Healthy Recipes and the Daily Symptom Tracker arrive by email after your order.'],
+  ['What are the benefits of Hormone Focus?',
+    'It is formulated to support healthy hormone levels in women whose estrogen '
+    + 'and progesterone are no longer in the balance they used to be — the stage '
+    + 'behind PMS and perimenopause. Customers report easier cycles, steadier '
+    + 'moods and better sleep. Individual results vary.'],
+
+  ['Does Hormone Focus replace the other Focus supplements '
+   + '(Liver Focus, Blood Sugar Focus and Tummy Focus)?',
+    'No, it does not replace any of the other Focus supplements. Hormone Focus '
+    + 'works on hormone balance. The others each do something different: Tummy '
+    + 'Focus is a digestive cleanse, Liver Focus is a liver cleanse, and Blood '
+    + 'Sugar Focus is taken with meals. They are made to be taken together.'],
+
+  ['How should you take Hormone Focus?',
+    'For optimal results, take 2 capsules with a meal and a glass of water, or '
+    + 'as directed by a healthcare professional. Some women find that taking it '
+    + 'at night suits them better. It is important to consult a healthcare '
+    + 'professional when making dosage adjustments.'],
+
+  ['How long should you take Hormone Focus?',
+    'Hormone Focus is not a stimulant and does not lead to dependency. It is '
+    + 'safe to take until you achieve your desired results. The duration of use '
+    + 'may vary based on individual needs and goals.'],
+
+  ['How quickly does Hormone Focus work?',
+    'That varies with your current hormonal balance and your overall health. '
+    + 'Customers generally report noticing a difference after about 30 days of '
+    + 'consistent use, and the 60-day guarantee is built around giving it that '
+    + 'long. Individual results vary.'],
+
+  ['What are the ingredients in Hormone Focus?',
+    'Unlike brands which offer DIM only or Calcium D-Glucarate only, we combine '
+    + 'both, in a compact 2-capsule serving. DIM, or Diindolylmethane, supports '
+    + 'the way the body metabolises estrogen. Calcium D-Glucarate supports the '
+    + 'body\'s own detoxification process. BioPerine improves the absorption and '
+    + 'bioavailability of both. Three ingredients, every milligram printed.'],
 ];
 
 /* ------------------------------------------------------------- the closer -- */

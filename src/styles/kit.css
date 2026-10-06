@@ -459,3 +459,44 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+/* ------------------------------------------- what women are saying, live -- */
+
+.okMeta {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 8px; margin: 0 0 18px;
+  font-size: var(--t-sub); color: var(--ink-2);
+}
+.okMeta b { font-size: var(--t-lead); font-weight: 800; color: var(--ink); }
+.okMeta svg { width: 17px; height: 17px; }
+
+.okList { display: grid; gap: 14px; }
+
+.okRev {
+  margin: 0; padding: 18px 18px 16px;
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow);
+}
+.okRev svg { width: 16px; height: 16px; }
+
+.okTitle {
+  margin: 9px 0 0; font-size: var(--t-body);
+  font-weight: 800; color: var(--ink); line-height: 1.3;
+}
+
+/* A customer's own words, so they are set as prose and never clamped into a
+   shape that changes what she said. */
+.okRev blockquote {
+  margin: 8px 0 0; font-size: var(--t-sub);
+  line-height: 1.5; color: var(--ink-2);
+}
+
+.okRev figcaption {
+  margin-top: 11px; font-size: var(--t-small);
+  font-weight: 700; color: var(--ink);
+}
+.okVb { font-weight: 600; color: var(--good); }
+
+@media (min-width: 900px) {
+  .okList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

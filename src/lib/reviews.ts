@@ -157,7 +157,7 @@ function named(names: string[]): Review[] {
 }
 
 /** Which three open the proof, by the concern she said bothers her most. */
-const LEAD_FOR: Record<string, string[]> = {
+export const LEAD_FOR: Record<string, string[]> = {
   weight: ['Lisa', 'Catonne J.', 'Toya H.'],
   bloat: ['Toya H.', 'Roslind', 'Lisa'],
   sleep: ['Roslind', 'Catonne J.', 'Lisa'],
@@ -193,9 +193,20 @@ export interface KitProof {
   closing: Review;
 }
 
-export function kitProof(mainConcern: string): KitProof {
+export function kitProof(_mainConcern: string): KitProof {
   return {
-    lead: named(LEAD_FOR[mainConcern] ?? LEAD_FOR.weight),
+    /* THE FOUR FROM JJ'S OWN PAGE, at David's request: the same women, in the
+       same order, that "Join the women who stopped fighting it" shows there.
+       They were already in this file — the quiz and the landing page read the
+       same published reviews — so this is a change of selection, not of source.
+
+       NOTE what it costs: lead used to answer her main concern, so a woman who
+       said "sleep" met a woman who slept. These four are the same for everyone.
+       LEAD_FOR is kept just below, so putting that back is one line. */
+    lead: named(['Anita F.', 'Katina S.', 'Adrienne', 'Roslind']),
+    /* "What women are saying" is live Okendo now, so this list no longer
+       feeds it; it stays as the fallback the section shows if Okendo cannot
+       be reached. */
     more: named(['Anita F.', 'QUANEZIA M.', 'Mara', 'Kim']),
     closing: BY_NAME.get('Adrienne') as Review,
   };
