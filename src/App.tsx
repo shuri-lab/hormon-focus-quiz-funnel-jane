@@ -7,7 +7,7 @@ import { Quiz } from './quiz/Quiz';
 import { OfferPage } from './offer/OfferPage';
 import { PlanPage } from './offer/PlanPage';
 import { ANGLES, OFFER_ANGLES } from './lib/angles';
-import { initClarity, pageView } from './lib/analytics';
+import { initClarity, initMeta, pageView } from './lib/analytics';
 import { FIRST_STEP, STEP_SLUG } from './quiz/steps';
 import { REVIEW } from './review/flag';
 
@@ -64,7 +64,12 @@ export default function App() {
     /* Attribution is captured in main.tsx, before the first render, because
        the cart links are built during render and an effect is too late. */
     /* Injects Clarity once. VITE_CLARITY_ID overrides the committed project. */
-    if (!REVIEW) initClarity();
+    if (!REVIEW) {
+      initClarity();
+      /* And the Meta pixel once, guarded against a pixel already on the
+         page. Off in the review build with everything else. */
+      initMeta();
+    }
   }, []);
 
   return (

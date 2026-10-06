@@ -151,7 +151,10 @@ test('carrying the attribution does not cost the required parameters', () => {
 test('traffic with no attribution gets a clean link, not invented values', () => {
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'single'));
   expect(u.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
-  expect([...u.searchParams.keys()]).toEqual(['storefront']);
+  /* What Shopify needs, plus the funnel mark — and nothing standing in for
+     an acquisition she did not arrive with. No empty utm_*. */
+  expect([...u.searchParams.keys()].sort()).toEqual(['hf_funnel', 'storefront']);
+  expect(u.searchParams.get('hf_funnel')).toBe('quiz');
 });
 
 /* --------------------------------------------------------------- rows -- */
@@ -320,4 +323,36 @@ test('the subscription card shows the price the plan charges', () => {
   expect(offerCards()[2].now).toBe('$39.99');
   expect(offerCards()[2].was).toBe('$49.99');
   expect(perDay('subscribe')).toBe('$1.43');
+});
+
+/* ------------------------------------------------------- the funnel mark -- */
+
+test('every cart link says the quiz converted her, without touching the utm', () => {
+  arrivedWith(AD);
+  for (const kind of ['single', 'protocol', 'subscribe'] as const) {
+    const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
+    /* Where she came from, untouched... */
+    expect(u.searchParams.get('utm_source'), kind).toBe(AD.utm_source);
+    expect(u.searchParams.get('utm_medium'), kind).toBe(AD.utm_medium);
+    /* ...and which door converted her, said separately. */
+    expect(u.searchParams.get('hf_funnel'), kind).toBe('quiz');
+  }
+});
+
+test('hf_funnel is set even when she arrived with no attribution at all', () => {
+  const u = new URL(shopUrl(SHOP_BASE, 'B', '', 'protocol'));
+  expect(u.searchParams.get('hf_funnel')).toBe('quiz');
+});
+
+test('hf_presell survives the quiz into Shopify', () => {
+  arrivedWith({ ...AD, hf_presell: 'advertorial-2' });
+  const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'protocol'));
+  expect(u.searchParams.get('hf_presell')).toBe('advertorial-2');
+});
+
+test('the kit keeps its free shipping code and the single bottle does not', () => {
+  const kit = new URL(shopUrl(SHOP_BASE, 'B', '', 'protocol'));
+  expect(kit.searchParams.get('discount')).toBe('HF60FREESHIP');
+  const one = new URL(shopUrl(SHOP_BASE, 'B', '', 'single'));
+  expect(one.searchParams.get('discount')).toBeNull();
 });

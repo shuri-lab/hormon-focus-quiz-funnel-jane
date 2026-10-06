@@ -16,6 +16,9 @@ declare global {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
     clarity?: (...args: unknown[]) => void;
+    _fbq?: unknown;
+    /* Set once, so a re-mount cannot install a second pixel. */
+    __hfMeta?: boolean;
   }
 }
 
@@ -57,6 +60,67 @@ export function pageView(path: string, title: string): void {
     page_location: window.location.href,
     page_title: title,
   });
+}
+
+/* --------------------------------------------------------------- meta -- */
+
+/**
+ * The Hormone Focus dataset. The same one the landing page uses and the same
+ * one Shopify's Facebook integration posts to, so the ad click, the quiz and
+ * the order all land in one place rather than three.
+ */
+export const META_DATASET_ID = '1614860232058835';
+
+/**
+ * Microsoft's pixel, with Jane's host guard.
+ *
+ * THE GUARD IS THE POINT. If a pixel is already on the page — a host, a tag
+ * manager, a Shopify theme — initialising a second one doubles every
+ * PageView and every report built on it. So we only install and init when
+ * nothing else has, and the events below fire once either way.
+ *
+ * NO PURCHASE IS EVER FIRED HERE. The quiz hands her to Shopify and Shopify
+ * owns the order, through the same dataset and its Conversions API. A
+ * Purchase from this side would be a second count of a sale we did not see.
+ */
+export function initMeta(): void {
+  try {
+    if (window.__hfMeta) return;
+    window.__hfMeta = true;
+
+    const hostPixel = typeof window.fbq === 'function'
+      || !!document.querySelector('script[src*="connect.facebook.net"]');
+
+    if (!hostPixel) {
+      /* Meta's own snippet, as a function rather than an inline tag. */
+      (function (f: Record<string, unknown>, b: Document, e: string, v: string) {
+        if (f.fbq) return;
+        const n = function (...args: unknown[]) {
+          const self = n as unknown as { callMethod?: (...a: unknown[]) => void; queue: unknown[] };
+          if (self.callMethod) self.callMethod(...args);
+          else self.queue.push(args);
+        } as unknown as Record<string, unknown> & ((...a: unknown[]) => void);
+        f.fbq = n;
+        if (!f._fbq) f._fbq = n;
+        n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+        const first = b.getElementsByTagName(e)[0];
+        const t = b.createElement(e) as HTMLScriptElement;
+        t.async = true; t.src = v;
+        first?.parentNode?.insertBefore(t, first);
+      })(window as unknown as Record<string, unknown>, document, 'script',
+         'https://connect.facebook.net/en_US/fbevents.js');
+
+      window.fbq?.('init', META_DATASET_ID);
+      window.fbq?.('track', 'PageView');
+    }
+
+    /* Fires whether or not we own the pixel: one ViewContent for the quiz. */
+    window.fbq?.('track', 'ViewContent', {
+      content_name: 'Hormone Focus quiz',
+      content_ids: ['hormone-focus'],
+      content_type: 'product',
+    });
+  } catch { /* tracking must never break the funnel */ }
 }
 
 /* ------------------------------------------------------------ clarity -- */
@@ -185,6 +249,12 @@ const AD_PARAMS = [
   'fbclid', 'gclid', 'ttclid', 'src',
   /* Funnel and variant, so a split test can be read on the Shopify side. */
   'hf_funnel', 'hf_variant',
+  /* Which advertorial sent her, carried like any other attribution. Same
+     name and same treatment as the landing page, so one Shopify report
+     reads both doors. */
+  'hf_presell',
+  /* Kept for parity with the landing page's list. Harmless, still useful. */
+  'utm_id',
 ];
 
 const STORE_KEY = 'hf_attribution';
@@ -245,12 +315,17 @@ export function readAttribution(): Record<string, string> {
  * path already says it, so a parameter saying it again is redundant, and one
  * carrying her quiz RESULT would put a health inference in an ad URL.
  */
+/** The value hf_funnel carries on every cart link the quiz builds. */
+export const QUIZ_FUNNEL = 'quiz';
+
 const PASS_THROUGH = [
   /* The acquisition, exactly as it arrived. */
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
   /* Click ids keep their own names: the platforms that issued them read
      them by exact name, so a prefix would break them. */
   'fbclid', 'gclid', 'ttclid',
+  /* The advertorial she came through, and the campaign id where one was set. */
+  'hf_presell', 'utm_id',
 ] as const;
 
 /**
@@ -280,6 +355,12 @@ export function shopUrl(
     const value = ad[key];
     if (value) url.searchParams.set(key, value);
   }
+
+  /* WHICH DOOR SHE CAME THROUGH, which is not the same question as where she
+     came from. The utm_* above say Instagram or Klaviyo and are left exactly
+     as they arrived; this says the quiz converted her rather than the
+     landing page. Shopify then answers both from one order. */
+  url.searchParams.set('hf_funnel', QUIZ_FUNNEL);
 
   return url.toString();
 }
