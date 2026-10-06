@@ -644,3 +644,77 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
 }
 .consent span { font-size: var(--t-sub); line-height: 1.4; color: var(--ink-2); }
 .consentBox[aria-invalid='true'] { outline: 2px solid var(--load); outline-offset: 2px; }
+
+/* ======================================================= the cover, v2 === */
+
+/* The bar JJ's own page carries above everything. Says the one thing this
+   page asks, so a woman who lands mid-scroll still knows what it is. */
+.alertBar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px var(--gutter) calc(10px + var(--safe-top));
+  background: linear-gradient(90deg, var(--plum) 0%, var(--plum-2) 100%);
+  color: #fff; font-size: var(--t-small); font-weight: 700;
+  letter-spacing: .04em; text-align: center;
+}
+.alertStar { font-size: 13px; opacity: .9; }
+
+/* Faces, then the claim. Overlapped the way a rating badge stacks them. */
+.proofRow {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin: 0 0 14px;
+  font-size: var(--t-small); font-weight: 700; color: var(--ink-2);
+}
+.proofFaces { display: flex; }
+.proofFaces i {
+  width: 30px; height: 30px; border-radius: 50%;
+  background-size: cover; background-position: center 28%;
+  border: 2px solid var(--surface); margin-left: -9px;
+  box-shadow: 0 2px 6px -2px rgba(36, 31, 46, .5);
+}
+.proofFaces i:first-child { margin-left: 0; }
+
+/* What the button costs her, under the button. */
+.ctaNote {
+  margin: 9px 0 0; text-align: center;
+  font-size: var(--t-small); font-weight: 600; color: var(--ink-3);
+}
+
+/* An angle cover shows its own symptom, still and large — the same height
+   the rail gives each picture, so the two covers feel like one design. */
+.coverShot { margin-top: 20px; }
+.coverShot img {
+  width: 100%; height: clamp(230px, 56vw, 320px);
+  object-fit: cover; border-radius: var(--radius-lg);
+  display: block; background: var(--wash);
+}
+
+/* The generic cover has no one symptom, so all six go past.
+   Clipped inside its own box rather than bled out with a negative margin:
+   the bleed was 2x the gutter wider than the page and scrolled it sideways
+   at 430px, which the overflow test caught. */
+.coverRail {
+  margin: 20px 0 0;
+  max-width: 100%;
+  overflow: hidden;
+  /* Fades at both edges, so the loop has no visible seam. */
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.coverRailTrack {
+  display: flex; gap: 12px; width: max-content;
+  animation: coverRail 38s linear infinite;
+}
+.coverRailTrack img {
+  width: clamp(190px, 52vw, 260px); height: clamp(230px, 56vw, 320px);
+  object-fit: cover; border-radius: var(--radius-lg);
+  display: block; flex: 0 0 auto; background: var(--wash);
+}
+/* Half the track is a copy of the first half, so -50% lands on a seam that
+   looks identical to the start. */
+@keyframes coverRail { to { transform: translateX(-50%); } }
+
+/* Motion is decoration here. Anyone who has asked for less of it gets a
+   still row they can still scroll by hand. */
+@media (prefers-reduced-motion: reduce) {
+  .coverRailTrack { animation: none; }
+  .coverRail { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}

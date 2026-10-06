@@ -41,11 +41,20 @@ test.describe('the cover', () => {
     await expect(page.locator('.lpLogo img')).toHaveAttribute('alt', 'JJ Smith');
     await expect(page.locator('.coverSub')).toHaveText('Take a 1-minute check. Find out why you feel this way and what to do next.');
     await expect(page.locator('a.cta')).toHaveCount(1);
-    await expect(page.locator('a.cta')).toContainText('GET THE HORMONE CHECK');
-    /* No rating, no review, no bottle, no price before she has a result. */
+    await expect(page.locator('a.cta')).toContainText('Get my hormone check');
+    await expect(page.locator('.ctaNote')).toHaveText('Free · 1 minute');
+
+    /* The alert bar and the social-proof row are David's additions. */
+    await expect(page.locator('.alertBar')).toContainText('Take the 1-minute quiz');
+    await expect(page.locator('.proofFaces i')).toHaveCount(4);
+
+    /* Still nothing sold: no rating number, no review, no bottle, no price
+       before she has a result. The faces are the one photograph allowed, and
+       they carry a claim scoped to JJ's programmes rather than to Hormone
+       Focus customers. */
     await expect(page.getByText('4.9')).toHaveCount(0);
     await expect(page.locator('.rev')).toHaveCount(0);
-    expect(await page.content()).not.toContain('customer-1.jpg');
+    await expect(page.getByText(/\$/)).toHaveCount(0);
     /* And the stage is the reveal, not the premise. */
     await expect(page.locator('h1')).not.toContainText(/menopause/i);
     await expect(page.locator('.coverSub')).not.toContainText(/menopause/i);
