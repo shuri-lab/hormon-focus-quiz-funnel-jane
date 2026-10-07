@@ -101,8 +101,8 @@ export const ANGLES: Angle[] = [
     preselect: ['bloat'],
     label: 'Bloating',
     chip1: '',
-    h1a: 'Why the bloating',
-    h1b: 'keeps coming back',
+    h1a: "Why you're bloated",
+    h1b: 'even when you eat right',
     paren: 'and what your answers may point to',
     lines: [
       'Flat at breakfast, swollen by six.',
@@ -110,7 +110,7 @@ export const ANGLES: Angle[] = [
       'Cutting out the obvious things changed nothing.',
     ],
     closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the two-minute check.',
+    description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the free 1-minute quiz.',
     offer: {
       sub: 'Tired of being flat at breakfast and swollen by six, of a waistband you undo in the car, of cutting things out and nothing changing? Hormone Focus helps with occasional bloating and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Easier evenings start with two capsules.',
@@ -123,8 +123,8 @@ export const ANGLES: Angle[] = [
     preselect: ['sweats'],
     label: 'Hot flashes',
     chip1: '',
-    h1a: 'Why the heat',
-    h1b: 'comes out of nowhere',
+    h1a: 'Why the hot flashes',
+    h1b: 'come out of nowhere',
     paren: 'and what your answers may point to',
     lines: [
       'Heat that arrives out of nowhere.',
@@ -132,7 +132,7 @@ export const ANGLES: Angle[] = [
       'You dress in layers now, all year.',
     ],
     closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with a two-minute check.',
+    description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with the free 1-minute quiz.',
     offer: {
       sub: 'Tired of heat that arrives out of nowhere, in a meeting, in the car, in front of everybody? Hormone Focus helps ease occasional hot flashes and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Cooler days start with two capsules.',
@@ -145,7 +145,7 @@ export const ANGLES: Angle[] = [
     preselect: ['sweats'],
     label: 'Night sweats',
     chip1: '',
-    h1a: 'Why you are',
+    h1a: 'Why you wake up',
     h1b: 'soaked every night',
     paren: 'and what your answers may point to',
     lines: [
@@ -169,8 +169,8 @@ export const ANGLES: Angle[] = [
     preselect: ['sleep'],
     label: 'Sleep',
     chip1: '',
-    h1a: 'Why you stopped',
-    h1b: 'sleeping past 3am',
+    h1a: 'Why you keep',
+    h1b: 'waking up at 3am',
     paren: 'and what your answers may point to',
     lines: [
       'Asleep by ten, awake at three.',
@@ -178,7 +178,7 @@ export const ANGLES: Angle[] = [
       'Sleeping in does not fix it.',
     ],
     closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'When fixing your bedtime does not fix your sleep, the cause may be hormonal. Take the two-minute check.',
+    description: 'When fixing your bedtime does not fix your sleep, the cause may be hormonal. Take the free 1-minute quiz.',
     offer: {
       sub: 'Tired of being asleep by ten and awake at three, with nothing about your bedtime changed? Hormone Focus supports restful sleep and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Sleeping through starts with two capsules.',
@@ -192,8 +192,8 @@ export const ANGLES: Angle[] = [
     label: 'Weight',
     /* The ONLY route that may carry the 5M lbs figure. */
     chip1: '5M+ lbs lost',
-    h1a: 'Why losing weight after 40 feels',
-    h1b: 'impossible',
+    h1a: "Why the scale won't move,",
+    h1b: 'even when you do everything right',
     paren: 'and what your answers may point to',
     lines: [
       'Clothes that fit last year and do not now.',
@@ -201,7 +201,7 @@ export const ANGLES: Angle[] = [
       'It settled on your middle and stayed.',
     ],
     closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A two-minute check from JJ Smith.',
+    description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A free 1-minute quiz from JJ Smith.',
     offer: {
       sub: 'Tired of the same food, the same walking, and a different body that settled on your middle and stayed? Hormone Focus supports a healthy weight as part of a healthy diet and regular exercise, and supports hormone balance through this stage. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'A body that works with you starts with two capsules.',
@@ -214,8 +214,8 @@ export const ANGLES: Angle[] = [
     preselect: ['mood'],
     label: 'Mood and fog',
     chip1: '',
-    h1a: 'Why you are',
-    h1b: 'tired all the time',
+    h1a: 'Why little things',
+    h1b: 'set you off lately',
     paren: 'and what your answers may point to',
     lines: [
       'Snapping at people you love.',
@@ -223,7 +223,7 @@ export const ANGLES: Angle[] = [
       'Walking into a room and forgetting why.',
     ],
     closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with a two-minute check.',
+    description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with the free 1-minute quiz.',
     offer: {
       sub: 'Tired of snapping at people you love, anxious for no reason you can point to, walking into a room and forgetting why? Hormone Focus helps support a calm mood and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Feeling like yourself starts with two capsules.',
@@ -247,7 +247,7 @@ export const ANGLES: Angle[] = [
       'The word that goes missing mid-sentence.',
     ],
     closer: 'The check looks at them together and tells you which stage your answers fit.',
-    description: 'The belly that arrived without you changing a thing. Find out whether your hormones are the reason, with a two-minute check from JJ Smith.',
+    description: 'The belly that arrived without you changing a thing. Find out whether your hormones are the reason, with the free 1-minute quiz from JJ Smith.',
     offer: {
       h1a: 'Your body does not store fat randomly after 40. ',
       h1b: 'It stores it differently now',
@@ -263,7 +263,9 @@ export const ANGLES: Angle[] = [
 export const DEFAULT_ANGLE = ANGLES[0];
 
 /** Built from the approved headline, so the tab never carries drafted words. */
-export const angleTitle = (a: Angle) => `${a.h1a} ${a.h1b} — The Hormone Check`;
+/* A vertical bar, not an em dash: the house rule is no em or en dashes, and
+   this separator was the one place a dash survived in a <title>. */
+export const angleTitle = (a: Angle) => `${a.h1a} ${a.h1b} | The Hormone Check`;
 
 export function angleBySlug(slug: string | undefined): Angle {
   if (!slug) return DEFAULT_ANGLE;

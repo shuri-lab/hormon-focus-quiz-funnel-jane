@@ -4,8 +4,8 @@ import { angleBySlug, angleTitle } from '../lib/angles';
 import { usePageMeta } from '../lib/usePageMeta';
 import { track } from '../lib/analytics';
 import {
-  ALERT_BAR, COVER_CTA, COVER_CTA_NOTE, COVER_SUB, CUSTOMERS, FDA_DISCLAIMER,
-  HERO_IMG, IMG, JJ_LOGO, PROOF_EYEBROW, QUIZ_DISCLAIMER,
+  ALERT_BAR, COVER_CTA, COVER_CTA_NOTE, COVER_SUB, FDA_DISCLAIMER,
+  HERO_IMG, IMG, JJ, JJ_LOGO, PROOF_EYEBROW, QUIZ_DISCLAIMER,
 } from '../lib/content';
 
 /* All six, in the order the quiz asks about them. The generic cover has no
@@ -14,8 +14,7 @@ import {
    one, and shows that one, still and large. */
 const ALL_SYMPTOMS = [IMG.sweats, IMG.weight, IMG.sleep, IMG.bloat, IMG.mood, IMG.energy];
 
-/* Four faces, as the landing page's rating badge carries. */
-const FACES = CUSTOMERS.slice(0, 4);
+
 
 /**
  * THE COVER. One screen: the headline, one line, one button.
@@ -69,11 +68,11 @@ export function Landing() {
                   into the left of it, the claim set against white so it
                   reads as one object rather than a line of loose text. */}
               <p className="proofPill">
-                <span className="proofFaces" aria-hidden="true">
-                  {FACES.map((src) => (
-                    <i key={src} style={{ backgroundImage: `url(${src})` }} />
-                  ))}
-                </span>
+                {/* Her, not customers: the claim beside it is her credential
+                    rather than a count of anybody else. One photograph, so
+                    the pill reads as a byline. */}
+                <span className="proofFace" aria-hidden="true"
+                      style={{ backgroundImage: `url(${JJ})` }} />
                 <span>{PROOF_EYEBROW}</span>
               </p>
 

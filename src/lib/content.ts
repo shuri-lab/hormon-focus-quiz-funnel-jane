@@ -49,7 +49,7 @@ export const HERO_IMG = '/img/symptom-sleep.jpg';
 /* The brief's words. The sub-line and the button are the same on every
    route; only the headline changes with the ad angle (angles.ts). */
 export const COVER_SUB =
-  'Take a 1-minute check. Find out why you feel this way and what to do next.';
+  "Find out what's really going on with your body. Take the free 1-minute quiz.";
 export const COVER_CTA = 'Get my hormone check';
 
 /** Under the button: what it costs and what it takes. */
@@ -58,8 +58,8 @@ export const COVER_CTA_NOTE = 'Free · 1 minute';
 /** The bar above everything, as JJ's own page carries one. */
 export const ALERT_BAR = 'Take the 1-minute quiz';
 
-/** Beside the faces. Scoped to JJ's programmes, never to Hormone Focus. */
-export const PROOF_EYEBROW = 'Thousands of women helped';
+/** Beside her photograph. Her own credential, not a customer count. */
+export const PROOF_EYEBROW = 'By NYT bestseller JJ Smith';
 
 /* -------------------------------------------------------- the questions -- */
 

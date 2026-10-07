@@ -683,14 +683,24 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
   box-shadow: var(--shadow);
   font-size: var(--t-small); font-weight: 700; color: var(--ink);
 }
-.proofFaces { display: inline-flex; }
-.proofFaces i {
-  width: 30px; height: 30px; border-radius: 50%;
-  background-size: cover; background-position: center 28%;
-  border: 2px solid var(--surface); margin-left: -11px;
+/* One face, hers.
+ *
+ * jj-smith.jpg is a full-length shot on a green disc, so a plain `cover`
+ * would frame her midriff. Zoomed and offset to sit on her face, which is
+ * about 56% across and 14% down the original frame. */
+.proofFace {
+  width: 32px; height: 32px; border-radius: 50%;
+  flex: 0 0 auto;
+  /* 330% and 58%/12% lands the circle on her face. At the default `cover`
+     it framed her midriff, and at 215% the green disc behind her showed at
+     the left edge. */
+  background-size: 330%;
+  background-position: 58% 12%;
+  background-repeat: no-repeat;
+  background-color: var(--wash);
+  border: 2px solid var(--surface);
   box-shadow: 0 2px 6px -2px rgba(36, 31, 46, .5);
 }
-.proofFaces i:first-child { margin-left: 0; }
 
 /* What the button costs her, under the button. */
 /* The pill is inline-flex, so it is centred by the column rather than by

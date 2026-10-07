@@ -123,6 +123,11 @@ const CONTRACTIONS_EXEMPT = (path: string) => path.startsWith('resultCopy.ts');
 test('no authored string uses a contraction', () => {
   for (const [where, value] of AUTHORED) {
     if (CONTRACTIONS_EXEMPT(where)) continue;
+    /* A string signed off by name is signed off for this gate too. It was
+       only consulted by the claim gate below, so a dictated contraction had
+       nowhere to be recorded except by exempting its whole module — which
+       would have waved through every future one in the same file. */
+    if (SIGNED_OFF.has(value)) continue;
     for (const pattern of CONTRACTIONS) {
       expect(
         pattern.test(value),
@@ -145,6 +150,15 @@ test('no authored string uses a contraction', () => {
  */
 const SIGNED_OFF = new Set([
   'Why losing weight after 40 feels',
+
+  /* THE 7 OCTOBER DOOR COPY. David specified these three word for word, so
+     the contractions are his and deliberate, not drift. Listed in full
+     rather than exempting a whole module, so a fourth contraction appearing
+     anywhere in angles.ts or content.ts still fails the build.
+     The claim gate below still reads every one of them. */
+  "Why you're bloated",
+  "Why the scale won't move,",
+  "Find out what's really going on with your body. Take the free 1-minute quiz.",
 ]);
 
 /**
