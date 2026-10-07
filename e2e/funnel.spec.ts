@@ -41,7 +41,7 @@ test.describe('the cover', () => {
     /* The wordmark sits in a bar of its own now, the way JJ's page has it,
        rather than floating above the copy. */
     await expect(page.locator('.masthead img')).toHaveAttribute('alt', 'JJ Smith');
-    await expect(page.locator('.proofPill')).toContainText('By NYT bestseller JJ Smith');
+    await expect(page.locator('.proofPill')).toContainText('Join 16,000+ women');
     await expect(page.locator('.coverSub'))
       .toHaveText("Find out what's really going on with your body. Take the free 1-minute quiz.");
     await expect(page.locator('a.cta')).toHaveCount(1);
@@ -50,10 +50,8 @@ test.describe('the cover', () => {
 
     /* The alert bar and the social-proof row are David's additions. */
     await expect(page.locator('.alertBar')).toContainText('Take the 1-minute quiz');
-    /* One photograph, hers, now the claim is her credential rather than a
-       count of customers. */
-    await expect(page.locator('.proofFace')).toHaveCount(1);
-    await expect(page.locator('.proofFaces')).toHaveCount(0);
+    /* Four customer faces, because the claim beside them counts customers. */
+    await expect(page.locator('.proofFaces i')).toHaveCount(4);
 
     /* Still nothing sold: no rating number, no review, no bottle, no price
        before she has a result. The faces are the one photograph allowed, and

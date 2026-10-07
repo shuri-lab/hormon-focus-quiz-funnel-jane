@@ -58,8 +58,8 @@ export const COVER_CTA_NOTE = 'Free · 1 minute';
 /** The bar above everything, as JJ's own page carries one. */
 export const ALERT_BAR = 'Take the 1-minute quiz';
 
-/** Beside her photograph. Her own credential, not a customer count. */
-export const PROOF_EYEBROW = 'By NYT bestseller JJ Smith';
+/** Beside the customer faces. See the note in copy.test.ts on the number. */
+export const PROOF_EYEBROW = 'Join 16,000+ women';
 
 /* -------------------------------------------------------- the questions -- */
 
