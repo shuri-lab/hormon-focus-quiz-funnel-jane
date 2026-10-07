@@ -309,14 +309,36 @@
 
 .kitSticky {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-  display: flex; align-items: center; justify-content: center; gap: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
   padding: 10px var(--gutter) calc(10px + var(--safe-bottom));
   background: var(--surface); border-top: 1px solid var(--line);
   box-shadow: 0 -10px 30px -22px rgba(36, 31, 46, .6);
 }
-.kitSticky span { font-size: 13px; font-weight: 600; color: var(--ink-2); line-height: 1.25; }
-.kitSticky span b { display: block; font-size: 19px; font-weight: 800; color: var(--ink); }
-.kitSticky .kitBtn { width: auto; flex: 0 1 260px; margin-top: 0; min-height: 52px; padding: 13px 18px; font-size: 16px; }
+/* ONE LINE, NEVER TWO. It used to stack a price over "free shipping", which
+   on a narrow phone wrapped into a three-line block beside the button and
+   made the bar taller than the button it was there to serve. */
+.kitStickyFrom {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: clamp(14px, 3.9vw, 16px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+}
+/* The button holds one line too. At 320px "Get the 60-Day Kit" wrapped and
+   took the bar to 97px — taller than the button it exists to serve — so the
+   label, the gap and the padding all give ground before the text does. */
+.kitSticky .kitBtn {
+  width: auto; flex: 0 1 260px; margin-top: 0;
+  min-height: 52px; padding: 13px clamp(12px, 4vw, 18px);
+  font-size: clamp(14.5px, 4vw, 16px);
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .kitSticky { gap: 8px; padding-inline: 10px; }
+  .kitStickyFrom { font-size: 13.5px; }
+}
 
 /* --------------------------------------------- the result, one answer --- */
 
