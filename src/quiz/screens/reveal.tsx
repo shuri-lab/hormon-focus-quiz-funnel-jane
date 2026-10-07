@@ -7,35 +7,55 @@ import {
   CANNOT_TELL, DOC, DOC_TITLE, IMG, MASKED_NOTE, PATTERN_SHORT, QUIZ_DISCLAIMER, RESULT,
   STAGE_FACT, WANT_PHRASE, cycleShort,
 } from '../../lib/content';
-import { CLOSE, HEAD, PAT, SYM, meansFor, symExtra } from '../../lib/resultCopy';
+import {
+  CLOSE, EARLY_DOCTOR_LINE, HEAD, PAT, STAGE_LINE, SYM, meansFor, symExtra,
+} from '../../lib/resultCopy';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
 const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
 
 /* ---------------------------------------------------------------- r1 ---- */
 
-/* HER RESULT. One named answer at the top, said in one sentence. Then what
- * she told us, with the same pictures she tapped, what it means with her own
- * symptoms in it, and one fact about women at her stage.
+/* HER RESULT. What her answers POINT TO, at the top, in one sentence. Then
+ * what she told us, with the same pictures she tapped, what it means with her
+ * own symptoms in it, and one fact about women at her stage.
  *
- * It is a pattern and never "you have", and it never tells her she might be
- * one thing or another: she gets one of four answers. */
+ * SOFTENED 7 OCTOBER. The stage word never stands alone as her result, and no
+ * sentence says she has or is in a stage: the headline is `copy.line`, which
+ * always begins "Your answers point to", and `copy.name` (the bare stage word,
+ * which still feeds Klaviyo's `result_route`) is not printed on the screen.
+ * STAGE_LINE then says it is a normal stage with real support.
+ *
+ * It never tells her she might be one thing or another: she gets one of four
+ * answers. */
 export function R1() {
-  const { S, next } = useQuiz();
+  const { S, next, forgetKnown } = useQuiz();
   const outcome = stateKey(S) as Exclude<Outcome, 'D'>;
   const copy = RESULT[outcome] ?? RESULT.A;
   const main = mainConcern(S);
   const picked = main ? [main, ...otherConcerns(S)] : [];
   const cycle = cycleShort(S);
-  const name = S.name.trim();
+  /* Her own, where she typed one at the gate; otherwise the first name the
+     email link carried, because a woman from JJ's list never sees the gate. */
+  const name = S.name.trim() || (S.known?.name ?? '').trim();
   const fact = STAGE_FACT[outcome] ?? STAGE_FACT.A;
 
   return (
     <Screen id="r1">
       <div className="resHero">
         <p className="resKicker">{name ? `${name}, your Hormone Check result` : 'Your Hormone Check result'}</p>
-        <ScreenTitle className="resName">{copy.name}</ScreenTitle>
-        <p className="resLine">{copy.line}</p>
+        <ScreenTitle className="resName">{copy.line}</ScreenTitle>
+        {/* SHE CAME FROM JJ'S LIST, so she was never asked for an address. If
+            the link was forwarded, or she is reading somebody else's email,
+            this is her way to the gate — and taking it clears the identity in
+            the link and asks her properly, consent box included. */}
+        {S.known && (
+          <p className="resNotYou">
+            <button type="button" onClick={forgetKnown}>
+              {S.known.name ? `Not ${S.known.name}? Enter your email.` : 'Not you? Enter your email.'}
+            </button>
+          </p>
+        )}
       </div>
 
       {picked.length > 0 && (
@@ -70,6 +90,8 @@ export function R1() {
         {meansFor(outcome).map((para) => <p key={para}>{para}</p>)}
         {masked(S) && <p>{MASKED_NOTE}</p>}
         {main && <p>{CLOSE[main]}</p>}
+        <p>{STAGE_LINE}</p>
+        {outcome === 'E' && <p>{EARLY_DOCTOR_LINE}</p>}
         {S.pattern && <p>{PAT[S.pattern]}</p>}
       </div>
 

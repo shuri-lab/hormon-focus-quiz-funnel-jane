@@ -37,6 +37,19 @@ export type WantId = 'body' | 'sleep' | 'energy' | 'cool' | 'clear' | 'understan
 export type Outcome = 'A' | 'B' | 'C' | 'D' | 'E';
 export type DocReason = 'young' | 'late' | '';
 
+/**
+ * Who she already is, when she arrived from JJ's list.
+ *
+ * Declared here, with the rest of the state, so `known.ts` can depend on this
+ * file and not the other way round: this module has no runtime imports and is
+ * meant to keep none.
+ */
+export interface KnownWoman {
+  email: string;
+  /** May be empty: Klaviyo sends `fn` blank when the list has no first name. */
+  name: string;
+}
+
 export interface QuizState {
   sym: SymptomId[];
   /** The one she says bothers her most. Asked only when she picked more than one. */
@@ -52,6 +65,14 @@ export interface QuizState {
   email: string;
   /** Ticked opt-in. No address is sent anywhere while this is false. */
   consent: boolean;
+  /**
+   * Set when she arrived from JJ's list with her identity in the link.
+   *
+   * It means she is ALREADY SUBSCRIBED, so she is not asked for an address she
+   * has already given and no new consent is recorded on her behalf. It never
+   * changes her outcome: the only thing it decides is whether `gate` is shown.
+   */
+  known: KnownWoman | null;
 }
 
 /** The complete shape. Every field, and what it may hold. */
@@ -60,6 +81,7 @@ export function createState(): QuizState {
     sym: [], main: '', age: '', cycle: '', twelve: '', pattern: '',
     tried: [], want: '',
     name: '', email: '', consent: false,
+    known: null,
   };
 }
 
@@ -265,6 +287,14 @@ export function shouldSkip(S: QuizState, id: ScreenId): boolean {
   /* One symptom needs no ranking. */
   if (id === 'q2') return S.sym.length < 2;
   if (id === 'q4b') return S.cycle !== 'stopped';
+  /* SHE CAME FROM JJ'S LIST, 7 OCTOBER 2026. The list already holds her
+     address, so the gate would be asking for something it has, and a second
+     address typed here becomes a second profile. `gate` stays in FLOW and
+     every other path through it is untouched: this is the one state that
+     steps over it, and the "Not you?" link on r1 clears `known` and brings
+     her straight back here. New-audience doors keep the gate, which is the
+     reason it exists. */
+  if (id === 'gate' && S.known) return true;
   if (doctorExit(S) && AFTER_CYCLE.includes(id)) return true;
   if (id === 'rDoc') return stateKey(S) !== 'D';
   if (id === 'r2') return !seesOffer(S);

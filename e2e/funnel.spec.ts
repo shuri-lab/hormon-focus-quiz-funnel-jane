@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   expectNoHorizontalOverflow, expectTapTargets, startQuiz, heading,
-  answerAndWait, pickOption, pressPrimary,
+  answerAndWait, blockKlaviyo, pickOption, pressPrimary,
 } from './helpers';
 
 /* Must match src/lib/angles.ts. A slug that no longer exists would otherwise
@@ -144,12 +144,18 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 1. One named answer, said in one sentence. */
+    /* RESULT PAGE 1. What her answers POINT TO, said in one sentence.
+       SOFTENED 7 OCTOBER 2026: the heading used to be the bare stage word
+       ("Perimenopause") with the sentence under it in `.resLine`. The bare
+       stage word is no longer printed at all, so the heading is the sentence
+       and `.resLine` is gone. */
     await expect(page.locator('.resKicker')).toHaveText('Renee, your Hormone Check result');
-    await expect(heading(page)).toHaveText('Perimenopause');
-    await expect(page.locator('.resLine')).toHaveText(
-      'Your answers match the pattern of perimenopause, the years before your periods stop.',
+    await expect(heading(page)).toHaveText(
+      'Your answers point to perimenopause, the years before your periods stop.',
     );
+    await expect(page.locator('.resLine')).toHaveCount(0);
+    /* No heading on the result may be the bare stage word on its own. */
+    await expect(heading(page)).not.toHaveText(/^(peri)?menopause$/i);
 
     /* What she told us, with the pictures she tapped, the one she named first. */
     const pics = page.locator('.resPics figure');
@@ -167,6 +173,10 @@ test.describe('the quiz', () => {
     await expect(page.getByText('Menopause is when your periods stop for good.', { exact: false })).toBeVisible();
     await expect(page.getByText("That's why your sleep changed, even though your bedtime didn't.")).toBeVisible();
     await expect(page.getByText('Most weeks is often enough to spot a pattern. Start writing it down.')).toBeVisible();
+    /* THE SOFTENING, 7 OCTOBER. Every result reads this after the close line. */
+    await expect(page.getByText('This is a normal stage, not an illness.', { exact: false })).toBeVisible();
+    /* The doctor line belongs to early menopause only, and she is B. */
+    await expect(page.getByText('take to your doctor soon', { exact: false })).toHaveCount(0);
     await expect(page.getByText('Why your sleep has changed')).toBeVisible();
     await expect(page.getByText('In this stage, sleep gets easier to break.', { exact: false })).toBeVisible();
     /* Sleep IS her main concern, so the extra sleep sentence is not appended. */
@@ -308,7 +318,9 @@ test.describe('the quiz', () => {
     await page.locator('.actionBar .cta').click();
 
     /* Menopause, and it is shown the kit like every result but the doctor's. */
-    await expect(heading(page)).toHaveText('Menopause');
+    await expect(heading(page)).toHaveText('Your answers point to menopause.');
+    await expect(page.getByText('Many women describe the same changes after that point.')).toBeVisible();
+    await expect(page.getByText('This is a normal stage, not an illness.', { exact: false })).toBeVisible();
     await expect(page.locator('.resKicker')).toHaveText('Your Hormone Check result');
     await expect(page.locator('.resFacts')).toContainText('Stopped 12 months or more');
     await expect(page.locator('.resPics figure')).toHaveCount(1);
@@ -400,7 +412,9 @@ test.describe('the doctor route is an exit', () => {
     await page.fill('#ef', 'dana@example.com');
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
-    await expect(heading(page)).toHaveText('Perimenopause');
+    await expect(heading(page)).toHaveText(
+      'Your answers point to perimenopause, the years before your periods stop.',
+    );
     /* The result says plainly what it was read from. */
     await expect(page.getByText('this result comes from your age and your symptoms')).toBeVisible();
   });
@@ -558,4 +572,146 @@ test.describe('the kit page', () => {
       await wall.scrollIntoViewIfNeeded();
       await expect(wall.locator('.okRev, .kitRev').first()).toBeVisible({ timeout: 15000 });
     });
+});
+
+/* ------------------------------------- she arrived from JJ's list ------- */
+
+/* THE 13 OCTOBER EMAIL. The Klaviyo button carries `e` and `fn`, so the women
+ * on JJ's list are not asked for an address the list already holds. Two things
+ * are being held here: she never meets the gate, and the address is out of the
+ * URL before anything can read it.
+ */
+test.describe('a woman who arrives from the email', () => {
+  /* These walk all seven questions, wait out the loader, and two of them then
+     make a round trip to the gate. Alone that is about 30 seconds, which is
+     inside the 45-second default until four workers are sharing one preview
+     server and it is not. The budget is the journey being long, not a slow
+     assertion: nothing here waits on anything it should not. */
+  test.describe.configure({ timeout: 120_000 });
+
+  const LINK = '/?e=test%40example.com&fn=Test';
+
+  test('walks from the link to her result without ever seeing the gate', async ({ page }) => {
+    /* Every request Klaviyo would have received, so the event can be read. */
+    const posted: string[] = [];
+    await page.route('**/a.klaviyo.com/**', (r) => {
+      posted.push(r.request().url() + ' ' + (r.request().postData() ?? ''));
+      return r.fulfill({ status: 202, body: '' });
+    });
+
+    await page.goto(LINK);
+    await page.evaluate(() => sessionStorage.clear());
+    await page.goto(LINK);
+    await page.waitForTimeout(250);
+
+    /* THE ADDRESS IS OUT OF THE URL, before the share button, the referrer,
+       GA4, Clarity, GTM or the Meta pixel can read it. */
+    const landed = new URL(page.url());
+    expect(landed.searchParams.has('e'), 'the address is stripped on arrival').toBe(false);
+    expect(landed.searchParams.has('fn')).toBe(false);
+    expect(page.url()).not.toContain('test@example.com');
+    expect(page.url()).not.toContain('test%40example.com');
+
+    /* In through the cover, like the link actually sends her. */
+    await page.locator('.heroCta .cta').first().click();
+    await expect(heading(page)).toContainText('What has been bothering you lately');
+
+    await page.locator('.tile').nth(0).click();                // weight
+    await page.locator('.tile').nth(1).click();                // sleep
+    await page.locator('.tile').nth(2).click();                // energy
+    await answerAndWait(page, pressPrimary(page), /Which one bothers you the most/);
+    await answerAndWait(page, pickOption(page, 1), /How old are you/);              // sleep
+    await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);    // 45-49
+    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);  // most weeks
+    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await page.locator('.opt').nth(1).click();
+
+    /* STRAIGHT TO HER RESULT. The loader hands off to r1, not to the gate. */
+    await expect(page.locator('.resName')).toBeVisible({ timeout: 10_000 });
+    await expect(heading(page)).toHaveText(
+      'Your answers point to perimenopause, the years before your periods stop.',
+    );
+    await expect(page.locator('#ef'), 'she is never asked for an address').toHaveCount(0);
+    await expect(page.locator('#cf')).toHaveCount(0);
+    await expect(page.getByText('Your Hormone Check is ready.')).toHaveCount(0);
+
+    /* The name from the link greets her, and gives her a way out of it. */
+    await expect(page.locator('.resKicker')).toHaveText('Test, your Hormone Check result');
+    await expect(page.locator('.resNotYou')).toHaveText('Not Test? Enter your email.');
+
+    /* The event still fires, with the address the link carried, and no
+       subscription is posted on her behalf. */
+    await expect.poll(() => posted.length, { timeout: 10_000 }).toBeGreaterThan(0);
+    const events = posted.filter((p) => p.includes('/client/events/'));
+    expect(events.length, 'one event').toBe(1);
+    expect(events[0]).toContain('test@example.com');
+    expect(events[0]).toContain('HF Quiz Completed');
+    expect(events[0]).toContain('perimenopause');
+    expect(events[0], 'no consent is recorded on her behalf').not.toContain('consent_at');
+    expect(
+      posted.filter((p) => p.includes('/client/subscriptions/')).length,
+      'she is already on the list',
+    ).toBe(0);
+
+    /* And her result is whole: the softening line is there like anyone else's. */
+    await expect(page.getByText('This is a normal stage, not an illness.', { exact: false })).toBeVisible();
+    await expectNoHorizontalOverflow(page, 'r1 from the email link');
+
+    /* A RELOAD IS NOT ANOTHER RUN OF THE FLOW. The gate used to send this on a
+       button press, which cannot happen twice; her result page can be
+       reloaded all afternoon. */
+    await page.reload();
+    await expect(page.locator('.resName')).toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(500);
+    expect(
+      posted.filter((p) => p.includes('/client/events/')).length,
+      'still one event after a reload',
+    ).toBe(1);
+  });
+
+  test('"Not you?" puts the gate back, empty, with the box unticked', async ({ page }) => {
+    await blockKlaviyo(page);
+    await page.goto(LINK);
+    await page.evaluate(() => sessionStorage.clear());
+    await page.goto(`/quiz${LINK.slice(1)}`);
+    await page.waitForTimeout(250);
+
+    await page.locator('.tile').nth(1).click();                // sleep only
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
+    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await page.locator('.opt').nth(1).click();
+
+    await expect(page.locator('.resNotYou button')).toBeVisible({ timeout: 10_000 });
+    await page.locator('.resNotYou button').click();
+
+    /* The ordinary gate, asked properly. Nothing is prefilled from the link:
+       she is telling us who she is, and consenting for herself. */
+    await expect(heading(page)).toHaveText('Your Hormone Check is ready.');
+    await expect(page.locator('#ef')).toHaveValue('');
+    await expect(page.locator('#nf')).toHaveValue('');
+    await expect(page.locator('#cf')).not.toBeChecked();
+    await expect(page.locator('.actionBar .cta')).toBeDisabled();
+  });
+
+  test('a woman with no identity in the link still meets the gate', async ({ page }) => {
+    await startQuiz(page);
+    await page.locator('.tile').nth(1).click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
+    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await page.locator('.opt').nth(1).click();
+
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 10_000 });
+    await expect(heading(page)).toHaveText('Your Hormone Check is ready.');
+    await expect(page.locator('.resNotYou')).toHaveCount(0);
+  });
 });

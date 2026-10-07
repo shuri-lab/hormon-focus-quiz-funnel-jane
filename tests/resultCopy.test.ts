@@ -14,9 +14,11 @@ import { test, expect } from 'vitest';
 import { createState, path, stateKey } from '../src/lib/logic';
 import type { QuizState, SymptomId, TriedId, WantId } from '../src/lib/logic';
 import {
-  ACK, CLOSE, HEAD, MEANS, PAT, PRI, SYM, SYM_SLEEP, WANT_CARD,
-  cardAcks, meansFor, symExtra, threeCards, underCardAcks,
+  ACK, CLOSE, EARLY_DOCTOR_LINE, HEAD, MEANS, PAT, PRI, STAGE_LINE, SYM, SYM_SLEEP,
+  WANT_CARD, cardAcks, meansFor, symExtra, threeCards, underCardAcks,
 } from '../src/lib/resultCopy';
+import { RESULT } from '../src/lib/content';
+import { claimHits } from './claimRules';
 
 const SYMPTOMS: SymptomId[] = ['weight', 'sleep', 'energy', 'sweats', 'bloat', 'mood'];
 const WANTS: WantId[] = ['body', 'sleep', 'energy', 'cool', 'clear', 'understand'];
@@ -199,4 +201,56 @@ test('a doctor state still reaches neither result page', () => {
   expect(seen, 'D never sees the result page').not.toContain('r1');
   expect(seen, 'D never sees the kit page').not.toContain('r2');
   expect(seen, 'D never reaches the email gate').not.toContain('gate');
+});
+
+/* ------------------------------------------- the softening, 7 October --- */
+
+/* THE RULE, agreed with Jane on 7 October 2026: a stage word never stands
+ * alone as her result, and no sentence says she HAS or IS IN a stage. The
+ * result POINTS TO a stage, the stage is something MANY WOMEN DESCRIBE, and
+ * one line says it is a normal stage with real support.
+ *
+ * `tests/copy.test.ts` already reads every string in resultCopy.ts. These two
+ * tests pin the sentences the softening turns on, so moving them to a module
+ * the gate does not walk, or quietly reinstating "you are in", fails here. */
+
+test('the two softening lines pass the claim gate', () => {
+  for (const [name, line] of [['STAGE_LINE', STAGE_LINE], ['EARLY_DOCTOR_LINE', EARLY_DOCTOR_LINE]] as const) {
+    expect(line.trim().length, `${name} is empty`).toBeGreaterThan(0);
+    expect(claimHits(line), `${name}: ${line}`).toEqual([]);
+  }
+});
+
+test('the stage line says it is normal and that there is support, without promising anything', () => {
+  expect(STAGE_LINE).toContain('normal stage');
+  expect(STAGE_LINE).toContain('not an illness');
+  expect(STAGE_LINE).toContain('real support');
+});
+
+test('only early menopause is sent to a doctor, and it is the one with a blood test', () => {
+  expect(EARLY_DOCTOR_LINE).toContain('doctor');
+  expect(EARLY_DOCTOR_LINE).toContain('blood test');
+  /* It must not read as the safety exit, which is route D and a screen of its
+     own. This is a suggestion on a result page, never an instruction. */
+  expect(EARLY_DOCTOR_LINE.toLowerCase()).not.toContain('stop taking');
+});
+
+test('no outcome line tells her she has a stage or is in one', () => {
+  const BANNED = ['match the pattern', 'you have', 'you are in'];
+  for (const [outcome, copy] of Object.entries(RESULT)) {
+    const line = copy.line.toLowerCase();
+    for (const phrase of BANNED) {
+      expect(line.includes(phrase), `RESULT.${outcome}.line says "${phrase}": ${copy.line}`).toBe(false);
+    }
+    /* And it must actively point instead. */
+    expect(copy.line.startsWith('Your answers point to'), `RESULT.${outcome}.line: ${copy.line}`).toBe(true);
+  }
+});
+
+test('what this means says many women describe it, on the two stage results', () => {
+  expect(MEANS.B[MEANS.B.length - 1]).toContain('many women describe');
+  expect(MEANS.C[MEANS.C.length - 1]).toContain('Many women describe');
+  /* A is a hormonal imbalance rather than a life stage, so it gets no such
+     line. The brief leaves means-A alone. */
+  expect(MEANS.A.join(' ')).not.toContain('many women describe');
 });

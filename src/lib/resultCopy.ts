@@ -36,10 +36,12 @@ export const MEANS: Record<MeansKey, string[]> = {
   B: [
     'Menopause is when your periods stop for good. The hormone changes behind it start years earlier. That stage is perimenopause.',
     'Your hormones get less steady, so changes show up in your sleep, energy, body, temperature and mood at the same time.',
+    'That is exactly what many women describe in those years.',
   ],
   C: [
     'After your periods stop, your body runs on less estrogen.',
     'Estrogen did more than run your cycle. So changes keep showing up in your sleep, energy, body, temperature and mood. One stage, not separate problems.',
+    'Many women describe the same changes after that point.',
   ],
 };
 
@@ -60,6 +62,14 @@ export const CLOSE: Record<SymptomId, string> = {
   bloat: "That's why the bloating keeps coming back, even when your food stays the same.",
   mood: "That's why your mood and focus don't feel like yours some days.",
 };
+
+/** Read after the close line on every result. Agreed with Jane, 7 Oct. */
+export const STAGE_LINE =
+  "This is a normal stage, not an illness. It's hard, and there's real support for it. Here is where I'd start.";
+
+/** Early menopause only, read after STAGE_LINE. The one result where a blood test helps. */
+export const EARLY_DOCTOR_LINE =
+  "This is the one result I'd take to your doctor soon, because it's the one where a blood test helps.";
 
 /* ------------------------------------------ the pattern line, by how often */
 

@@ -84,7 +84,7 @@ export const ANGLES: Angle[] = [
       'Awake at three, and staying awake.',
       'Snapping at people you love.',
     ],
-    closer: 'The check looks at them together and tells you which stage your answers fit.',
+    closer: 'The check looks at them together and tells you what your answers may point to.',
     description: 'Struggling with stubborn weight, poor sleep, low energy or hot flashes? Take a 1-minute check and find out why. From JJ Smith.',
     offer: {
       h1a: 'Feel like yourself again, ',
@@ -109,7 +109,7 @@ export const ANGLES: Angle[] = [
       'A waistband you undo in the car.',
       'Cutting out the obvious things changed nothing.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
     description: 'If you are bloated most days and cutting foods out has not fixed it, the cause may be hormonal. Take the free 1-minute quiz.',
     offer: {
       sub: 'Tired of being flat at breakfast and swollen by six, of a waistband you undo in the car, of cutting things out and nothing changing? Hormone Focus helps with occasional bloating and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -131,8 +131,8 @@ export const ANGLES: Angle[] = [
       'Your face goes and everybody notices.',
       'You dress in layers now, all year.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
-    description: 'Hot flashes can start years before your periods stop. Find out which stage you are in with the free 1-minute quiz.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
+    description: 'Hot flashes can start years before your periods stop. Find out what your symptoms may point to with the free 1-minute quiz.',
     offer: {
       sub: 'Tired of heat that arrives out of nowhere, in a meeting, in the car, in front of everybody? Hormone Focus helps ease occasional hot flashes and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
       close: 'Cooler days start with two capsules.',
@@ -153,7 +153,7 @@ export const ANGLES: Angle[] = [
       'Sheets you change more than you used to.',
       'Cool again by four, and wide awake.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
     /* PENDING: this route is new and had no description in the repo. Carrying
        the default page's wording until Jane supplies one of its own. */
     description: 'Waking up soaked? Take a 1-minute check and find out why. From JJ Smith.',
@@ -177,7 +177,7 @@ export const ANGLES: Angle[] = [
       'Nothing about your bedtime changed.',
       'Sleeping in does not fix it.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
     description: 'When fixing your bedtime does not fix your sleep, the cause may be hormonal. Take the free 1-minute quiz.',
     offer: {
       sub: 'Tired of being asleep by ten and awake at three, with nothing about your bedtime changed? Hormone Focus supports restful sleep and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -200,7 +200,7 @@ export const ANGLES: Angle[] = [
       'The same food, the same walking, a different body.',
       'It settled on your middle and stayed.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
     description: 'Eating less and training harder stopped working. Find out whether your hormones are the reason. A free 1-minute quiz from JJ Smith.',
     offer: {
       sub: 'Tired of the same food, the same walking, and a different body that settled on your middle and stayed? Hormone Focus supports a healthy weight as part of a healthy diet and regular exercise, and supports hormone balance through this stage. Every milligram disclosed. Two capsules a day with a meal.',
@@ -222,7 +222,7 @@ export const ANGLES: Angle[] = [
       'Anxious for no reason you can point to.',
       'Walking into a room and forgetting why.',
     ],
-    closer: 'The check tells you which stage your answers fit, and where to start.',
+    closer: 'The check tells you what your answers may point to, and where to start.',
     description: 'Mood swings and brain fog that are not like you. Find out whether your hormones are behind it with the free 1-minute quiz.',
     offer: {
       sub: 'Tired of snapping at people you love, anxious for no reason you can point to, walking into a room and forgetting why? Hormone Focus helps support a calm mood and supports hormone balance for women in perimenopause and menopause. Every milligram disclosed. Two capsules a day with a meal.',
@@ -246,7 +246,7 @@ export const ANGLES: Angle[] = [
       'Awake at three, drenched.',
       'The word that goes missing mid-sentence.',
     ],
-    closer: 'The check looks at them together and tells you which stage your answers fit.',
+    closer: 'The check looks at them together and tells you what your answers may point to.',
     description: 'The belly that arrived without you changing a thing. Find out whether your hormones are the reason, with the free 1-minute quiz from JJ Smith.',
     offer: {
       h1a: 'Your body does not store fat randomly after 40. ',

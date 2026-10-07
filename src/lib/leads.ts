@@ -110,6 +110,90 @@ const OUTCOME_NAME: Record<Exclude<Outcome, 'D'>, string> = {
 /** The ad parameters worth carrying onto the profile. */
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'] as const;
 
+/**
+ * Her answers, as Klaviyo stores them. The same object on both paths.
+ *
+ * `consent_at` is NOT in here. It belongs to the path where she ticks a box,
+ * and only that path adds it: a woman who arrived already subscribed gave her
+ * consent to JJ's list months ago, and stamping this moment on her profile
+ * would be recording a consent that did not happen.
+ */
+function answerProperties(S: QuizState, outcome: Exclude<Outcome, 'D'>, angle: string) {
+  const ad = readAttribution();
+  const utm: Record<string, string> = {};
+  /* Omitted rather than sent empty: an absent utm_source and a blank one mean
+     different things in a report, and only one of them is true. */
+  for (const key of UTM_KEYS) {
+    if (ad[key]) utm[key] = ad[key];
+  }
+
+  return {
+    outcome: OUTCOME_NAME[outcome],
+    outcome_code: outcome,
+    /* The same value under the name the rebuild brief asks for. `outcome`
+       stays, because the live flow already branches on it. */
+    result_route: OUTCOME_NAME[outcome],
+    quiz: 'hf-v3',
+    angle,
+    ...utm,
+    /* Her answers, so an email can say them back to her. They go to
+       Klaviyo with her consent and nowhere else: never into a link,
+       never to an ad pixel. */
+    selected_symptoms: S.sym,
+    primary_symptom: mainConcern(S),
+    /* The v4 name for the same thing, kept for anything already reading it. */
+    main_concern: mainConcern(S),
+    age_band: S.age,
+    cycle_status: S.cycle,
+    ...(S.twelve ? { cycle_12_month_status: S.twelve } : {}),
+    symptom_pattern: S.pattern,
+    tried_actions: S.tried,
+    desired_outcome: S.want,
+    signs: S.sym.length,
+  };
+}
+
+/** The one metric the post-quiz flow triggers on. Never blocks her. */
+async function sendEvent(
+  properties: Record<string, unknown>, email: string, firstName: string,
+): Promise<boolean> {
+  const body = {
+    data: {
+      type: 'event',
+      attributes: {
+        properties,
+        metric: {
+          data: { type: 'metric', attributes: { name: KLAVIYO_METRIC } },
+        },
+        profile: {
+          data: {
+            type: 'profile',
+            attributes: { email, first_name: firstName },
+          },
+        },
+      },
+    },
+  };
+
+  try {
+    const res = await fetch(`${KLAVIYO_EVENTS}?company_id=${KLAVIYO_PUBLIC_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        revision: KLAVIYO_REVISION,
+      },
+      body: JSON.stringify(body),
+      keepalive: true,       // survives the navigation to the next screen
+    });
+    /* Klaviyo answers 202 with an empty body. Any 2xx is delivered; anything
+       else is not, and either way she carries on to her result. */
+    return res.ok;
+  } catch {
+    // Never block her from her result because a marketing endpoint is down.
+    return false;
+  }
+}
+
 export async function submitLead(
   S: QuizState, outcome: Outcome, angle: string,
   /* The list to subscribe her to. Defaults to the one configured above; a
@@ -139,81 +223,64 @@ export async function submitLead(
   /* The review copy is for looking at, not for collecting. Nothing is sent. */
   if (REVIEW) return { ok: true, delivered: false };
 
-  const ad = readAttribution();
-  const utm: Record<string, string> = {};
-  /* Omitted rather than sent empty: an absent utm_source and a blank one mean
-     different things in a report, and only one of them is true. */
-  for (const key of UTM_KEYS) {
-    if (ad[key]) utm[key] = ad[key];
-  }
-
-  const consentAt = new Date().toISOString();
-
-  const body = {
-    data: {
-      type: 'event',
-      attributes: {
-        properties: {
-          outcome: OUTCOME_NAME[outcome],
-          outcome_code: outcome,
-          /* The same value under the name the rebuild brief asks for. `outcome`
-             stays, because the live flow already branches on it. */
-          result_route: OUTCOME_NAME[outcome],
-          quiz: 'hf-v3',
-          angle,
-          ...utm,
-          /* Her answers, so an email can say them back to her. They go to
-             Klaviyo with her consent and nowhere else: never into a link,
-             never to an ad pixel. */
-          selected_symptoms: S.sym,
-          primary_symptom: mainConcern(S),
-          /* The v4 name for the same thing, kept for anything already reading it. */
-          main_concern: mainConcern(S),
-          age_band: S.age,
-          cycle_status: S.cycle,
-          ...(S.twelve ? { cycle_12_month_status: S.twelve } : {}),
-          symptom_pattern: S.pattern,
-          tried_actions: S.tried,
-          desired_outcome: S.want,
-          signs: S.sym.length,
-          consent_at: consentAt,
-        },
-        metric: {
-          data: { type: 'metric', attributes: { name: KLAVIYO_METRIC } },
-        },
-        profile: {
-          data: {
-            type: 'profile',
-            attributes: {
-              email: S.email.trim(),
-              first_name: S.name.trim(),
-            },
-          },
-        },
-      },
-    },
+  const properties = {
+    ...answerProperties(S, outcome, angle),
+    /* She ticked the box a moment ago, and this is when. */
+    consent_at: new Date().toISOString(),
   };
 
-  let delivered = false;
-  try {
-    const res = await fetch(`${KLAVIYO_EVENTS}?company_id=${KLAVIYO_PUBLIC_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        revision: KLAVIYO_REVISION,
-      },
-      body: JSON.stringify(body),
-      keepalive: true,       // survives the navigation to the next screen
-    });
-    /* Klaviyo answers 202 with an empty body. Any 2xx is delivered; anything
-       else is not, and either way she carries on to her result. */
-    delivered = res.ok;
-  } catch {
-    // Never block her from her result because a marketing endpoint is down.
-  }
+  const delivered = await sendEvent(properties, S.email.trim(), S.name.trim());
 
   /* Her consent, recorded on the list, so the flow is allowed to email her. */
   if (listId) await subscribe(S.email.trim(), listId);
+
+  return { ok: true, delivered };
+}
+
+/**
+ * The same event, for a woman who arrived from JJ's list.
+ *
+ * TWO DIFFERENCES FROM submitLead, and no others:
+ *
+ *  1. THE CONSENT CHECK. She is not asked to tick a box, because she is being
+ *     asked for nothing: the address came from the list she is already on.
+ *     This function refuses without `S.known` exactly as firmly as submitLead
+ *     refuses without `S.consent`, and submitLead's own check is untouched —
+ *     nothing reaches this function on the ordinary path.
+ *
+ *  2. NO SUBSCRIPTION. She is on the list. Posting a SUBSCRIBED consent for
+ *     her would be recording an opt-in she never gave on this page, and the
+ *     one she did give already exists on her profile.
+ *
+ * `consent_at` is absent for the same reason. See answerProperties.
+ */
+export async function submitKnownLead(
+  S: QuizState, outcome: Outcome, angle: string,
+): Promise<{ ok: boolean; delivered: boolean }> {
+  if (!S.known) {
+    if (import.meta.env.DEV) {
+      console.warn('[leads] refused: this is the known-woman path and nobody is known.');
+    }
+    return { ok: false, delivered: false };
+  }
+
+  /* The doctor route is an exit here too: she is told to see somebody, shown
+     no offer, and does not enter a flow that will go on to sell her a
+     supplement. Her being on the list changes none of that. */
+  if (outcome === 'D') {
+    if (import.meta.env.DEV) {
+      console.warn('[leads] refused: the doctor route does not reach Klaviyo.');
+    }
+    return { ok: true, delivered: false };
+  }
+
+  if (REVIEW) return { ok: true, delivered: false };
+
+  const delivered = await sendEvent(
+    answerProperties(S, outcome, angle),
+    S.known.email.trim(),
+    S.known.name.trim(),
+  );
 
   return { ok: true, delivered };
 }
