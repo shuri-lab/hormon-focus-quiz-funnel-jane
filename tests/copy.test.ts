@@ -259,29 +259,58 @@ test('the Plan is named the same way everywhere she sees it', () => {
  * the same breath. Not in the paragraph next to it, where an edit can separate
  * them without anybody noticing — in the same string.
  */
-const CLOCK = /\b(two weeks|sixty days)\b/i;
-const ATTRIBUTED = /as customers report|customers report|women tell us|women report|women notice/i;
+/* WIDENED 8 OCTOBER 2026. It used to read only the two clocks spelled out in
+   words, `two weeks` and `sixty days`. A new Kit paragraph said "The second
+   month is when those add up to a pattern you can see" and the gate never saw
+   it: the duration was in digits, and "month" was not a word it knew. Both are
+   now read. */
+const CLOCK =
+  /\b(two weeks|sixty days|thirty days|\d+\s*(?:days|weeks|months)|first month|second month|two months)\b/i;
 
 /**
- * The clock rule is about a PROMISE, and these two sentences are not one.
+ * A DURATION IS NOT A PROMISE ON ITS OWN, and this is why the rule needs two
+ * halves rather than one.
  *
- * Both are instructions for her own notebook: two weeks of writing things down
- * is how long it takes HER to see HER pattern. Neither says a supplement does
- * anything in two weeks, which is the thing the rule exists to stop, and no
- * regular expression can tell the two apart.
+ * "1 bottle, 30 days" is a pack size. "Delivered every 30 days" is a delivery
+ * cadence. "START MY 60 DAYS" is a button. "Your next 60 days" is a heading.
+ * Widening the clock above to digits made the gate read all nineteen of them,
+ * and a gate that fails on nineteen strings nobody is worried about is a gate
+ * somebody switches off.
  *
- * Listed in full rather than by path, exactly as SIGNED_OFF is, so changing a
- * single character of either one puts it straight back under the gate.
+ * What the claims list actually forbids is a duration tied to a CHANGE: how
+ * long before she notices, sees, feels or gets a result. So the rule fires
+ * when a duration and an outcome are in the same string, and stays quiet when
+ * a duration is just counting days.
  */
+const OUTCOME =
+  /\b(notic\w*|see|seeing|saw|feel\w*|felt|chang\w*|difference|results?|add up|adds up|improv\w*)\b/i;
+
+/* `women tell me` and `they tell me` added 8 October: JJ writes in the first
+   person, so her attribution reads "many women tell me", not "tell us".
+   `customers generally report` is the kit FAQ's own wording, which the old
+   pattern did not recognise because the clock never read `30 days` before. */
+const ATTRIBUTED =
+  /as customers report|customers (?:generally )?report|women tell us|women tell me|they tell me|women report|women notice/i;
+
 const CLOCK_EXEMPT = new Set([
   'Write it down for two weeks',
   'When it shows up, what you ate, where you are in your cycle. Two weeks shows the pattern.',
   'Sleep, energy, mood, cravings, how your clothes fit. Two weeks on paper beats months of guessing.',
+
+  /* THE REFUND WINDOW, not a timeline. "If you do not see results in 60 days,
+     it is free" is a condition for getting her money back, and it promises the
+     opposite of a result. Both are approved offer copy that predates the
+     widening above, and both are listed in full so an edit re-gates them. */
+  'See results in 60 days, or it is free.',
+  ' Two bottles, free shipping, and if you do not see results in 60 days, it is free.',
 ]);
 
 test('no timeline is stated without saying whose timeline it is', () => {
   for (const [where, value] of CUSTOMER_FACING) {
     if (!CLOCK.test(value)) continue;
+    /* A duration that is not tied to a change is counting days, not promising
+       one. See the note on OUTCOME above. */
+    if (!OUTCOME.test(value)) continue;
     if (CLOCK_EXEMPT.has(value)) continue;
     expect(
       ATTRIBUTED.test(value),
@@ -297,6 +326,41 @@ test('the clock gate fires on a bare promise and not on an attributed one', () =
   const attributed = 'Most women tell us the first change comes inside two weeks.';
   expect(CLOCK.test(bare) && !ATTRIBUTED.test(bare)).toBe(true);
   expect(CLOCK.test(attributed) && ATTRIBUTED.test(attributed)).toBe(true);
+});
+
+/** Does a string get past the whole rule, exactly as the loop above runs it? */
+const clockPasses = (v: string) =>
+  !CLOCK.test(v) || !OUTCOME.test(v) || CLOCK_EXEMPT.has(v) || ATTRIBUTED.test(v);
+
+test('the sentence that slipped through on 7 October would not slip through now', () => {
+  /* Written in digits and in months, so the old pattern never read it, and
+     stated in the brand's own voice. This is the regression. */
+  const slipped = 'The second month is when those add up to a pattern you can see.';
+  expect(clockPasses(slipped), 'a bare month-and-change promise must be caught').toBe(false);
+
+  /* Jane's rewrite, which carries the attribution in the same breath. */
+  const fixed = 'They tell me the second month is when those add up to a pattern you can see.';
+  expect(clockPasses(fixed), 'the attributed form is allowed').toBe(true);
+
+  /* And the digit form of the other clock, which also used to be invisible. */
+  expect(clockPasses('You will see a difference in 60 days.')).toBe(false);
+  expect(clockPasses('Women tell me they see a difference in 60 days.')).toBe(true);
+});
+
+test('counting days is not promising one', () => {
+  /* Every one of these is a pack size, a cadence, a button or a heading. The
+     widened clock reads them; the rule must still let them through. */
+  for (const v of [
+    '1 bottle · 30 days',
+    'Delivered every 30 days',
+    'START MY 60 DAYS',
+    'Your next 60 days',
+    'Where you are in 60 days',
+    'Two months to decide, on us',
+    'Two bottles of Hormone Focus, 60 days',
+  ]) {
+    expect(clockPasses(v), `the gate must not fire on: ${v}`).toBe(true);
+  }
 });
 
 /* ------------------------------------------- the two numbers, unmerged -- */

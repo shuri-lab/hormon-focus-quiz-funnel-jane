@@ -229,7 +229,14 @@ export function underCardAcks(S: QuizState): string[] {
 export const KIT_TITLE = 'This is why I made the 60-Day Kit';
 
 export const KIT_INTRO =
-  "Knowing what to do is one thing. Doing it every day for 60 days is another. That's why I made the Hormone Focus 60-Day Kit: one plan for the food, the sleep, the tracking and the hormone support.";
+  'Knowing what to do is one thing. Doing it every day for 60 days is another. '
+  + 'Why 60 days? Hormones change slowly, and so do habits. Many women tell me '
+  + 'the first month is small things: a better night here, a steadier day there. '
+  + 'They tell me the second month is when those add up to a pattern you can see. '
+  + 'So everything '
+  + 'in the Kit is built for the full 60. '
+  + "That's why I made the Hormone Focus 60-Day Kit: one plan for the food, the "
+  + 'sleep, the tracking and the hormone support.';
 
 /* The four approved product lines, verbatim. */
 export const KIT_PIECES: [string, string][] = [
