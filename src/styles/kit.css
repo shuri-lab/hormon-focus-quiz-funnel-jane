@@ -450,6 +450,60 @@
 .nextPieces span { font-size: 14.5px; line-height: 1.4; color: var(--ink-2); }
 .nextSign { margin: 12px 0 0; font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--plum); text-align: right; }
 
+/* THE RESULT PAGE, REORDERED 8 OCTOBER 2026.
+   One idea per screen on a phone, so these are spaced apart rather than
+   packed: the bridge gets air on both sides, and each Kit piece is its own
+   row. Nothing shrinks to fit. */
+
+/* The paragraph between her three things and the Kit. */
+.bridge {
+  margin: 26px 0 0; font-size: var(--t-body); line-height: 1.5; color: var(--ink);
+}
+
+/* The Kit opening runs to two paragraphs, so the second one needs its own air
+   rather than sitting tight under the first. */
+.nextHow .lead + p { margin: 10px 0 0; font-size: var(--t-sub); line-height: 1.5; color: var(--ink-2); }
+
+/* Why sixty days, for the concern she named, under its own heading. Set apart
+   from the opening above it so the two are not read as one block of text. */
+.why60 {
+  margin: 18px 0 0; padding: 14px 16px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+}
+.why60T {
+  margin: 0 0 6px; font-weight: 700; font-size: var(--t-sub); color: var(--plum);
+}
+.why60 p + p, .why60 > p:last-child {
+  margin: 0; font-size: var(--t-sub); line-height: 1.5; color: var(--ink-2);
+}
+
+.kitPiecesT { margin: 20px 0 0; }
+
+/* The four pieces: an image slot on the left, one line on the right. */
+.kitRows { display: grid; gap: 10px; margin-top: 10px; }
+.kitRow {
+  display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+}
+/* NOT `.kitShot`. That class is the product photograph in KitOffer.tsx, and a
+   second rule of the same name here restyled it to a 64px lilac square on the
+   offer page. Empty until David supplies the pictures, and holding its own
+   space so the rows do not jump when he does. */
+.kitPieceShot {
+  width: 64px; aspect-ratio: 1; border-radius: 10px;
+  background: var(--wash-2); border: 1px solid var(--line-2);
+}
+.kitSay { display: grid; gap: 4px; }
+.kitSay span { font-size: 15px; line-height: 1.45; color: var(--ink); }
+/* The claim is never the headline. */
+.kitClaim { font-size: 12.5px; line-height: 1.4; color: var(--ink-3); }
+
+@media (width >= 560px) {
+  .kitRow { grid-template-columns: 84px 1fr; gap: 16px; }
+  .kitPieceShot { width: 84px; }
+}
+
 .preProof { margin-top: 30px; }
 .preProof .kitRev { margin-top: 12px; }
 

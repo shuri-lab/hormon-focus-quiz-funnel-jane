@@ -14,8 +14,10 @@ import { test, expect } from 'vitest';
 import { createState, path, stateKey } from '../src/lib/logic';
 import type { QuizState, SymptomId, TriedId, WantId } from '../src/lib/logic';
 import {
-  ACK, CLOSE, EARLY_DOCTOR_LINE, HEAD, MEANS, PAT, PRI, STAGE_LINE, SYM, SYM_SLEEP,
-  WANT_CARD, cardAcks, meansFor, symExtra, threeCards, underCardAcks,
+  ACK, BRIDGE, CLOSE, EARLY_DOCTOR_LINE, HEAD, KIT_CLOSE, KIT_FOCUS_CLAIM, KIT_INTRO,
+  KIT_PIECES, KIT_PIECES_TITLE, KIT_PIECE_IDS, KIT_TITLE, MEANS, PAT, PRI, STAGE_LINE,
+  START_TITLE, SYM, SYM_SLEEP, WANT_CARD, WHY60, WHY60_TITLE,
+  cardAcks, meansFor, symExtra, threeCards, underCardAcks,
 } from '../src/lib/resultCopy';
 import { RESULT } from '../src/lib/content';
 import { claimHits } from './claimRules';
@@ -253,4 +255,88 @@ test('what this means says many women describe it, on the two stage results', ()
   /* A is a hormonal imbalance rather than a life stage, so it gets no such
      line. The brief leaves means-A alone. */
   expect(MEANS.A.join(' ')).not.toContain('many women describe');
+});
+
+/* --------------------------------- the result page, 8 October 2026 ------ */
+
+/* THE ORDER SHE READS IT IN: where to start, her three things, the bridge,
+ * then the Kit, why it runs sixty days for her concern, and what is inside.
+ * These hold the copy; the e2e walk holds the order on the screen. */
+
+test('every symptom has a start headline, and it says where to start', () => {
+  for (const id of SYMPTOMS) {
+    expect(START_TITLE[id], `START_TITLE.${id}`).toBeTruthy();
+    expect(START_TITLE[id].startsWith('Start with these 3 for'), START_TITLE[id]).toBe(true);
+  }
+  expect(Object.keys(START_TITLE).sort()).toEqual([...SYMPTOMS].sort());
+  /* The promise it replaced is gone: this page no longer opens with a plan. */
+  for (const id of SYMPTOMS) expect(START_TITLE[id]).not.toContain('60-day plan');
+});
+
+test('every symptom has a why-sixty-days line, and every one is attributed', () => {
+  expect(Object.keys(WHY60).sort()).toEqual([...SYMPTOMS].sort());
+  for (const id of SYMPTOMS) {
+    expect(WHY60[id], `WHY60.${id}`).toBeTruthy();
+    /* A timeline is only ours to state if somebody else stated it first. */
+    expect(WHY60[id].includes('Many women tell me'), `WHY60.${id} is unattributed`).toBe(true);
+    expect(WHY60[id]).toContain('first month');
+    expect(WHY60[id]).toContain('second month');
+  }
+});
+
+test('the new paragraphs are the strings Jane sent, to the character', () => {
+  expect(BRIDGE).toBe(
+    "These are the first three things I'd work on. None of them are complicated, "
+    + 'but doing them consistently when life gets busy is where it gets harder. '
+    + 'This is why I built the Feel Like YOU Again Kit.',
+  );
+
+  expect(KIT_TITLE).toBe('The 60-Day Feel Like YOU Again Kit');
+
+  /* Two paragraphs, in order, so the screen can put air between them. */
+  expect(KIT_INTRO).toHaveLength(2);
+  expect(KIT_INTRO[0]).toBe(
+    "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+    + 'this together on your own. It gives you 60 days to stay with the same simple '
+    + 'plan instead of changing things every few days.',
+  );
+  expect(KIT_INTRO[1]).toBe(
+    'Hormones change slowly, and so do habits, so I want you looking at more than '
+    + 'a few good days.',
+  );
+
+  expect(WHY60_TITLE).toBe('Why 60 days?');
+  expect(KIT_PIECES_TITLE).toBe("What's inside");
+
+  expect(KIT_CLOSE).toBe(
+    'Not one more thing to try. Just one plan built around feeling like you again.',
+  );
+});
+
+test('the four kit pieces are one line each, in the order she reads them', () => {
+  expect(KIT_PIECE_IDS).toEqual(['guide', 'recipes', 'tracker', 'focus']);
+  for (const id of KIT_PIECE_IDS) {
+    expect(KIT_PIECES[id], id).toBeTruthy();
+    /* One line: a title sentence and a short one after it, no paragraph. */
+    expect(KIT_PIECES[id].length, `${id} is too long for a row`).toBeLessThan(110);
+  }
+  expect(KIT_PIECES.focus).toContain('Two capsules with a meal every day');
+});
+
+/* THE INGREDIENT SENTENCES ARE OFF THIS PAGE, 8 October 2026.
+ *
+ * DIM, Calcium D-Glucarate and BioPerine stay on the offer page, where she is
+ * reading about the product. On the result page she is reading about what to
+ * do next, and the bottle carries one claim, small, under the dose line. */
+test('the result page carries one claim about the bottle, and not the formula', () => {
+  expect(KIT_FOCUS_CLAIM).toBe('Hormone Focus supports healthy estrogen metabolism.');
+
+  const everything = [
+    BRIDGE, ...KIT_INTRO, KIT_TITLE, KIT_CLOSE, KIT_FOCUS_CLAIM,
+    ...Object.values(KIT_PIECES), ...Object.values(WHY60), ...Object.values(START_TITLE),
+  ].join(' ');
+
+  for (const ingredient of ['DIM', 'Calcium D-Glucarate', 'BioPerine']) {
+    expect(everything.includes(ingredient), `${ingredient} is still on the result page`).toBe(false);
+  }
 });

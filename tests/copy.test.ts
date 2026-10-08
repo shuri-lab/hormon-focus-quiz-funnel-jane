@@ -147,6 +147,14 @@ const SIGNED_OFF = new Set([
   "Why you're bloated",
   "Why the scale won't move,",
   "Find out what's really going on with your body. Take the free 1-minute quiz.",
+
+  /* THE 8 OCTOBER QUIZ ANSWER. Jane's copy pack replaces "I have not really
+     tracked them yet" on question five with this, word for word, and the
+     handover says not to reword it. It is one answer she taps, in her own
+     voice, and the house style is about the brand's prose.
+     Listed in full, like David's three above, so a fifth contraction
+     appearing anywhere in content.ts still fails the build. */
+  "I'm not sure",
 ]);
 
 test('no authored string makes a claim the brand may not make', () => {
@@ -303,6 +311,17 @@ const CLOCK_EXEMPT = new Set([
      widening above, and both are listed in full so an edit re-gates them. */
   'See results in 60 days, or it is free.',
   ' Two bottles, free shipping, and if you do not see results in 60 days, it is free.',
+
+  /* HOW LONG THE PLAN RUNS, not how long a result takes.
+     The clock reads "60 days" here and the outcome half reads "CHANGING
+     things every few days" — but that is HER changing her plan, not a change
+     in her body, and the sentence promises nothing. It is the outcome
+     heuristic misfiring on one word, so the string is exempted in full rather
+     than the rule being widened to let the real case through. Jane's Kit
+     opening, 8 October 2026. */
+  "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+  + 'this together on your own. It gives you 60 days to stay with the same simple '
+  + 'plan instead of changing things every few days.',
 ]);
 
 test('no timeline is stated without saying whose timeline it is', () => {

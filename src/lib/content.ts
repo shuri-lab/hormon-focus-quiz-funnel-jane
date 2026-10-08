@@ -109,7 +109,7 @@ export const PATTERN_OPTIONS: [Pattern, string][] = [
   ['comego', 'They come and go without a clear pattern'],
   ['weekly', 'Most weeks'],
   ['daily', 'Almost every day'],
-  ['untracked', 'I have not really tracked them yet'],
+  ['untracked', "I'm not sure"],
 ];
 
 export const TRIED_OPTIONS: [TriedId, string][] = [
@@ -273,24 +273,17 @@ export const CANNOT_TELL =
 
 /* ---------------------------------------------------------- what to do next -- */
 
-/* THE 60 DAYS, BUILT TO THE KIT. It names her biggest concern, gives her the
-   five things to do, asks the question she is already asking (how?), and
-   answers it with the kit, piece by piece. Jane, 3 October 2026.
-   It is a plan for her, never a promised result by a date. */
+/* THE 60 DAYS, BUILT TO THE KIT. It names her biggest concern, asks the
+   question she is already asking (how?), and answers it with the kit, piece
+   by piece. Jane, 3 October 2026.
+   It is a plan for her, never a promised result by a date.
 
-/** What her 60 days are for, by the concern she named. */
-export const PLAN_FOR: Record<SymptomId, string> = {
-  weight: 'your weight',
-  sleep: 'better sleep',
-  energy: 'more energy',
-  sweats: 'cooler days and nights',
-  bloat: 'less bloating',
-  mood: 'a calmer, clearer you',
-};
+   `PLAN_FOR` and `nextTitle()` were removed on 8 October 2026. They built the
+   old headline, "Your 60-day plan for your weight", which promised her a plan
+   before she had read one. The result page now opens with where to start:
+   see START_TITLE in resultCopy.ts. Nothing else read them. */
 
 export const NEXT_EYEBROW = 'Your next 60 days';
-export const nextTitle = (main: SymptomId | ''): string =>
-  main ? `Your 60-day plan for ${PLAN_FOR[main]}` : 'Your 60-day plan';
 
 export const NEXT_LEAD = 'You do not have to fix everything at once.';
 export const NEXT_INTRO = 'For the next 60 days, you focus on five things, every day:';

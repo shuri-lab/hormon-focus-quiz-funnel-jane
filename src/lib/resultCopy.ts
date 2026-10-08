@@ -117,6 +117,24 @@ export function symExtra(S: QuizState, main: SymptomId): string | '' {
 
 /* ------------------------------------------------ your first three ------- */
 
+/**
+ * The headline over her three things, by the concern she named.
+ *
+ * It replaces `nextTitle()` in content.ts ("Your 60-day plan for your weight"),
+ * which promised a plan before she had read one. This says what the next
+ * screen actually is: where to start. Jane's pack, 8 October 2026.
+ */
+export const START_TITLE: Record<SymptomId, string> = {
+  weight: 'Start with these 3 for stubborn weight',
+  sleep: 'Start with these 3 for poor sleep',
+  energy: 'Start with these 3 for low energy',
+  sweats: 'Start with these 3 for hot flashes',
+  bloat: 'Start with these 3 for bloating',
+  mood: 'Start with these 3 for mood and focus',
+};
+
+/* Kept as the export it was. START_TITLE is the headline the screen shows
+   over her three cards now, so this label is no longer rendered. */
 export const THREE_TITLE = 'Your first three things';
 
 /** The six symptoms, plus the tracker card she gets when she wants to understand. */
@@ -226,33 +244,94 @@ export function underCardAcks(S: QuizState): string[] {
 
 /* --------------------------------------------------------- the kit ------ */
 
-export const KIT_TITLE = 'This is why I made the 60-Day Kit';
+/**
+ * The paragraph between her three things and the Kit.
+ *
+ * It names the hard part before it names the thing that helps with it, which
+ * is why it sits after the cards and not inside them, and it hands over to the
+ * Kit by name.
+ */
+export const BRIDGE =
+  "These are the first three things I'd work on. None of them are complicated, "
+  + 'but doing them consistently when life gets busy is where it gets harder. '
+  + 'This is why I built the Feel Like YOU Again Kit.';
 
-export const KIT_INTRO =
-  'Knowing what to do is one thing. Doing it every day for 60 days is another. '
-  + 'Why 60? Hormones change slowly, and so do habits. Many women tell me the '
-  + 'first month is small things, and the second is when they add up to a pattern '
-  + 'you can see. '
-  + "That's why the Kit covers the full 60 days: the 60-Day Hormone Fix guide, "
-  + 'the Hormone Healthy Recipes, the Daily Symptom Tracker, and two bottles of '
-  + 'Hormone Focus.';
+export const KIT_TITLE = 'The 60-Day Feel Like YOU Again Kit';
 
-/* The four approved product lines, verbatim. */
-export const KIT_PIECES: [string, string][] = [
-  ['The 60-Day Hormone Fix guide', "what's changing and what to focus on now."],
-  ['Hormone Healthy Recipes', '"eat better" turned into meals you can actually make.'],
-  ['The Daily Symptom Tracker', 'one place to see your pattern instead of guessing.'],
-  [
-    'Hormone Focus',
-    'supports healthy estrogen metabolism. DIM supports healthy estrogen metabolism. '
-    + "Calcium D-Glucarate supports the body's natural processes involved in processing and "
-    + 'eliminating certain substances. BioPerine is included to support absorption. '
-    + 'Two bottles, so this piece sits inside the same 60-day routine.',
-  ],
+/** Two paragraphs, so the screen can breathe between them. */
+export const KIT_INTRO: string[] = [
+  "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+  + 'this together on your own. It gives you 60 days to stay with the same simple '
+  + 'plan instead of changing things every few days.',
+  'Hormones change slowly, and so do habits, so I want you looking at more than '
+  + 'a few good days.',
 ];
 
+export const WHY60_TITLE = 'Why 60 days?';
+
+/**
+ * Why the Kit runs sixty days, said about the thing she came for.
+ *
+ * Every line is attributed in its own sentence: "many women tell me" is what
+ * the claims gate accepts, and a timeline is only ours to state if somebody
+ * else stated it first. Approved as written, Jane, 8 October 2026.
+ */
+export const WHY60: Record<SymptomId, string> = {
+  weight:
+    'Many women tell me they notice the first signs in the first month, like '
+    + 'their clothes fitting a little differently. The second month gives you '
+    + 'more time to see if that change is actually holding.',
+  sleep:
+    'Many women tell me they start noticing better nights in the first month. '
+    + 'The second month gives you more time to see if those better nights are '
+    + 'becoming more consistent.',
+  energy:
+    'Many women tell me they start noticing better-energy days in the first '
+    + 'month. The second month gives you more time to see if those days are '
+    + 'happening more often.',
+  sweats:
+    'Many women tell me they start noticing fewer rough nights in the first '
+    + 'month. The second month gives you more time to see if that keeps '
+    + 'happening.',
+  bloat:
+    'Many women tell me they start noticing less bloating in the first month. '
+    + 'The second month gives you more time to see if that change is holding.',
+  mood:
+    'Many women tell me they start noticing more good days in the first month. '
+    + 'The second month gives you more time to see if those days are becoming '
+    + 'more consistent.',
+};
+
+export const KIT_PIECES_TITLE = "What's inside";
+
+/** The four pieces, one line each, in the order she reads them. */
+export type KitPieceId = 'guide' | 'recipes' | 'tracker' | 'focus';
+
+export const KIT_PIECE_IDS: KitPieceId[] = ['guide', 'recipes', 'tracker', 'focus'];
+
+export const KIT_PIECES: Record<KitPieceId, string> = {
+  guide: "The 60-Day Hormone Fix Guide. What's changing and what to focus on now.",
+  recipes: 'Hormone Healthy Recipes. Simple meals you can actually make and keep eating.',
+  tracker: "Daily Symptom Tracker. See what's changing instead of trying to remember.",
+  focus: 'Hormone Focus. Two capsules with a meal every day, with two bottles for the full 60 days.',
+};
+
+/**
+ * The one structure-function claim the bottle carries on this page, small and
+ * under the dose line.
+ *
+ * THE CLAIM IS NEVER THE HEADLINE. The name comes first, then the picture,
+ * then what she does with it, then this.
+ *
+ * The DIM, Calcium D-Glucarate and BioPerine sentences are NOT here. They were
+ * on this page until 8 October and they now live only on the offer page, in
+ * kitCopy.ts and offerCopy.ts, where she is reading about the product rather
+ * than about what to do next.
+ */
+export const KIT_FOCUS_CLAIM = 'Hormone Focus supports healthy estrogen metabolism.';
+
 export const KIT_CLOSE =
-  "Not one more thing to try. A simple plan for this stage: understand what's changing, know what to do next, track how your body responds, support it along the way.";
+  'Not one more thing to try. Just one plan built around feeling like you again.';
 
 /** Tile order, for any test that wants to walk every symptom. */
 export const SYMPTOM_IDS: SymptomId[] = TILES.map(([id]) => id);

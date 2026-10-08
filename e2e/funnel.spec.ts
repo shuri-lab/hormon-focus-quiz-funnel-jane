@@ -200,14 +200,17 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 2. Her 60 days, named for what she picked, then the how,
-       answered by the kit, then women who did it, all before the price. */
-    await expect(heading(page)).toHaveText('Your 60-day plan for better sleep');
+    /* RESULT PAGE 2. REORDERED 8 OCTOBER 2026: where to start, named for what
+       she picked, her three things, the bridge, then the Kit, why it runs
+       sixty days for HER concern, and what is inside. It used to open "Your
+       60-day plan for better sleep", which promised a plan before she had
+       read one. */
+    await expect(heading(page)).toHaveText('Start with these 3 for poor sleep');
     await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
 
     /* HER FIRST THREE THINGS replaced the five generic steps. Sleep first
        because she named it, then the other two she ticked in tile order. */
-    await expect(page.getByText('Your first three things')).toBeVisible();
+    await expect(page.getByText('Your first three things')).toHaveCount(0);
     const cards = page.locator('.priCard');
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0)).toContainText('Protect your sleep');
@@ -222,9 +225,41 @@ test.describe('the quiz', () => {
     await expect(cards.nth(2)).toContainText("More cardio won't work.");
     await expect(cards.nth(0)).not.toContainText('already worked on your sleep');
 
-    await expect(page.locator('.nextHowQ')).toContainText('This is why I made the 60-Day Kit');
-    await expect(page.getByText('Knowing what to do is one thing.', { exact: false })).toBeVisible();
-    await expect(page.locator('.nextPieces > div')).toHaveCount(4);
+    /* The bridge names the hard part, and sits between the cards and the Kit. */
+    await expect(page.locator('.bridge'))
+      .toContainText("These are the first three things I'd work on.");
+    /* And it hands over to the Kit by name. */
+    await expect(page.locator('.bridge'))
+      .toContainText('This is why I built the Feel Like YOU Again Kit.');
+
+    await expect(page.locator('.nextHowQ')).toHaveText('The 60-Day Feel Like YOU Again Kit');
+    await expect(page.getByText('I put the Feel Like YOU Again Kit together', { exact: false })).toBeVisible();
+    /* The opening is two paragraphs now, not one. */
+    await expect(page.getByText('Hormones change slowly, and so do habits', { exact: false })).toBeVisible();
+
+    /* Why sixty days, under its own heading, said about the concern she
+       named. She said sleep. */
+    await expect(page.locator('.why60T')).toHaveText('Why 60 days?');
+    await expect(page.locator('.why60'))
+      .toContainText('they start noticing better nights in the first month');
+    await expect(page.locator('.why60')).toContainText('Many women tell me');
+
+    /* Four pieces under their own heading, one row each, with a slot for the
+       picture David supplies. `kitPieceShot`, because `kitShot` is the product
+       photograph further down the offer. */
+    await expect(page.locator('.kitPiecesT')).toHaveText("What's inside");
+    await expect(page.locator('.kitRow')).toHaveCount(4);
+    await expect(page.locator('.kitPieceShot')).toHaveCount(4);
+    await expect(page.locator('.kitRow').nth(0)).toContainText('The 60-Day Hormone Fix Guide');
+    await expect(page.locator('.kitRow').nth(3)).toContainText('Two capsules with a meal every day');
+    /* One claim about the bottle, small, under the dose line, and nowhere else. */
+    await expect(page.locator('.kitClaim')).toHaveCount(1);
+    await expect(page.locator('.kitClaim')).toHaveText('Hormone Focus supports healthy estrogen metabolism.');
+    /* THE FORMULA IS OFF THIS PAGE. It stays on the offer page below. */
+    for (const ingredient of ['DIM', 'Calcium D-Glucarate', 'BioPerine']) {
+      await expect(page.locator('.nextHow'), ingredient).not.toContainText(ingredient);
+    }
+    await expect(page.getByText('Not one more thing to try. Just one plan built around feeling like you again.')).toBeVisible();
     await expect(page.locator('[data-proof="pre"] .pfFaces img')).toHaveCount(6);
     /* THE LEAD REVIEW IS NO LONGER PERSONALISED. It used to answer her main
        concern — a woman who said sleep met a woman who slept. David asked for
@@ -329,7 +364,7 @@ test.describe('the quiz', () => {
     await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
 
-    await expect(heading(page)).toHaveText('Your 60-day plan for cooler days and nights');
+    await expect(heading(page)).toHaveText('Start with these 3 for hot flashes');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
     /* Same four whatever she answered — see the note on the lead review above. */
@@ -436,7 +471,7 @@ test.describe('the addresses', () => {
     ['what-you-want', 'What do you want most right now'],
     ['your-result', 'Your Hormone Check is ready'],
     ['result', ''],
-    ['kit', 'Your 60-day plan'],
+    ['kit', 'Start with these 3'],
     ['speak-to-your-doctor', 'Talk to your healthcare professional'],
   ] as const;
 
