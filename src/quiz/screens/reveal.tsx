@@ -16,13 +16,13 @@ const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
 
 /* ---------------------------------------------------------------- r1 ---- */
 
-/* HER RESULT. What her answers POINT TO, at the top, in one sentence. Then
+/* HER RESULT. What her answers MAY POINT TO, at the top, in one sentence. Then
  * what she told us, with the same pictures she tapped, what it means with her
  * own symptoms in it, and one fact about women at her stage.
  *
  * SOFTENED 7 OCTOBER. The stage word never stands alone as her result, and no
  * sentence says she has or is in a stage: the headline is `copy.line`, which
- * always begins "Your answers point to", and `copy.name` (the bare stage word,
+ * always begins "Your answers may point to", and `copy.name` (the bare stage word,
  * which still feeds Klaviyo's `result_route`) is not printed on the screen.
  * STAGE_LINE then says it is a normal stage with real support.
  *

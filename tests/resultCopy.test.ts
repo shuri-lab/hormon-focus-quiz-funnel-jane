@@ -243,7 +243,7 @@ test('no outcome line tells her she has a stage or is in one', () => {
       expect(line.includes(phrase), `RESULT.${outcome}.line says "${phrase}": ${copy.line}`).toBe(false);
     }
     /* And it must actively point instead. */
-    expect(copy.line.startsWith('Your answers point to'), `RESULT.${outcome}.line: ${copy.line}`).toBe(true);
+    expect(copy.line.startsWith('Your answers may point to'), `RESULT.${outcome}.line: ${copy.line}`).toBe(true);
   }
 });
 

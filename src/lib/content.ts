@@ -171,7 +171,7 @@ export const WANT_PHRASE: Record<WantId, string> = {
 /* ONE CLEAR ANSWER. She gets one of four named results, said once, in one
    sentence, with no "you may be between two" and no list of what she is
    not. It is never "you have" and never "you are in": the sentence says her
-   answers POINT TO it. Jane, 2 October 2026, softened 7 October 2026.
+   answers MAY POINT TO it. Jane, 2 October 2026, softened 7 and 8 October 2026.
 
    `name` is the bare stage word. It is NOT printed on the result screen any
    more (see reveal.tsx) and is kept because `result_route` in the Klaviyo
@@ -190,22 +190,22 @@ export interface ResultCopy {
 export const RESULT: Record<Exclude<Outcome, 'D'>, ResultCopy> = {
   A: {
     name: 'Hormonal imbalance',
-    line: 'Your answers point to a hormonal imbalance.',
+    line: 'Your answers may point to a hormonal imbalance.',
     means: (x) => `Your hormones rise and fall through every month. When they shift out of their usual rhythm, it can show up as ${x}.`,
   },
   B: {
     name: 'Perimenopause',
-    line: 'Your answers point to perimenopause, the years before your periods stop.',
+    line: 'Your answers may point to perimenopause, the years before your periods stop.',
     means: (x, many) => `In the years before periods stop, hormones start to rise and fall unevenly. That is why ${x} can ${many ? 'all show up at the same time' : 'show up'}.`,
   },
   C: {
     name: 'Menopause',
-    line: 'Your answers point to menopause.',
+    line: 'Your answers may point to menopause.',
     means: (x) => `After your periods stop, your hormones settle at a new, lower level. That is why ${x} can keep showing up.`,
   },
   E: {
     name: 'Early menopause',
-    line: 'Your answers point to early menopause, which starts before 45.',
+    line: 'Your answers may point to early menopause, which starts before 45.',
     means: (x) => `Your hormones are settling at a new, lower level earlier than most women. That is why ${x} can show up. Ask your doctor to confirm it, so you know where you stand.`,
   },
 };

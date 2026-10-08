@@ -351,7 +351,7 @@
   text-transform: uppercase; color: var(--plum-2);
 }
 /* SOFTENED 7 OCTOBER. This used to hold one stage word ("Perimenopause") at
-   clamp(34px, 10vw, 46px). It now holds the whole "Your answers point to ..."
+   clamp(34px, 10vw, 46px). It now holds the whole "Your answers may point to ..."
    sentence, so it is sized as a title rather than a display word and given a
    measure to wrap against. `.resLine` went with the bare stage word. */
 .resName {

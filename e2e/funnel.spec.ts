@@ -144,14 +144,14 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 1. What her answers POINT TO, said in one sentence.
+    /* RESULT PAGE 1. What her answers MAY POINT TO, said in one sentence.
        SOFTENED 7 OCTOBER 2026: the heading used to be the bare stage word
        ("Perimenopause") with the sentence under it in `.resLine`. The bare
        stage word is no longer printed at all, so the heading is the sentence
        and `.resLine` is gone. */
     await expect(page.locator('.resKicker')).toHaveText('Renee, your Hormone Check result');
     await expect(heading(page)).toHaveText(
-      'Your answers point to perimenopause, the years before your periods stop.',
+      'Your answers may point to perimenopause, the years before your periods stop.',
     );
     await expect(page.locator('.resLine')).toHaveCount(0);
     /* No heading on the result may be the bare stage word on its own. */
@@ -318,7 +318,7 @@ test.describe('the quiz', () => {
     await page.locator('.actionBar .cta').click();
 
     /* Menopause, and it is shown the kit like every result but the doctor's. */
-    await expect(heading(page)).toHaveText('Your answers point to menopause.');
+    await expect(heading(page)).toHaveText('Your answers may point to menopause.');
     await expect(page.getByText('Many women describe the same changes after that point.')).toBeVisible();
     await expect(page.getByText('This is a normal stage, not an illness.', { exact: false })).toBeVisible();
     await expect(page.locator('.resKicker')).toHaveText('Your Hormone Check result');
@@ -413,7 +413,7 @@ test.describe('the doctor route is an exit', () => {
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
     await expect(heading(page)).toHaveText(
-      'Your answers point to perimenopause, the years before your periods stop.',
+      'Your answers may point to perimenopause, the years before your periods stop.',
     );
     /* The result says plainly what it was read from. */
     await expect(page.getByText('this result comes from your age and your symptoms')).toBeVisible();
