@@ -56,13 +56,21 @@ Her cycle cannot tell us anything, so she is read on age and symptoms, and **the
 
 | Follow-up | Age | Outcome |
 |-----------|-----|---------|
-| 12 months or more | 45 and over | **C** |
+| Any answer | 50 and over | **C** |
+| 12 months or more | 45–49 | **C** |
 | 12 months or more | 40–44 | **E** |
-| Under 12 months | 40–59 | **B** |
-| Under 12 months | 60+ | **C** |
-| Not sure | 40–49 | **B** |
-| Not sure | 50 and over | **C** |
+| Under 12 months, or not sure | 40–49 | **B** |
 | Any but medication or surgery | Under 40 | **D** |
+
+The age is read before the follow-up at 50 and over. Jane's rule of 8 October
+2026, from the route table review: periods stopped at fifty or above is
+menopause whatever she answers about the twelve months.
+
+It replaces three rows that read the follow-up first, and it exists because
+those rows were inconsistent inside one age band — "not sure" gave **C** while
+"no" gave **B**, so a woman of 55 whose periods had stopped could be told she
+was in "the years before your periods stop". The forties are unchanged and
+still read the follow-up.
 
 **4. She still has a cycle, or she is not sure**
 

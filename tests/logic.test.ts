@@ -109,11 +109,60 @@ test('E: periods stopped for twelve months before 45', () => {
   }
 });
 
-test('periods stopped for under twelve months is perimenopause, until sixty', () => {
-  for (const age of [...FORTIES, ...FIFTIES]) {
+test('periods stopped for under twelve months is perimenopause, in her forties', () => {
+  /* CHANGED 8 OCTOBER 2026. This used to run to fifty-nine. It now stops at
+     forty-nine, because fifty and over is menopause on the age alone — see
+     the test below and the note in stateKey. */
+  for (const age of FORTIES) {
     expect(stateKey(make({ age, cycle: 'stopped', twelve: 'no' })), age).toBe('B');
   }
-  expect(stateKey(make({ age: '60-plus', cycle: 'stopped', twelve: 'no' }))).toBe('C');
+  for (const age of FIFTY_PLUS) {
+    expect(stateKey(make({ age, cycle: 'stopped', twelve: 'no' })), age).toBe('C');
+  }
+});
+
+/* FIFTY AND OVER, PERIODS STOPPED: MENOPAUSE, WHATEVER THE FOLLOW-UP SAYS.
+ *
+ * Jane's rule of 8 October 2026, from the route table review. What it fixes is
+ * an inconsistency inside one age band: "not sure" used to give menopause
+ * while "no" gave perimenopause, so a woman of 55 whose periods had stopped
+ * could be told she was in "the years before your periods stop".
+ *
+ * Held for every answer she can give, so reinstating the follow-up check above
+ * this line fails here rather than quietly changing what she reads. */
+test('fifty and over with periods stopped is menopause on every follow-up answer', () => {
+  for (const age of FIFTIES) {
+    for (const twelve of ['yes', 'no', 'unsure'] as Twelve[]) {
+      expect(
+        stateKey(make({ age, cycle: 'stopped', twelve })),
+        `age=${age} twelve=${twelve} must be menopause`,
+      ).toBe('C');
+    }
+  }
+});
+
+test('and sixty plus with periods stopped is menopause too, as it always was', () => {
+  for (const twelve of ['yes', 'no', 'unsure'] as Twelve[]) {
+    expect(stateKey(make({ age: '60-plus', cycle: 'stopped', twelve })), twelve).toBe('C');
+  }
+});
+
+test('the forties still read the follow-up, and are untouched by the fifties rule', () => {
+  /* Twelve months or more: menopause, and early menopause before 45. */
+  expect(stateKey(make({ age: '40-44', cycle: 'stopped', twelve: 'yes' }))).toBe('E');
+  expect(stateKey(make({ age: '45-49', cycle: 'stopped', twelve: 'yes' }))).toBe('C');
+  /* Under twelve months, or she cannot say: perimenopause. */
+  for (const age of FORTIES) {
+    for (const twelve of ['no', 'unsure'] as Twelve[]) {
+      expect(stateKey(make({ age, cycle: 'stopped', twelve })), `${age} ${twelve}`).toBe('B');
+    }
+  }
+});
+
+test('under forty with periods stopped is still the doctor route, not menopause', () => {
+  for (const twelve of ['yes', 'no', 'unsure'] as Twelve[]) {
+    expect(stateKey(make({ age: 'under-40', cycle: 'stopped', twelve })), twelve).toBe('D');
+  }
 });
 
 test('stopped, and not sure how long: read on age', () => {
@@ -173,9 +222,15 @@ test('the whole input space lands on the expected outcome spread', () => {
   }
   /* 108 states, and where each of them lands. If a branch is reordered, a
      comparison flipped or a threshold moved, the split moves with it and this
-     fails even when every named case above still passes. */
+     fails even when every named case above still passes.
+
+     MOVED 8 OCTOBER 2026, from { A: 15, B: 49, C: 32, D: 10, E: 2 }. Jane's
+     fifties rule took FOUR states from B to C and touched nothing else:
+     50-54 and 55-59, cycle stopped, twelve "no", with and without sweats.
+     A, D and E are unchanged, which is the evidence that the rule reached
+     only the band it was aimed at. */
   expect(total, 'the input space itself changed size').toBe(108);
-  expect(count).toEqual({ A: 15, B: 49, C: 32, D: 10, E: 2 });
+  expect(count).toEqual({ A: 15, B: 45, C: 36, D: 10, E: 2 });
 });
 
 /* -------------------------------------- 2. the doctor route is an exit --- */

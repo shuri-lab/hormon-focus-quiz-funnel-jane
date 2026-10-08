@@ -176,12 +176,23 @@ export function stateKey(S: QuizState): Outcome {
     return periScore(S) >= 5 ? 'B' : 'A';
   }
 
+  /* PERIODS STOPPED.
+   *
+   * FIFTY AND OVER IS MENOPAUSE, WHATEVER SHE SAYS ABOUT THE TWELVE MONTHS.
+   * Jane, 8 October 2026, from the route table review. The rule used to read
+   * the follow-up first, which made the answer inconsistent across one age
+   * band: at 50 to 59, "not sure" gave menopause but "no" gave perimenopause.
+   * A woman in her fifties whose periods have stopped was then told she was in
+   * "the years before your periods stop", which is wrong to her whatever the
+   * textbook says about twelve months.
+   *
+   * The forties are unchanged and still read the follow-up: twelve months or
+   * more is menopause, or early menopause at 40 to 44; under twelve months or
+   * not sure is perimenopause. Under forty left on the doctor route above, and
+   * medication or surgery was read as `masked` above. */
   if (S.cycle === 'stopped') {
-    /* Under forty went to the doctor above. */
+    if (older(S)) return 'C';
     if (S.twelve === 'yes') return S.age === '40-44' ? 'E' : 'C';
-    /* Under twelve months, or she cannot say how long. */
-    if (S.age === '60-plus') return 'C';
-    if (S.twelve === 'unsure' && fifties(S)) return 'C';
     return 'B';
   }
 
