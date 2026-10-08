@@ -5,8 +5,6 @@ import {
   shouldSkip, type QuizState, type ScreenId,
 } from '../lib/logic';
 import { track } from '../lib/analytics';
-import { claimKnownEventSlot, clearKnown, readKnown } from '../lib/known';
-import { submitKnownLead } from '../lib/leads';
 import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
 import { FIRST_STEP, screenFromSlug, stepPath } from './steps';
@@ -40,15 +38,10 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
   const { step } = useParams();
 
   const [S, setS] = useState<QuizState>(() => {
-    /* main.tsx read this off the link before the first render and took it out
-       of the URL. Applied over a restored state as well as a fresh one: she
-       may have started the quiz earlier in the session and come back through
-       the email. */
-    const known = readKnown();
     const restored = load();
-    if (restored) return { ...restored, known: known ?? restored.known };
+    if (restored) return restored;
     // The ad already told us what she came for. Do not ask her again.
-    return { ...createState(), sym: [...angle.preselect], known };
+    return { ...createState(), sym: [...angle.preselect] };
   });
 
   /* THE SCREEN IS THE URL. It used to live in history state, which meant
@@ -114,23 +107,11 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
   }, [navigate, goTo, here]);
 
   const restart = useCallback(() => {
-    /* Her answers go, who she is stays. She never disowned the link — only
-       the "Not you?" line does that — and dropping it here would send a woman
-       from JJ's list to a gate she had already been spared. */
-    const fresh = { ...createState(), sym: [...angle.preselect], known: readKnown() };
+    const fresh = { ...createState(), sym: [...angle.preselect] };
     setS(fresh);
     try { sessionStorage.removeItem(STORE_KEY); } catch { /* ignore */ }
     goTo('q1');
   }, [angle.preselect, goTo]);
-
-  /* She is not the woman the email was addressed to. Forget the address that
-     came in the link, empty the fields it would have filled, and send her to
-     the gate — which `shouldSkip` stops skipping the moment `known` is null. */
-  const forgetKnown = useCallback(() => {
-    clearKnown();
-    setS((prev) => ({ ...prev, known: null, name: '', email: '', consent: false }));
-    goTo('gate');
-  }, [goTo]);
 
   /* -------------------------------------------------------- progress --- */
 
@@ -157,34 +138,17 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     if (here === 'q1') track.quizStart(angle.slug);
     if (questionStep) track.quizStep(here, questionStep.index, questionStep.total);
     if (here === 'load') track.quizComplete(stateKey(latest.current));
-    if (here === 'r1') {
-      track.resultView(stateKey(latest.current));
-      /* A woman from JJ's list never sees the gate, so the event the gate
-         would have sent fires here instead — the same moment it fires today,
-         when her result opens. `submitKnownLead` sends the event and no
-         subscription, and refuses the doctor route like the ordinary path.
-         ONCE PER SESSION: the gate sent it on a button press, which cannot
-         happen twice, but a result page can be reloaded or come back under
-         the back button, and each of those must not re-run the flow. */
-      if (latest.current.known && claimKnownEventSlot()) {
-        const outcome = stateKey(latest.current);
-        track.lead(outcome);
-        void submitKnownLead(latest.current, outcome, angle.slug);
-      }
-    }
+    if (here === 'r1') track.resultView(stateKey(latest.current));
     if (here === 'r2') track.offerView(stateKey(latest.current));
     if (here === 'rDoc') track.doctorRoute(docReason(latest.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here]);
 
   const value = useMemo<QuizApi>(() => ({
-    S, angle, here, set, toggle, next, back, restart, forgetKnown,
+    S, angle, here, set, toggle, next, back, restart,
     canBack: here !== 'q1' && here !== 'load',
     questionStep, revealStep,
-  }), [
-    S, angle, here, set, toggle, next, back, restart, forgetKnown,
-    questionStep, revealStep,
-  ]);
+  }), [S, angle, here, set, toggle, next, back, restart, questionStep, revealStep]);
 
   return <QuizCtx.Provider value={value}>{children}</QuizCtx.Provider>;
 }

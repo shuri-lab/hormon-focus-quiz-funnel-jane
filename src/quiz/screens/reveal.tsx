@@ -29,15 +29,13 @@ const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
  * It never tells her she might be one thing or another: she gets one of four
  * answers. */
 export function R1() {
-  const { S, next, forgetKnown } = useQuiz();
+  const { S, next } = useQuiz();
   const outcome = stateKey(S) as Exclude<Outcome, 'D'>;
   const copy = RESULT[outcome] ?? RESULT.A;
   const main = mainConcern(S);
   const picked = main ? [main, ...otherConcerns(S)] : [];
   const cycle = cycleShort(S);
-  /* Her own, where she typed one at the gate; otherwise the first name the
-     email link carried, because a woman from JJ's list never sees the gate. */
-  const name = S.name.trim() || (S.known?.name ?? '').trim();
+  const name = S.name.trim();
   const fact = STAGE_FACT[outcome] ?? STAGE_FACT.A;
 
   return (
@@ -45,17 +43,6 @@ export function R1() {
       <div className="resHero">
         <p className="resKicker">{name ? `${name}, your Hormone Check result` : 'Your Hormone Check result'}</p>
         <ScreenTitle className="resName">{copy.line}</ScreenTitle>
-        {/* SHE CAME FROM JJ'S LIST, so she was never asked for an address. If
-            the link was forwarded, or she is reading somebody else's email,
-            this is her way to the gate — and taking it clears the identity in
-            the link and asks her properly, consent box included. */}
-        {S.known && (
-          <p className="resNotYou">
-            <button type="button" onClick={forgetKnown}>
-              {S.known.name ? `Not ${S.known.name}? Enter your email.` : 'Not you? Enter your email.'}
-            </button>
-          </p>
-        )}
       </div>
 
       {picked.length > 0 && (

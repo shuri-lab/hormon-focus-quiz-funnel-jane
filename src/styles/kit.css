@@ -359,15 +359,6 @@
   letter-spacing: -.02em; font-size: clamp(23px, 6vw, 31px); line-height: 1.18;
   color: var(--plum); text-wrap: balance;
 }
-/* "Not Jane? Enter your email." A quiet way out for a forwarded email, so it
-   is a link and not a second call to action competing with the result. */
-.resNotYou { margin: 10px 0 0; }
-.resNotYou button {
-  font: inherit; font-size: var(--t-small); color: var(--ink-3);
-  background: none; border: 0; padding: 4px 2px; cursor: pointer;
-  text-decoration: underline; text-underline-offset: 2px;
-}
-.resNotYou button:hover, .resNotYou button:focus-visible { color: var(--plum); }
 
 .resSec { margin-top: 24px; }
 .resPics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }

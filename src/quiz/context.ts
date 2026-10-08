@@ -13,12 +13,6 @@ export interface QuizApi {
   next: (opts?: { replace?: boolean }) => void;
   back: () => void;
   restart: () => void;
-  /**
-   * "Not Jane? Enter your email." — she arrived from JJ's list, but she is not
-   * the woman the link was addressed to. Forgets the identity in the link and
-   * sends her to the gate, consent box included, like any new visitor.
-   */
-  forgetKnown: () => void;
   canBack: boolean;
   /** "2 of 7", or null on screens that are not questions. */
   questionStep: { index: number; total: number } | null;

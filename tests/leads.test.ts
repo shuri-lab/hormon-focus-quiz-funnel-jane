@@ -9,8 +9,7 @@
  */
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import {
-  KLAVIYO_LIST_ID, KLAVIYO_METRIC, KLAVIYO_PUBLIC_KEY, KLAVIYO_SOURCE,
-  submitKnownLead, submitLead, subscriptionBody,
+  KLAVIYO_LIST_ID, KLAVIYO_METRIC, KLAVIYO_PUBLIC_KEY, KLAVIYO_SOURCE, submitLead, subscriptionBody,
 } from '../src/lib/leads';
 import { createState, type QuizState } from '../src/lib/logic';
 
@@ -243,88 +242,4 @@ test('a failed subscription never blocks her result', async () => {
     .mockRejectedValueOnce(new TypeError('Failed to fetch'));
   const result = await submitLead(finished(), 'B', '', 'AbC123');
   expect(result).toEqual({ ok: true, delivered: true });
-});
-
-/* --------------------------------------- she was already on JJ's list --- */
-
-/* THE 13 OCTOBER EMAIL. She is on the list, so she is never asked for an
- * address and never ticks a box. Two things follow, and this is where they
- * are held:
- *
- *  - the EVENT still fires, with the address from the link, so the post-quiz
- *    flow runs for her exactly as it does for everybody else;
- *  - the SUBSCRIPTION does not, because recording a fresh SUBSCRIBED consent
- *    for a woman who did not give one on this page would be inventing it.
- */
-
-/** The same finished quiz, but she arrived from the list and ticked nothing. */
-function fromList(over: Partial<QuizState> = {}): QuizState {
-  return finished({
-    name: '',
-    email: '',
-    consent: false,
-    known: { email: '  jane@example.com  ', name: '  Jane  ' },
-    ...over,
-  });
-}
-
-test('a woman from the list gets the event, with the address the link carried', async () => {
-  const result = await submitKnownLead(fromList(), 'B', 'night-sweats');
-
-  expect(result).toEqual({ ok: true, delivered: true });
-
-  const [url, init] = fetchMock.mock.calls[0];
-  expect(url).toBe(EVENTS_URL);
-  expect(init.keepalive).toBe(true);
-
-  const attrs = sentBody();
-  expect(attrs.metric.data.attributes.name).toBe(KLAVIYO_METRIC);
-  expect(attrs.profile.data.attributes.email).toBe('jane@example.com');
-  expect(attrs.profile.data.attributes.first_name).toBe('Jane');
-
-  /* Her answers reach the flow unchanged: it is the same quiz. */
-  expect(attrs.properties.result_route).toBe('perimenopause');
-  expect(attrs.properties.selected_symptoms).toEqual(['sweats', 'sleep']);
-  expect(attrs.properties.primary_symptom).toBe('sleep');
-  expect(attrs.properties.age_band).toBe('45-49');
-  expect(attrs.properties.desired_outcome).toBe('sleep');
-});
-
-test('a woman from the list is never subscribed again', async () => {
-  /* A list id is configured, which is what makes the second call possible at
-     all — and it still must not happen. */
-  await submitKnownLead(fromList(), 'B', 'night-sweats');
-
-  expect(fetchMock, 'the event and nothing else').toHaveBeenCalledTimes(1);
-  for (const [url] of fetchMock.mock.calls) {
-    expect(url, 'no subscription may be posted for her').not.toContain('/subscriptions/');
-  }
-});
-
-test('no consent is recorded on her behalf', async () => {
-  await submitKnownLead(fromList(), 'B', '');
-  const attrs = sentBody();
-  /* She consented to JJ's list months ago. Stamping this moment onto her
-     profile would be recording a consent that did not happen here. */
-  expect(attrs.properties.consent_at).toBeUndefined();
-});
-
-test('the known path refuses when nobody is known', async () => {
-  const result = await submitKnownLead(finished({ known: null }), 'B', '');
-  expect(fetchMock, 'nobody known, no request').not.toHaveBeenCalled();
-  expect(result).toEqual({ ok: false, delivered: false });
-});
-
-test('the doctor route never reaches Klaviyo on the known path either', async () => {
-  const result = await submitKnownLead(fromList(), 'D', '');
-  expect(fetchMock).not.toHaveBeenCalled();
-  expect(result).toEqual({ ok: true, delivered: false });
-});
-
-test('being known does not weaken the ordinary path', async () => {
-  /* The consent check is the one that protects a woman who typed her address
-     into the gate. Arriving with `known` set must not buy a way past it. */
-  const result = await submitLead(fromList({ consent: false }), 'B', '', 'AbC123');
-  expect(fetchMock, 'no ticked box, no request, known or not').not.toHaveBeenCalled();
-  expect(result).toEqual({ ok: false, delivered: false });
 });
