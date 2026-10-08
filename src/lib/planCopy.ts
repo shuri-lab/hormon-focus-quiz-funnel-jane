@@ -104,7 +104,7 @@ const MENOPAUSE_GOING = [
 export const PLANS: Record<Archetype, PlanVersion> = {
   imbalance: {
     stage: 'a hormonal imbalance',
-    result: 'Your answers point to a hormonal imbalance: your cycle is still keeping time, and your body is not clearing what it makes each month. You said yes to {count}. They are not {signs} separate problems.',
+    result: 'Your answers may point to a hormonal imbalance: your cycle is still keeping time, and your body is not clearing what it makes each month. You said yes to {count}. They are not {signs} separate problems.',
     going: [
       'Every month your body makes estrogen and then has to clear it.',
       'When the clearing falls behind, the part that stays builds up: the bloating before your period, the mood that turns, the weight that goes to the middle.',
@@ -119,7 +119,7 @@ export const PLANS: Record<Archetype, PlanVersion> = {
 
   perimenopause: {
     stage: 'perimenopause',
-    result: 'Your answers point to perimenopause: the years before your periods stop, when your hormones stop keeping time. You said yes to {count}. Most women are never told this stage exists, and you have just named it.',
+    result: 'Your answers may point to perimenopause: the years before your periods stop, when your hormones stop keeping time. You said yes to {count}. Most women are never told this stage exists, and you have just named it.',
     going: [
       'Estrogen is swinging, high one month and low the next, and your body is not clearing it evenly.',
       'That swing is the 3 a.m. sweat, the mood you do not recognise, the weight that stores in the middle no matter what you eat.',
@@ -134,7 +134,7 @@ export const PLANS: Record<Archetype, PlanVersion> = {
 
   menopause: {
     stage: 'menopause',
-    result: 'Your answers point to menopause: your periods have stopped, and your body is running on less estrogen than it did. You said yes to {count}. They are one stage, not {signs} problems.',
+    result: 'Your answers may point to menopause: your periods have stopped, and your body is running on less estrogen than it did. You said yes to {count}. They are one stage, not {signs} problems.',
     going: MENOPAUSE_GOING,
     week: 'Protein at every meal, not just breakfast, because muscle is what keeps the weight off now. Ten minutes of walking after dinner, every day. Layers you can take off, and a fan by the bed, because the flash passes faster when you stop fighting it.',
     howTo: HOW_TO_BREAKFAST,
@@ -146,7 +146,7 @@ export const PLANS: Record<Archetype, PlanVersion> = {
   /* Version C's guide, with the added line and the doctor line moved up. */
   'early-menopause': {
     stage: 'early menopause',
-    result: 'Your answers point to menopause earlier than most: your periods have stopped, and your body is running on less estrogen than it did. You said yes to {count}. They are one stage, not {signs} problems.',
+    result: 'Your answers may point to menopause earlier than most: your periods have stopped, and your body is running on less estrogen than it did. You said yes to {count}. They are one stage, not {signs} problems.',
     going: [
       MENOPAUSE_GOING[0],
       'Because this has come earlier than most, it is worth a conversation with your doctor about what else is worth checking, alongside the support here.',
