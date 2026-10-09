@@ -53,15 +53,62 @@ test('the card she says bothers her most comes first', () => {
   }
 });
 
-test('what she wants most fills a place only when she ticked fewer than three', () => {
-  /* One symptom, so the want has room. */
-  const one = state({ sym: ['weight'], main: 'weight', want: 'understand' });
-  expect(threeCards(one)).toEqual(['weight', 'track']);
+/* ALWAYS THREE, AND THE TRACKER IS ALWAYS THE THIRD. Jane, 9 October 2026.
+ *
+ * This replaced "the want fills a place only when she ticked fewer than
+ * three", which let a woman who ticked three symptoms have three symptom
+ * cards and never the tracker, and a woman who ticked one have only two
+ * cards. Writing it down works for every result, so every result gets it. */
 
-  /* Three symptoms, so it does not. */
-  const three = state({ sym: ['weight', 'sleep', 'energy'], main: 'weight', want: 'understand' });
-  expect(threeCards(three)).toEqual(['weight', 'sleep', 'energy']);
-  expect(threeCards(three)).not.toContain('track');
+test('the tracker is the third card, whatever she ticked', () => {
+  /* Two of hers: her own two, then the tracker. The want has no room. */
+  expect(threeCards(state({ sym: ['weight', 'sleep'], main: 'weight', want: 'body' })))
+    .toEqual(['weight', 'sleep', 'track']);
+
+  /* One of hers, and the want points back at it, so the fallback fills two. */
+  expect(threeCards(state({ sym: ['weight'], main: 'weight', want: 'body' })))
+    .toEqual(['weight', 'sleep', 'track']);
+
+  /* Same, and the fallback avoids repeating sleep by reaching for weight. */
+  expect(threeCards(state({ sym: ['sleep'], main: 'sleep', want: 'sleep' })))
+    .toEqual(['sleep', 'weight', 'track']);
+
+  /* Three or more of hers: the first two, then the tracker. It no longer
+     crowds the tracker out. */
+  expect(threeCards(state({ sym: ['weight', 'sleep', 'energy'], main: 'weight', want: 'understand' })))
+    .toEqual(['weight', 'sleep', 'track']);
+});
+
+test('every path gives exactly three cards, with track last and no repeats', () => {
+  const states: QuizState[] = [state(), state({ sym: [...SYMPTOMS] })];
+  for (const want of ['', ...WANTS] as (WantId | '')[]) {
+    for (const main of ['', ...SYMPTOMS] as (SymptomId | '')[]) {
+      states.push(state({ sym: main ? [main] : [], main, want }));
+      states.push(state({ sym: [...SYMPTOMS], main, want }));
+      for (const other of SYMPTOMS) {
+        states.push(state({ sym: main && other !== main ? [main, other] : [other], main, want }));
+      }
+    }
+  }
+
+  for (const S of states) {
+    const cards = threeCards(S);
+    const where = `main=${S.main || '-'} want=${S.want || '-'} sym=[${S.sym.join()}]`;
+    expect(cards.length, `three cards: ${where}`).toBe(3);
+    expect(cards[2], `track is last: ${where}`).toBe('track');
+    expect(new Set(cards).size, `no repeats: ${where}`).toBe(3);
+    /* And the tracker never sneaks into the first two. */
+    expect(cards.slice(0, 2), `track only once: ${where}`).not.toContain('track');
+    /* Every id shown has copy behind it. */
+    for (const id of cards) expect(PRI[id], `${id} has copy: ${where}`).toBeTruthy();
+  }
+});
+
+test('the one that bothers her most is still the first card', () => {
+  for (const main of SYMPTOMS) {
+    const S = state({ sym: [...SYMPTOMS], main });
+    expect(threeCards(S)[0], `main=${main}`).toBe(main);
+  }
 });
 
 test('the want never duplicates a symptom she already ticked', () => {

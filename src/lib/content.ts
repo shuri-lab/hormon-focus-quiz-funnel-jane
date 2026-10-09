@@ -216,7 +216,7 @@ export const PATTERN_SHORT: Record<Pattern, string> = {
   comego: 'They come and go',
   weekly: 'Most weeks',
   daily: 'Almost every day',
-  untracked: 'Not tracked yet',
+  untracked: 'Not sure yet',
 };
 
 export function cycleShort(S: QuizState): string {

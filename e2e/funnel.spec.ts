@@ -209,21 +209,34 @@ test.describe('the quiz', () => {
     await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
 
     /* HER FIRST THREE THINGS replaced the five generic steps. Sleep first
-       because she named it, then the other two she ticked in tile order. */
+       because she named it, then the next thing she ticked in tile order,
+       then the tracker.
+
+       CHANGED 9 OCTOBER 2026: the third card is always the tracker. It used
+       to be her third symptom (energy, here), which meant a woman who ticked
+       three things never got the one action that works for every result. */
     await expect(page.getByText('Your first three things')).toHaveCount(0);
     const cards = page.locator('.priCard');
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0)).toContainText('Protect your sleep');
     await expect(cards.nth(1)).toContainText('Build meals that keep you full');
-    await expect(cards.nth(2)).toContainText('Build steadier energy');
+    await expect(cards.nth(2)).toContainText('Write it down for two weeks');
+    /* Her third symptom is no longer a card of its own. */
+    await expect(cards.nth(2)).not.toContainText('Build steadier energy');
 
     /* What she already tried is acknowledged inside the card it belongs to:
-       eating differently on the weight card, exercising more on the energy
-       card. She did not say she had worked on her sleep, so that card has no
-       acknowledgement on it. */
+       eating differently on the weight card. She did not say she had worked
+       on her sleep, so that card has no acknowledgement on it. */
     await expect(cards.nth(1)).toContainText("You've already changed how you eat");
-    await expect(cards.nth(2)).toContainText("More cardio won't work.");
     await expect(cards.nth(0)).not.toContainText('already worked on your sleep');
+
+    /* AND SHE IS NO LONGER TOLD ANYTHING ABOUT THE EXERCISING.
+       `cardAcks` is unchanged: the gym line goes on the energy card, or the
+       weight card when energy is not shown and food has not already claimed
+       it. She ticked food and gym, energy is no longer a card, and food owns
+       the weight card, so the line has nowhere left to go. Asserted rather
+       than left implicit, because it is a sentence she used to read. */
+    await expect(page.getByText("More cardio won't work.")).toHaveCount(0);
 
     /* The bridge names the hard part, and sits between the cards and the Kit. */
     await expect(page.locator('.bridge'))

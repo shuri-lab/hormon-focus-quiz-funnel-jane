@@ -182,21 +182,44 @@ export const WANT_CARD: Record<WantId, CardId> = {
 };
 
 /**
- * Her three cards.
+ * Her three cards: two about what she came for, then the tracker.
  *
- * The one that bothers her most first, then everything else she ticked in
- * tile order, de-duplicated. If she ticked fewer than three things, what she
- * wants most fills a place. Never more than three.
+ * ALWAYS EXACTLY THREE, AND `track` IS ALWAYS THE THIRD. Jane, 9 October 2026.
+ * It used to return whatever it could fill, up to three, so a woman who
+ * ticked three symptoms got three symptom cards and never the tracker, while
+ * a woman who ticked one could end up with two cards. Writing it down is the
+ * one action that works for every result, so it stops being the card that
+ * only some women see.
+ *
+ * The first two, in order:
+ *  1. the one that bothers her most;
+ *  2. the next thing she ticked, in tile order; failing that what she wants
+ *     most, when that is not already the first card; failing that sleep, or
+ *     weight when sleep is the first card.
+ *
+ * `track` is never allowed into the first two, which is what stops
+ * `want: 'understand'` putting the tracker in slot two and again in slot
+ * three. No duplicates, and the result is three cards whatever she answered.
  */
 export function threeCards(S: QuizState): CardId[] {
   const main = mainConcern(S);
   const out: CardId[] = [];
-  const add = (id: CardId) => { if (id && out.indexOf(id) < 0 && out.length < 3) out.push(id); };
 
-  if (main) add(main);
+  /* Fills the first two slots only, and never with the tracker. */
+  const add = (id: CardId | '') => {
+    if (!id || id === 'track') return;
+    if (out.indexOf(id) < 0 && out.length < 2) out.push(id);
+  };
+
+  add(main);
   for (const id of otherConcerns(S)) add(id);
-  if (out.length < 3 && S.want) add(WANT_CARD[S.want]);
-  return out.slice(0, 3);
+  if (S.want) add(WANT_CARD[S.want]);
+  /* Nothing of hers was left to show. Two cards she can act on regardless. */
+  add(main === 'sleep' ? 'weight' : 'sleep');
+  add('weight');
+
+  out.push('track');
+  return out;
 }
 
 /* -------------------------------------------- you have already tried ----- */
