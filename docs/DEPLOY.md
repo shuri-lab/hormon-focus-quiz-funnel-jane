@@ -11,6 +11,21 @@ Lovable opens the project and presses Publish, then Update.**
 `focus-quiz-funnel.lovable.app` 302s to the real host,
 `quiz.hormonefocus.jjsmithonline.com`, carrying the query with it.
 
+### The host does not use index.html or src/main.tsx
+
+It builds `src/` behind its own generated router and its own entry. The live
+page is server-rendered and its chunks are named for routes that exist nowhere
+in this repo (`_slug`, `quiz._`, `offer._slug`, `plan._archetype`), while the
+components inside them are ours.
+
+**So nothing in `src/main.tsx` runs in production.** Anything the session needs
+on first load - attribution, the quiz landing slug, the `skip_email` link -
+belongs at module scope in a module every screen imports, which is why those
+three calls sit at the bottom of `src/lib/analytics.ts`. Putting them in the
+entry file is the bug that made `?skip_email=1` work in every local test and
+do nothing on the live site for a week: the deployed bundle had the reader and
+not the capture. `tests/listLink.test.ts` fails if they move back.
+
 ### Check what is actually live before debugging anything
 
 A stale publish looks exactly like a broken feature: the parameter is ignored,

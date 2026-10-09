@@ -6,6 +6,18 @@ import App from './App';
 import { captureAttribution, captureQuizLanding } from './lib/analytics';
 import { captureListLink } from './lib/listLink';
 
+/* THESE THREE NOW LIVE IN lib/analytics.ts, AT MODULE SCOPE, AND RUN FROM
+ * THERE. They are repeated here only because this file is the entry for
+ * `vite dev` and `vite build`, and a reader of the entry should be able to
+ * see what the session does on first load. All three are first-wins, so
+ * whichever runs second is a no-op.
+ *
+ * DO NOT MOVE THEM BACK HERE AND DELETE THEM THERE. The deployed host does
+ * not use this file: it builds src/ behind its own generated router and its
+ * own entry, so for a week ?skip_email=1 did nothing in production while
+ * passing every test locally. tests/listLink.test.ts guards it now.
+ */
+
 /* BEFORE THE FIRST RENDER, not in an effect.
  *
  * The cart links are built during render from stored attribution. Capturing

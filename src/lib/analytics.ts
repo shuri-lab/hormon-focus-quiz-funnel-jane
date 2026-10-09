@@ -9,6 +9,7 @@
  */
 
 import { cartPath, type OfferKind } from './offer';
+import { captureListLink } from './listLink';
 
 declare global {
   interface Window {
@@ -452,4 +453,40 @@ export function shopUrl(
   }
 
   return url.toString();
+}
+
+
+/* ------------------------------------------------- the session bootstrap -- */
+
+/**
+ * CAPTURE THE SESSION HERE, NOT IN THE ENTRY FILE.
+ *
+ * All three of these used to be called only from src/main.tsx. That is the
+ * entry for `vite dev`, `vite build` and every test in this repo, so it was
+ * green everywhere and still did nothing on the deployed site: the host
+ * builds this `src/` behind its own generated router and its own entry, and
+ * never loads index.html or main.tsx at all. The symptom was
+ * ?skip_email=1 being ignored in production while passing seven end-to-end
+ * tests locally - the capture was simply never reached.
+ *
+ * So it hangs off a module instead of an entry. Every screen imports this
+ * file (Landing, QuizContext, OfferPage, PlanPage, the buy buttons), so it
+ * is in the first-load graph of every route whichever entry boots the app,
+ * and module evaluation happens before that route renders - which is what
+ * these three need, because a client-side navigation to /quiz/symptoms drops
+ * the query and there is nothing left to read by the time the quiz mounts.
+ *
+ * ORDER MATTERS. captureListLink strips k_id and skip_email from the address
+ * bar first, so a profile id cannot reach GA4 as page_location, Clarity as
+ * the recorded URL, or the Referer of any third-party request. It leaves
+ * every utm_* and hf_* alone for the two calls after it.
+ *
+ * ALL THREE ARE FIRST-WINS AND SAFE TO CALL TWICE, so main.tsx still calls
+ * them and the second call is a no-op. Guarded on `window` because the host
+ * renders this on a server first, where there is no address bar to read.
+ */
+if (typeof window !== 'undefined') {
+  captureListLink();
+  captureAttribution();
+  captureQuizLanding();
 }

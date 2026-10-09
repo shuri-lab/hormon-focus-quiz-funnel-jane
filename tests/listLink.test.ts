@@ -140,3 +140,43 @@ describe('the quiz flow', () => {
     }
   });
 });
+
+describe('the capture does not depend on the entry file', () => {
+  /* THE BUG THIS GUARDS, 9 October 2026.
+   *
+   * captureListLink() was called only from src/main.tsx. That is the entry
+   * for vite dev, vite build and every test here, so the feature was green
+   * locally and dead in production: the deployed host builds this src/ behind
+   * its own generated router and its own entry, and never loads index.html or
+   * main.tsx at all. The deployed bundle carried readListLink and the
+   * hf_list_link key, and contained the strings 'skip_email' and 'k_id' zero
+   * times - the reader shipped, the capture did not.
+   *
+   * So importing the module every screen imports must be enough to capture
+   * the session. If someone moves the bootstrap back into an entry file, this
+   * fails.
+   */
+  test('importing analytics is enough to capture skip_email', async () => {
+    visit('?skip_email=1&k_id=01GDDKASAP8TKDDA2GRZDSVP4H');
+    expect(store.get('hf_list_link'), 'nothing captured yet').toBeUndefined();
+
+    vi.resetModules();
+    await import('../src/lib/analytics');
+
+    expect(JSON.parse(store.get('hf_list_link') ?? 'null')).toEqual({
+      skipEmail: true, profileId: '01GDDKASAP8TKDDA2GRZDSVP4H',
+    });
+  });
+
+  test('and the quiz then steps over the gate on the strength of it', async () => {
+    visit('?skip_email=1');
+    vi.resetModules();
+    await import('../src/lib/analytics');
+
+    /* What QuizContext does on mount: read what the bootstrap captured. */
+    const S = { ...createState(), skipEmail: readListLink().skipEmail };
+    expect(S.skipEmail).toBe(true);
+    expect(shouldSkip(S, 'gate')).toBe(true);
+    expect(nextId(S, 'load')).not.toBe('gate');
+  });
+});
