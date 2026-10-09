@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { useQuiz } from '../context';
+import { submitListLead } from '../../lib/leads';
+import { readListLink } from '../../lib/listLink';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import {
   TILES, BRAND, docReason, has, mainConcern, masked, otherConcerns, stateKey,
@@ -29,7 +32,7 @@ const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
  * It never tells her she might be one thing or another: she gets one of four
  * answers. */
 export function R1() {
-  const { S, next } = useQuiz();
+  const { S, angle, next } = useQuiz();
   const outcome = stateKey(S) as Exclude<Outcome, 'D'>;
   const copy = RESULT[outcome] ?? RESULT.A;
   const main = mainConcern(S);
@@ -37,6 +40,22 @@ export function R1() {
   const cycle = cycleShort(S);
   const name = S.name.trim();
   const fact = STAGE_FACT[outcome] ?? STAGE_FACT.A;
+
+  /* SHE PRESSED NOTHING, SO THIS IS WHERE THE EVENT GOES.
+   *
+   * A woman who typed her address sends HF Quiz Completed by pressing the
+   * button on the email screen. A woman from JJ's list never sees that
+   * screen, so her completion is sent when her result opens instead.
+   *
+   * submitListLead is the one that decides whether anything leaves: without
+   * a profile id it sends nothing and reports success, which is the
+   * skip_email=1 test mode, and it refuses a second send in the same
+   * session so a reload or the back button cannot run JJ's flow twice. */
+  useEffect(() => {
+    if (!S.skipEmail) return;
+    void submitListLead(S, outcome, angle.slug, readListLink().profileId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Screen id="r1">

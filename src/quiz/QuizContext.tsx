@@ -9,6 +9,7 @@ import type { Angle } from '../lib/angles';
 import { QuizCtx, type QuizApi } from './context';
 import { FIRST_STEP, screenFromSlug, stepPath } from './steps';
 import { REVIEW, takePreset } from '../review/flag';
+import { readListLink } from '../lib/listLink';
 
 /* v3: the seven-question quiz. An answer saved by the old quiz does not fit
    the new questions, so it is left behind rather than restored. */
@@ -38,10 +39,14 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
   const { step } = useParams();
 
   const [S, setS] = useState<QuizState>(() => {
+    /* Read every time the quiz mounts, and applied to a restored state as
+       well as a fresh one: a refresh halfway through must not put the email
+       screen back in front of a woman who came from the list. */
+    const { skipEmail } = readListLink();
     const restored = load();
-    if (restored) return restored;
+    if (restored) return { ...restored, skipEmail };
     // The ad already told us what she came for. Do not ask her again.
-    return { ...createState(), sym: [...angle.preselect] };
+    return { ...createState(), sym: [...angle.preselect], skipEmail };
   });
 
   /* THE SCREEN IS THE URL. It used to live in history state, which meant
@@ -107,7 +112,9 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
   }, [navigate, goTo, here]);
 
   const restart = useCallback(() => {
-    const fresh = { ...createState(), sym: [...angle.preselect] };
+    const fresh = {
+      ...createState(), sym: [...angle.preselect], skipEmail: readListLink().skipEmail,
+    };
     setS(fresh);
     try { sessionStorage.removeItem(STORE_KEY); } catch { /* ignore */ }
     goTo('q1');
