@@ -53,7 +53,26 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
      every step read /quiz and nothing in the funnel could be linked to.
      Reading it from the path gives the device back button the same walk it
      had before, and gives everything else an address. */
-  const here: ScreenId = screenFromSlug(step) ?? FIRST_STEP;
+  const asked: ScreenId = screenFromSlug(step) ?? FIRST_STEP;
+
+  /* THE GATE IS NOT ALLOWED ON SCREEN FOR A WOMAN FROM JJ'S LIST, WHICHEVER
+     WAY SHE REACHED IT.
+     shouldSkip is consulted by nextId and prevId, so walking the quiz steps
+     over the gate correctly - but an address does not walk. Typing
+     /quiz/your-result, reloading on it, or following a shared link went
+     straight past that check and showed her the email screen anyway, which
+     is the one thing skip_email=1 promises will not happen.
+     ONLY THE GATE IS GUARDED HERE, DELIBERATELY. The other skips are
+     consequences of her answers (no ranking without two symptoms, no kit
+     without an offer) and those addresses must stay openable, which is the
+     whole reason the steps have addresses: /quiz/kit has to render for
+     anyone reviewing it. This one is not a consequence of an answer, it is a
+     promise made in a link, so it holds no matter how she arrived.
+     Resolved during render, not in an effect, so the email screen never
+     paints for even one frame. */
+  const here: ScreenId = asked === 'gate' && shouldSkip(S, 'gate')
+    ? nextId(S, 'gate') ?? asked
+    : asked;
 
   /* The angle prefix, so a woman inside /bloating stays inside it. */
   const base = angle.slug ? `/${angle.slug}` : '';
@@ -92,6 +111,12 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
        walk, and the address bar is now the thing that holds it. */
     navigate({ pathname: stepPath(base, id), search: window.location.search }, { replace });
   }, [navigate, base]);
+
+  /* And make the address agree with what she is looking at. replace, so the
+     back button does not drop her onto the screen she was just spared. */
+  useEffect(() => {
+    if (here !== asked) goTo(here, true);
+  }, [here, asked, goTo]);
 
   /* A double-tap on Continue used to fire two navigations and skip a screen —
      easy to do on a phone, and invisible until somebody lands on the offer

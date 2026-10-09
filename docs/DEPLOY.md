@@ -8,6 +8,31 @@ Lovable reads this repository's `main` branch. Pushing to `main` updates the
 Lovable project, but **the public site only changes when someone signed in to
 Lovable opens the project and presses Publish, then Update.**
 
+`focus-quiz-funnel.lovable.app` 302s to the real host,
+`quiz.hormonefocus.jjsmithonline.com`, carrying the query with it.
+
+### Check what is actually live before debugging anything
+
+A stale publish looks exactly like a broken feature: the parameter is ignored,
+the screen is wrong, nothing in the console complains. On 9 October the live
+build was ten commits behind and had never contained `skip_email` at all, and
+an hour went into the flow before the deploy was questioned. **Ask the bundle
+first.** It is one command, and it answers the question outright:
+
+```bash
+H=https://quiz.hormonefocus.jjsmithonline.com
+curl -s $H/ | grep -aoE '/assets/[A-Za-z0-9._-]+\.js' | sort -u |
+  while read -r j; do curl -s "$H$j"; done | grep -c skip_email
+```
+
+`0` means the deployed JavaScript has no such code and no amount of reading
+`src/` will explain the symptom - someone needs to press Publish. Swap
+`skip_email` for any string unique to the change you are chasing
+(`hf_quiz_landing`, `TfxMKk`, a headline). Follow the dynamic chunks too: the
+first page only lists the entry bundle, so grep the chunk names out of it and
+fetch those as well, or a code-split feature reads as missing when it is
+merely elsewhere.
+
 After publishing, check the live cover reads "Take a 1-minute check".
 
 ## Build
