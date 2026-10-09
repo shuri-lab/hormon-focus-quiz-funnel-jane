@@ -44,16 +44,33 @@ const KLAVIYO_SUBSCRIPTIONS = 'https://a.klaviyo.com/client/subscriptions/';
 /**
  * The list she is subscribed to when she ticks the box.
  *
- * NULL UNTIL THE LIST ID IS SUPPLIED. Set it to the six-character id of the
- * list the quiz should feed (Klaviyo: Lists & Segments, the list, Settings),
- * and the subscription call below switches on. Nothing else changes.
+ * Supplied by David on 8 October. Until it was set, the quiz created her
+ * profile and fired the event but never recorded consent anywhere, so
+ * Klaviyo skipped her as "not subscribed" and the post-quiz flow never
+ * reached her. Every address collected before this date is on a profile
+ * that is not on this list.
  */
-export const KLAVIYO_LIST_ID: string | null = null;
+export const KLAVIYO_LIST_ID: string | null = 'TfxMKk';
 
 /** Where the consent came from, as Klaviyo shows it on her profile. */
 export const KLAVIYO_SOURCE = 'Hormone Check quiz';
 
-/** The subscription request, built on its own so a test can hold it to the API. */
+/**
+ * The subscription request, built on its own so a test can hold it to the API.
+ *
+ * NO `subscriptions` / `consent` FIELD, AND THAT IS DELIBERATE. It used to
+ * carry `subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } }`,
+ * copied from the server-side bulk-subscribe job, where it is required. This
+ * endpoint is not that one: it rejects the field outright with
+ *
+ *   400 'subscriptions' is not a valid field for the resource 'profile'
+ *
+ * before it even looks at the list, so every call failed and `subscribe()`
+ * returned false for everyone. Consent is not a field here because asking
+ * this endpoint IS the consent - that is what `custom_source` labels, and
+ * what Klaviyo shows on her profile. Verified against the live API on
+ * revision 2024-10-15; if that revision changes, re-check this shape.
+ */
 export function subscriptionBody(email: string, listId: string) {
   return {
     data: {
@@ -63,10 +80,7 @@ export function subscriptionBody(email: string, listId: string) {
         profile: {
           data: {
             type: 'profile',
-            attributes: {
-              email,
-              subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } },
-            },
+            attributes: { email },
           },
         },
       },

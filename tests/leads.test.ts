@@ -97,7 +97,9 @@ test('a completed quiz posts one event Klaviyo can trigger on', async () => {
     /* utm_medium and utm_content were never set by the ad. */
   }));
 
-  const result = await submitLead(finished(), 'B', 'night-sweats');
+  /* null: this test is about the event, so the subscription call is left
+     out rather than counted around. */
+  const result = await submitLead(finished(), 'B', 'night-sweats', null);
 
   expect(result).toEqual({ ok: true, delivered: true });
   expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -146,7 +148,7 @@ test('the ad parameters it has are carried, and the ones it lacks are absent', a
     utm_campaign: 'hf_sept',
   }));
 
-  await submitLead(finished(), 'A', '');
+  await submitLead(finished(), 'A', '', null);
   const props = sentBody().properties;
 
   expect(props.utm_source).toBe('facebook');
@@ -159,7 +161,7 @@ test('the ad parameters it has are carried, and the ones it lacks are absent', a
 });
 
 test('the twelve-month answer is sent only when it was asked', async () => {
-  await submitLead(finished({ cycle: 'unpredictable', twelve: '' }), 'B', '');
+  await submitLead(finished({ cycle: 'unpredictable', twelve: '' }), 'B', '', null);
   const props = sentBody().properties;
   expect(props.cycle_status).toBe('unpredictable');
   expect('cycle_12_month_status' in props).toBe(false);
@@ -175,7 +177,7 @@ test('each outcome is named in the long form a person can read', async () => {
 
   for (const [code, name] of cases) {
     fetchMock.mockClear();
-    await submitLead(finished(), code, '');
+    await submitLead(finished(), code, '', null);
     const props = sentBody().properties;
     expect(props.outcome, code).toBe(name);
     expect(props.outcome_code, code).toBe(code);
@@ -206,9 +208,26 @@ test('a refusal from Klaviyo is recorded, not thrown', async () => {
 
 const SUBS_URL = `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`;
 
-test('with no list configured, only the event is sent', async () => {
-  expect(KLAVIYO_LIST_ID, 'set the list id on purpose, and update this test with it').toBe(null);
+test('the configured list is the one she is subscribed to', async () => {
+  /* Until 8 October this was null, and the comment here asked whoever set it
+     to update this test. The quiz was creating her profile and firing the
+     event but recording consent nowhere, so Klaviyo skipped her as "not
+     subscribed" and the flow never reached her. */
+  expect(KLAVIYO_LIST_ID, 'the list id is no longer configured').toBe('TfxMKk');
+
   await submitLead(finished(), 'B', '');
+  expect(fetchMock, 'the event and the subscription').toHaveBeenCalledTimes(2);
+
+  const [url, init] = fetchMock.mock.calls[1];
+  expect(String(url)).toContain('/client/subscriptions/');
+  const body = JSON.parse(String(init?.body));
+  const listId = body?.data?.relationships?.list?.data?.id
+    ?? body?.data?.attributes?.list_id;
+  expect(listId, 'she was subscribed to a different list').toBe(KLAVIYO_LIST_ID);
+});
+
+test('passing null still sends the event alone, which is what a test wants', async () => {
+  await submitLead(finished(), 'B', '', null);
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
@@ -227,7 +246,13 @@ test('with a list, her consent is recorded on it after the event', async () => {
   expect(sub.relationships.list.data).toEqual({ type: 'list', id: 'AbC123' });
   expect(sub.attributes.custom_source).toBe(KLAVIYO_SOURCE);
   expect(sub.attributes.profile.data.attributes.email).toBe('renee@example.com');
-  expect(sub.attributes.profile.data.attributes.subscriptions.email.marketing.consent).toBe('SUBSCRIBED');
+  /* THE FIELD MUST NOT BE THERE. This endpoint answers a profile carrying
+     `subscriptions` with 400 "'subscriptions' is not a valid field for the
+     resource 'profile'" before it even reads the list, so sending it meant
+     nobody was ever subscribed. Asking this endpoint is itself the consent.
+     Checked against the live API on revision 2024-10-15. */
+  expect(sub.attributes.profile.data.attributes).toEqual({ email: 'renee@example.com' });
+  expect(sub.attributes.profile.data.attributes.subscriptions, 'the live API rejects this field').toBeUndefined();
 });
 
 test('no box ticked, or the doctor route: no subscription either', async () => {
