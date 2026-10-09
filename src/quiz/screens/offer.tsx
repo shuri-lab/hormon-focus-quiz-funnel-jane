@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle } from '../../components/Screen';
 import { OkendoWall } from '../../components/OkendoWall';
+import { VideoWall } from '../../components/VideoWall';
 import { mainConcern, stateKey } from '../../lib/logic';
 import {
   NEXT_EYEBROW, OFFER_DISCLAIMER, triedLine,
@@ -18,7 +19,8 @@ import { PROTOCOL_PRICE, dailyPrice, money } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
 import {
   CLOSE_CTA, CLOSE_HEAD, HF_BODY, HF_EYEBROW, HF_HEAD, KIT_CTA, KIT_FAQ, KIT_FAQ_EYEBROW,
-  KIT_FAQ_HEAD, PROOF_EYEBROW, PROOF_HEAD, PROOF_MORE_HEAD, PROOF_NOTE, WHY_BODY,
+  KIT_FAQ_HEAD, PROOF_ALL_LINK, PROOF_EYEBROW, PROOF_HEAD, PROOF_MORE_HEAD,
+  PROOF_NOTE, WHY_BODY,
   WHY_EYEBROW, WHY_HEAD,
 } from '../../lib/kitCopy';
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
@@ -176,12 +178,39 @@ export function R2() {
         <Faces count={6} />
         <RatingBadge />
         {proof.lead[0] && <Quote review={proof.lead[0]} />}
+        <FacebookComment />
+        {/* A way down to all of them, rather than asking her to scroll and
+            hope. Same move as JJ's page: the rating is the link. */}
+        <a className="kitAllRevs" href="#all-reviews">{PROOF_ALL_LINK}</a>
       </section>
 
       {/* ------------------------------------------------ the offer ---- */}
       <section className="kitBand" ref={offer}>
         <KitOffer outcome={outcome} angle={angle.slug} />
       </section>
+
+      {/* THE GUARANTEE ANSWERS THE PRICE, so it follows it rather than
+          sitting five screens below. The questions follow the guarantee for
+          the same reason: both are what she wants the moment she has seen
+          what it costs. David's order. */}
+      <section className="kitBand teal">
+        <KitGuarantee />
+      </section>
+
+      {/* ------------------------------------------------- questions ---- */}
+      <section className="kitSec">
+        <p className="kitEyebrow">{KIT_FAQ_EYEBROW}</p>
+        <h2 className="kitH2">{KIT_FAQ_HEAD}</h2>
+        <div className="kitFaq">
+          {KIT_FAQ.map(([q, a]) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
 
       {/* ------------------------------------------- proof, block 1 ---- */}
       <section className="kitSec">
@@ -219,8 +248,10 @@ export function R2() {
           two cannot disagree about what customers said. The authored reviews
           below are the fallback: if Okendo is slow, blocked or down she reads
           customers rather than a spinner. */}
-      <section className="kitSec">
+      <section className="kitSec" id="all-reviews">
         <h2 className="kitH2">{PROOF_MORE_HEAD}</h2>
+        {/* Nine of them on camera, before the written ones. */}
+        <VideoWall />
         <OkendoWall
           fallback={(
             <>
@@ -231,29 +262,10 @@ export function R2() {
             </>
           )}
         />
-        <FacebookComment />
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>
 
       {/* --------------------------------------------- the guarantee ---- */}
-      <section className="kitBand teal">
-        <KitGuarantee />
-      </section>
-
-      {/* ------------------------------------------------- questions ---- */}
-      <section className="kitSec">
-        <p className="kitEyebrow">{KIT_FAQ_EYEBROW}</p>
-        <h2 className="kitH2">{KIT_FAQ_HEAD}</h2>
-        <div className="kitFaq">
-          {KIT_FAQ.map(([q, a]) => (
-            <details key={q}>
-              <summary>{q}</summary>
-              <p>{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
       {/* ------------------------------- one last review, and the button ---- */}
       <section className="kitSec kitClose">
         <div data-proof="closing"><Quote review={proof.closing} long /></div>

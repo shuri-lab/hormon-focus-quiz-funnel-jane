@@ -48,6 +48,9 @@ export const PROOF_EYEBROW = 'Real women';
 /* JJ's page heading for the same wall of faces. */
 export const PROOF_HEAD = 'Join the women who stopped fighting it, one symptom at a time';
 export const PROOF_MORE_HEAD = 'What women are saying';
+
+/** The way down to every review, from the first block of proof. */
+export const PROOF_ALL_LINK = 'Read all the reviews';
 export const PROOF_NOTE =
   'Reviews, photos and a comment from verified buyers and JJ’s Facebook page. Individual results vary.';
 
