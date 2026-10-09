@@ -16,7 +16,7 @@ import {
   SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
-import { shopUrl } from '../src/lib/analytics';
+import { quizLandingFrom, shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE } from '../src/lib/logic';
 
 /* shopUrl reads stored attribution. In a node environment there is no
@@ -153,7 +153,10 @@ test('traffic with no attribution gets a clean link, not invented values', () =>
   expect(u.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
   /* What Shopify needs, plus the funnel mark — and nothing standing in for
      an acquisition she did not arrive with. No empty utm_*. */
-  expect([...u.searchParams.keys()].sort()).toEqual(['hf_funnel', 'storefront']);
+  /* What Shopify needs, the funnel mark and the door — and nothing standing
+     in for an acquisition she did not arrive with. No empty utm_*. */
+  expect([...u.searchParams.keys()].sort())
+    .toEqual(['hf_funnel', 'hf_quiz_landing', 'storefront']);
   expect(u.searchParams.get('hf_funnel')).toBe('quiz');
 });
 
@@ -355,4 +358,70 @@ test('the kit keeps its free shipping code and the single bottle does not', () =
   expect(kit.searchParams.get('discount')).toBe('HF60FREESHIP');
   const one = new URL(shopUrl(SHOP_BASE, 'B', '', 'single'));
   expect(one.searchParams.get('discount')).toBeNull();
+});
+
+/* ------------------------------------------------- which door she came in -- */
+
+test('every offer carries the door she entered by', () => {
+  arrivedWith(AD);
+  store.set('hf_quiz_landing', 'night-sweats');
+  for (const kind of ['single', 'protocol', 'subscribe'] as const) {
+    const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', kind));
+    expect(u.searchParams.get('hf_quiz_landing'), kind).toBe('night-sweats');
+    expect(u.searchParams.get('hf_funnel'), kind).toBe('quiz');
+  }
+});
+
+test('the door is a slug, and never an answer', () => {
+  for (const [path, slug] of [
+    ['/', 'main'],
+    ['/night-sweats', 'night-sweats'],
+    ['/bloating/quiz/symptoms', 'bloating'],
+    ['/quiz/kit', 'direct'],
+    ['/not-a-door', 'main'],
+  ] as const) {
+    expect(quizLandingFrom(path), path).toBe(slug);
+  }
+});
+
+/* --------------------------------------------- the subscription redirect -- */
+
+test('the subscription carries its attribution through Shopify\'s redirect', () => {
+  /* THE BUG THIS EXISTS FOR, measured against the live store:
+   *   /cart/add?...&utm_source=x   ->  302 /cart          every param dropped
+   *   /cart/<variant>:1?utm_...    ->  302 /cart?utm_...  kept
+   * The subscription is the only offer on /cart/add, so it was the only one
+   * reaching checkout with no attribution. return_to is what survives. */
+  arrivedWith(AD);
+  store.set('hf_quiz_landing', 'night-sweats');
+  const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'subscribe'));
+
+  const returnTo = u.searchParams.get('return_to');
+  expect(returnTo, 'the subscription has no return_to').toBeTruthy();
+
+  const landed = new URLSearchParams(returnTo!.split('?')[1]);
+  /* The acquisition. hf_funnel is excluded here because the fixture carries
+     one of its own and the quiz sets its own; it is asserted just below. */
+  for (const [k, v] of Object.entries(AD)) {
+    if (k.startsWith('hf_')) continue;
+    expect(landed.get(k), `${k} would be lost at the redirect`).toBe(v);
+  }
+  expect(landed.get('hf_funnel')).toBe('quiz');
+  expect(landed.get('hf_quiz_landing')).toBe('night-sweats');
+
+  /* And the cart's own instructions stay on /cart/add, where Shopify reads
+     them. A selling_plan inside return_to would do nothing. */
+  expect(landed.get('id'), 'id does not belong in return_to').toBeNull();
+  expect(landed.get('selling_plan'), 'selling_plan must stay on /cart/add').toBeNull();
+  expect(u.searchParams.get('selling_plan')).toBe(SUBSCRIBE_SELLING_PLAN_ID);
+  expect(u.searchParams.get('id')).toBe(SUBSCRIBE_VARIANT_ID);
+  expect(u.searchParams.get('quantity')).toBe('1');
+});
+
+test('the two permalink offers need no return_to, because they keep their query', () => {
+  arrivedWith(AD);
+  for (const kind of ['single', 'protocol'] as const) {
+    const u = new URL(shopUrl(SHOP_BASE, 'B', '', kind));
+    expect(u.searchParams.get('return_to'), kind).toBeNull();
+  }
 });

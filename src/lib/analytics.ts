@@ -301,6 +301,63 @@ export function readAttribution(): Record<string, string> {
  * `storefront=true` is set explicitly rather than inherited, so this cannot
  * silently become the direct-to-checkout link.
  */
+/* ------------------------------------------------ which door she came in -- */
+
+/**
+ * The quiz landing page she ORIGINALLY entered through.
+ *
+ * Not the page she is on. Captured once, from the first path this session
+ * sees, and never rewritten — so a woman who entered at /night-sweats and is
+ * now reading /quiz/kit still reports night-sweats, which is the question
+ * worth answering.
+ *
+ * A slug only. No answer, symptom or result ever becomes this value: it is
+ * the door, and a door is not health information.
+ */
+const LANDING_KEY = 'hf_quiz_landing';
+
+/** Every door, as its route spells it. '' is the generic cover. */
+const DOORS = ['bloating', 'hot-flashes', 'night-sweats', 'sleep', 'weight', 'mood'];
+
+/** The generic cover, and a direct arrival at the quiz with no cover at all. */
+const MAIN = 'main';
+const DIRECT = 'direct';
+
+export function quizLandingFrom(pathname: string): string {
+  const first = pathname.replace(/^\/+/, '').split('/')[0] ?? '';
+  if (DOORS.includes(first)) return first;
+  /* /quiz/... with no door in front of it: she arrived at the quiz itself. */
+  if (first === 'quiz') return DIRECT;
+  return MAIN;
+}
+
+/**
+ * Read once, on the first load of the session, and kept.
+ *
+ * FIRST WINS, like the rest of attribution. An incoming hf_quiz_landing is
+ * honoured above the path, so a link that already names the door keeps it.
+ */
+export function captureQuizLanding(): string {
+  try {
+    const held = sessionStorage.getItem(LANDING_KEY);
+    if (held) return held;
+
+    const fromQuery = new URLSearchParams(window.location.search).get(LANDING_KEY);
+    const value = fromQuery && /^[a-z0-9-]{1,32}$/.test(fromQuery)
+      ? fromQuery
+      : quizLandingFrom(window.location.pathname);
+
+    sessionStorage.setItem(LANDING_KEY, value);
+    return value;
+  } catch {
+    return MAIN;
+  }
+}
+
+export function readQuizLanding(): string {
+  try { return sessionStorage.getItem(LANDING_KEY) ?? MAIN; } catch { return MAIN; }
+}
+
 /**
  * What is carried to Shopify, and nothing else.
  *
@@ -361,6 +418,38 @@ export function shopUrl(
      as they arrived; this says the quiz converted her rather than the
      landing page. Shopify then answers both from one order. */
   url.searchParams.set('hf_funnel', QUIZ_FUNNEL);
+
+  /* And which of the quiz's own doors she entered by. A slug, never an
+     answer: the door is not health information. */
+  url.searchParams.set('hf_quiz_landing', readQuizLanding());
+
+  /* THE SUBSCRIPTION NEEDS ONE MORE THING, and this is the bug it fixes.
+   *
+   * A cart permalink keeps its query across Shopify's redirect:
+   *   /cart/<variant>:1?utm_source=x  ->  /cart?cart_link_id=..&utm_source=x
+   * /cart/add does not:
+   *   /cart/add?...&utm_source=x      ->  /cart
+   * Every marketing parameter is dropped, so the subscription reached
+   * checkout with no attribution at all while the other two were fine.
+   *
+   * The permalink shape cannot be used instead: /cart/<variant>:1 with a
+   * selling_plan query does NOT attach the plan. Measured against the live
+   * store, it adds the bottle at $49.99 as a one-off, which is a worse bug
+   * than the one it would fix.
+   *
+   * So /cart/add stays, and return_to carries the attribution through the
+   * redirect, which is where it survives. Verified against the live store:
+   * plan 5529010287, "Deliver every month", $39.99. */
+  if (url.pathname.endsWith('/cart/add')) {
+    const carried = new URLSearchParams();
+    for (const [k, v] of url.searchParams) {
+      /* The cart's own instructions stay on /cart/add; only the marketing
+         parameters need to survive to the cart page. */
+      if (k === 'id' || k === 'quantity' || k === 'selling_plan') continue;
+      carried.set(k, v);
+    }
+    url.searchParams.set('return_to', `/cart?${carried.toString()}`);
+  }
 
   return url.toString();
 }

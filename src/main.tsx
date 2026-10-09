@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './styles/global.css';
 import './styles/kit.css';
 import App from './App';
-import { captureAttribution } from './lib/analytics';
+import { captureAttribution, captureQuizLanding } from './lib/analytics';
 import { captureListLink } from './lib/listLink';
 
 /* BEFORE THE FIRST RENDER, not in an effect.
@@ -20,6 +20,11 @@ import { captureListLink } from './lib/listLink';
 captureListLink();
 
 captureAttribution();
+
+/* The door she came in by, read from the first path of the session and never
+   rewritten. Must run on the first load, before any internal navigation can
+   make /quiz/kit look like the page she arrived on. */
+captureQuizLanding();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
