@@ -200,21 +200,46 @@ test.describe('the quiz', () => {
     await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 2. REORDERED 8 OCTOBER 2026: where to start, named for what
-       she picked, her three things, the bridge, then the Kit, why it runs
-       sixty days for HER concern, and what is inside. It used to open "Your
-       60-day plan for better sleep", which promised a plan before she had
-       read one. */
-    await expect(heading(page)).toHaveText('Start with these 3 for poor sleep');
+    /* RESULT PAGE 2. REBUILT 16 OCTOBER 2026 for conversion. It opened on
+       three free tips and reached the price at section six of fourteen; it
+       now opens on the outcome she came for, with proof and a button, and
+       the offer sits directly under the hero.
+
+       The headline is hers: she said sleep bothers her most, and the eyebrow
+       carries the stage from the result page she has just read. */
+    await expect(heading(page)).toHaveText('Sleep through the night again.');
+    await expect(page.locator('.kitHeroEyebrow')).toHaveText('Your perimenopause plan');
+    await expect(page.locator('.kitHeroSub')).toContainText('One simple plan for your hormones');
+
+    /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
+       rebuild: a button, the risk taken off it, and two forms of proof. */
+    await expect(page.locator('.kitHeroCta')).toHaveText(/START MY 60 DAYS/);
+    await expect(page.locator('.kitHeroRisk'))
+      .toHaveText('60-day money-back guarantee · Free shipping · Ships today');
+    const fold = page.viewportSize()!.height;
+    const ctaBox = (await page.locator('.kitHeroCta').boundingBox())!;
+    expect(
+      Math.round(ctaBox.y + ctaBox.height),
+      'the hero button has to be on the first screen',
+    ).toBeLessThanOrEqual(fold);
+
     await expect(page.getByText('You told us you have already tried changing how you eat and exercising more.')).toBeVisible();
 
-    /* HER FIRST THREE THINGS replaced the five generic steps. Sleep first
-       because she named it, then the next thing she ticked in tile order,
-       then the tracker.
+    /* HER THREE THINGS ARE NOW THE PLAN IN ACTION, and they moved below the
+       offer rather than above it: three free tips were the first thing a
+       warm woman met, and they handed her the answer without the kit.
+       Nothing personal was lost in the move. threeCards() maps onto the
+       three steps exactly, so her two symptom cards are what step two is,
+       and the tracker is step three.
 
        CHANGED 9 OCTOBER 2026: the third card is always the tracker. It used
        to be her third symptom (energy, here), which meant a woman who ticked
        three things never got the one action that works for every result. */
+    await expect(page.locator('.kitPlan .kitH2')).toHaveText('Three simple things, every day.');
+    await expect(page.locator('.planSteps > li')).toHaveCount(3);
+    await expect(page.locator('.planSteps > li').nth(0)).toContainText('Take two capsules a day.');
+    await expect(page.locator('.planSteps > li').nth(1)).toContainText('Follow the food and sleep cues');
+    await expect(page.locator('.planSteps > li').nth(2)).toContainText('Mark the tracker.');
     await expect(page.getByText('Your first three things')).toHaveCount(0);
     const cards = page.locator('.priCard');
     await expect(cards).toHaveCount(3);
@@ -238,12 +263,12 @@ test.describe('the quiz', () => {
        than left implicit, because it is a sentence she used to read. */
     await expect(page.getByText("More cardio won't work.")).toHaveCount(0);
 
-    /* The bridge names the hard part, and sits between the cards and the Kit. */
-    await expect(page.locator('.bridge'))
-      .toContainText("These are the first three things I'd work on.");
-    /* And it hands over to the Kit by name. */
-    await expect(page.locator('.bridge'))
-      .toContainText('This is why I built the Feel Like YOU Again Kit.');
+    /* THE BRIDGE IS OFF THE PAGE. It read "These are the first three things
+       I would work on ... this is why I built the Feel Like YOU Again Kit",
+       which pointed from the tips to the kit. The kit is above the tips now,
+       so the sentence pointed backwards. It is still exported from
+       resultCopy.ts and still under the copy gate, just not rendered. */
+    await expect(page.locator('.bridge')).toHaveCount(0);
 
     await expect(page.locator('.nextHowQ')).toHaveText('The 60-Day Feel Like YOU Again Kit');
     await expect(page.getByText('I put the Feel Like YOU Again Kit together', { exact: false })).toBeVisible();
@@ -302,20 +327,44 @@ test.describe('the quiz', () => {
     await expect(kit.locator('a.kitBtn'))
       .toHaveAttribute('href', /shop\.jjsmithonline\.com\/cart\/54330638663791:1.*discount=HF60FREESHIP/);
 
+    /* TWO CHOICES, NOT THREE, since 16 October 2026. The 30-day one-time
+       bottle is off this page: it cost MORE than the subscription for the
+       same bottle ($49.99 against $39.99), so it was the row nobody should
+       pick, and it set her up to stop at day 30 before the plan finished.
+       There is no radio group left, so the alternative is one link.
+
+       THE PRODUCT IS NOT GONE, only this page's offer of it. /offer, /live
+       and /plan still sell it, and offer.spec.ts still holds them to it. */
     const bottle = page.locator('.kitQuiet');
-    await expect(bottle.locator('a.kitBtn')).toContainText('Get 1 bottle · $49.99');
-    await expect(bottle.locator('a.kitBtn')).toHaveAttribute('href', /cart\/41200079175791:1/);
-    await bottle.locator('.kitOpt').nth(1).click();
+    await expect(bottle.locator('.kitOpt')).toHaveCount(0);
+    await expect(bottle).toContainText('Prefer to start month to month?');
+    await expect(bottle).not.toContainText('One-time purchase');
     await expect(bottle.locator('a.kitBtn')).toContainText('Subscribe & save · $39.99');
     await expect(bottle.locator('a.kitBtn'))
       .toHaveAttribute('href', /cart\/add\?id=54355951845487.*selling_plan=5529010287/);
+    /* CHECKED AGAINST THE LIVE CART on 16 October: that variant on that plan
+       produces a line whose Frequency reads "Deliver every month". The card
+       said "Delivered every 30 days" before, which was never what Shopify
+       tells her at the checkout. */
+    await expect(bottle).toContainText('Delivered every month');
+    /* The crossed price is the same bottle bought one at a time, which is why
+       the one-time price is still a number on this page. */
+    await expect(bottle.locator('.kitAltCost')).toContainText('$49.99');
+    await expect(page.locator('a[href*="41200079175791"]'), 'the one-time cart link is off the page')
+      .toHaveCount(0);
 
     /* Proof comes after the offer, in three places. She said sleep bothers
        her most, so the first review she reads is about sleep. */
     /* Four from JJ's page: the first stands alone above the offer, the other
        three sit under it. */
     await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(3);
-    await expect(page.locator('[data-proof="more"] .kitRev')).toHaveCount(4);
+    /* THE CONTRACT, NOT THE FALLBACK. "What women are saying" is live Okendo
+       with the authored four behind it, and the wall moved up the page in the
+       16 October rebuild, so whether the lazy fetch has fired by the time
+       this runs is a race. Either real reviews render or the authored ones
+       do; an empty section or an apology is the only failure. */
+    await expect(page.locator('.okWall .okRev, [data-proof="more"] .kitRev').first())
+      .toBeVisible();
     await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
     await expect(page.locator("[data-proof=\"lead\"]").locator("xpath=..").locator(".pfFaces img")).toHaveCount(12);
     await expect(page.locator('.kitSec .pfRating').first()).toContainText('171 reviews');
@@ -377,7 +426,9 @@ test.describe('the quiz', () => {
     await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
 
-    await expect(heading(page)).toHaveText('Start with these 3 for hot flashes');
+    /* She ticked hot flashes and nothing else, so the hero names the one
+       she came for. 'Start with these 3 for hot flashes' until 16 October. */
+    await expect(heading(page)).toHaveText('Sleep cool through the night again.');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
     /* Same four whatever she answered — see the note on the lead review above. */
@@ -484,7 +535,9 @@ test.describe('the addresses', () => {
     ['what-you-want', 'What do you want most right now'],
     ['your-result', 'Your Hormone Check is ready'],
     ['result', ''],
-    ['kit', 'Start with these 3'],
+    /* The hero headline, with no answers behind it. It was
+       'Start with these 3' until the 16 October rebuild. */
+    ['kit', 'Feel like YOU again.'],
     ['speak-to-your-doctor', 'Talk to your healthcare professional'],
   ] as const;
 
@@ -608,6 +661,83 @@ test.describe('the kit page', () => {
       .evaluate((el) => getComputedStyle(el).position);
     expect(pos, 'the header is fixed on a page that already has a sticky bar').toBe('static');
   });
+
+  /* ------------------------------------------- the 16 October rebuild -- */
+
+  test('the offer is above the tips, which is the whole point of the rebuild',
+    async ({ page }) => {
+      /* THE ORDER IS THE CHANGE. The page opened on three free tips and
+         reached the price at section six of fourteen, which handed a warm
+         woman the answer for nothing and asked 60% of them to scroll for the
+         offer. Asserted by document position rather than by eye, so a later
+         edit that quietly moves the offer back down fails here. */
+      await page.goto('/quiz/kit');
+      const order = await page.evaluate(() => {
+        const at = (sel: string) => document.querySelector(sel);
+        const hero = at('.kitHero');
+        const offer = at('#kit-offer');
+        const plan = at('.kitPlan');
+        if (!hero || !offer || !plan) return null;
+        const follows = (a: Element, b: Element) =>
+          Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+        return {
+          offerAfterHero: follows(hero, offer),
+          planAfterOffer: follows(offer, plan),
+        };
+      });
+      expect(order, 'the hero, the offer or the plan is missing').not.toBeNull();
+      expect(order!.offerAfterHero, 'the offer must follow the hero').toBe(true);
+      expect(order!.planAfterOffer, 'the tips must follow the offer').toBe(true);
+    });
+
+  test('the one-time bottle is off this page and still sold on the offer pages',
+    async ({ page }) => {
+      /* Removed from the PAGE, not from the product. Two places have to stay
+         true at once or the removal has quietly become a delisting. */
+      await page.goto('/quiz/kit');
+      await expect(page.locator('a[href*="41200079175791"]')).toHaveCount(0);
+      await expect(page.getByText('One-time purchase')).toHaveCount(0);
+
+      await page.goto('/offer');
+      await expect(page.locator('a[href*="41200079175791"]').first()).toBeAttached();
+    });
+
+  test('both buy buttons still carry her ad tags, and never her answers',
+    async ({ page }) => {
+      /* THE CARRY-THROUGH, ON THE REBUILT PAGE. The offer block moved, the
+         one-time row went, and the hero gained a button: all three are ways
+         to lose attribution on the way to Shopify without anything looking
+         broken. Read off the first paint, with no click and no scroll,
+         because attribution is captured before render and the links are
+         built during it. */
+      const ad = {
+        utm_source: 'meta', utm_medium: 'paid', utm_campaign: 'peri_q3',
+        /* utm_term is DELIBERATELY not a body word. It was 'bloat_kw', which
+           is a perfectly good ad keyword and tripped the leak check below on
+           its own fixture: an advertiser's keyword is hers to carry, a quiz
+           answer is not, and the assertion cannot tell them apart. */
+        utm_content: 'vid_07', utm_term: 'kw_42', fbclid: 'FB1',
+      };
+      await page.goto(`/quiz/kit?${new URLSearchParams(ad)}`);
+
+      const hrefs = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
+        (as) => as.map((a) => (a as HTMLAnchorElement).href),
+      );
+      expect(hrefs.length, 'the kit, the subscription and the closer').toBeGreaterThanOrEqual(3);
+
+      for (const href of hrefs) {
+        const url = new URL(href);
+        expect(url.origin).toBe('https://shop.jjsmithonline.com');
+        for (const [k, v] of Object.entries(ad)) {
+          /* The subscription is a /cart/add, which 302s to /cart and drops
+             the query, so its tags ride in return_to instead. Either way the
+             pair has to be somewhere in the link. */
+          expect(href, `${k} is missing from ${url.pathname}`).toContain(`${k}=${v}`);
+        }
+        /* And nothing about her body goes with them, on any of the three. */
+        expect(href).not.toMatch(/outcome|perimenopause|symptom|sleep|bloat|menopause/i);
+      }
+    });
 
   test('"What women are saying" shows customers whether or not Okendo answers',
     async ({ page }) => {

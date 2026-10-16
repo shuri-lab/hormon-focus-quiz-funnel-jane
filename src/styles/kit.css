@@ -654,3 +654,154 @@
   width: 100%; max-width: 420px; margin-inline: auto;
   border-radius: 14px; border: 1px solid var(--line); display: block;
 }
+
+/* ===================================================== the rebuilt page ===
+   16 October 2026. The hero, the quiet subscription card, the mechanism
+   section and the three plan steps. Everything else on this page keeps the
+   furniture it already had, which is why this block is additive: the kit
+   card, the bands, the reviews, the questions and the closer are untouched.
+   ========================================================================= */
+
+/* -- 1. the hero -------------------------------------------------------- */
+
+/* IT HAS TO FIT ONE SCREEN, which is the whole argument for the rebuild, so
+   every part of it is measured against a 390x844 phone with the top bar on.
+   The kit shot is the one thing that gives ground: it is capped rather than
+   sized, so a long headline takes the room it needs and the button stays
+   above the fold. */
+.kitHero { display: grid; justify-items: center; text-align: center; }
+.kitHeroEyebrow {
+  margin: 0 0 6px; font-size: 12.5px; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--plum-2);
+}
+.kitHeroH1 {
+  margin: 0; font-size: clamp(27px, 7.4vw, 38px); font-weight: 800;
+  line-height: 1.12; letter-spacing: -.03em; color: var(--ink);
+}
+.kitHeroSub {
+  margin: 10px 0 0; max-width: 34ch;
+  font-size: var(--t-sub); line-height: 1.45; color: var(--ink-2);
+}
+.kitHeroShot {
+  display: block; width: 100%; max-width: 420px; height: auto;
+  max-height: 172px; object-fit: contain; margin: 12px 0 0;
+}
+
+/* The proof row, compact on purpose. A full .pfFaces grid is two rows of
+   three portraits and about 300px tall, which on its own would push the
+   button off the first screen. Here the same six faces overlap in one row,
+   the way the landing page's pill stacks them. */
+.kitHeroProof { margin-top: 12px; display: grid; justify-items: center; gap: 7px; }
+.kitHeroProof .pfFaces {
+  display: inline-flex; gap: 0; margin: 0; grid-template-columns: none;
+}
+.kitHeroProof .pfFaces img {
+  width: 34px; height: 34px; aspect-ratio: 1 / 1; border-radius: 50%;
+  object-position: center 20%; border: 2px solid var(--surface);
+  margin-left: -10px; box-shadow: 0 2px 6px -2px rgba(36, 31, 46, .5);
+}
+.kitHeroProof .pfFaces img:first-child { margin-left: 0; }
+.kitHeroProof .pfRating { margin: 0; }
+/* One woman in her own words, with the card taken off it: the stars are
+   already on the rating line directly above, so showing them twice spends
+   height on nothing. */
+.kitHeroProof .kitRev {
+  padding: 0; background: none; border: 0; box-shadow: none;
+  max-width: 36ch; text-align: center;
+}
+.kitHeroProof .kitRevStars { display: none; }
+.kitHeroProof .kitRev p { font-size: var(--t-sub); }
+.kitHeroProof .kitRev cite { margin-top: 4px; }
+
+.kitHeroCta { width: 100%; max-width: 420px; }
+.kitHeroRisk {
+  margin: 9px 0 0; font-size: var(--t-small); font-weight: 600; color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* -- 2. the quiet alternative ------------------------------------------- */
+
+.kitAltLead {
+  margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--ink-2);
+}
+.kitAltRow {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+  padding: 12px; border-radius: 14px; background: var(--wash); text-align: left;
+}
+.kitAltTerms { display: grid; justify-items: start; gap: 5px; min-width: 0; }
+.kitAltTerms b { font-size: 15.5px; font-weight: 800; color: var(--ink); line-height: 1.2; }
+.kitAltTerms small { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.kitAltCost { flex: none; text-align: right; }
+.kitAltCost b {
+  display: block; font-size: 26px; font-weight: 800; letter-spacing: -.025em;
+  color: var(--plum); line-height: 1;
+}
+.kitAltCost small {
+  display: block; margin-top: 4px; font-size: 14px; font-weight: 700; color: var(--ink-3);
+}
+
+/* The risk reversal now sits inside the lead card, under its button, so it
+   needs less air above it than it did as a block of its own. */
+.kitLead .kitTrust { margin-top: 16px; }
+
+/* -- 3. what is inside, now a section of its own ------------------------ */
+
+/* It used to be a small label inside JJ's note. Standing on its own it is a
+   heading, so it is sized like one. .blabel still supplies the rest. */
+.kitSec > .kitPiecesT {
+  margin: 0 0 2px; text-align: center; text-transform: none;
+  font-size: clamp(19px, 4.8vw, 22px); font-weight: 800;
+  letter-spacing: -.01em; color: var(--ink);
+}
+
+/* -- 4. why it works ---------------------------------------------------- */
+
+.kitMech .kitBody { text-align: left; }
+/* The line that ties the stage to the thing she named. Hers, so it carries
+   the weight. */
+.kitMechWhy { font-weight: 700; color: var(--ink); }
+.kitMgEyebrow { margin-top: 26px; }
+.kitH3 {
+  margin: 0; font-size: clamp(19px, 4.8vw, 22px); font-weight: 800;
+  line-height: 1.2; letter-spacing: -.01em; text-align: center; color: var(--ink);
+}
+
+/* -- 6. the three steps ------------------------------------------------- */
+
+.planSteps {
+  counter-reset: step; list-style: none; margin: 18px 0 0; padding: 0;
+  display: grid; gap: 18px;
+}
+.planSteps > li { counter-increment: step; position: relative; padding-left: 42px; }
+.planSteps > li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 1px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--plum); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; line-height: 1;
+}
+.planStepT {
+  display: block; font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--ink);
+}
+.planStepB {
+  display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--ink-2);
+}
+.planSteps .priCards { margin-top: 10px; }
+.kitPlan .kitBody { text-align: left; }
+.kitPlan .nextHow { margin-top: 22px; }
+
+/* A SHORT SCREEN KEEPS THE BUTTON AND LOSES THE PICTURE.
+   On a 320x568 phone the hero runs to 742px and the button lands 126px below
+   the fold, which is the exact failure this rebuild exists to fix. The kit
+   shot is the only part that can go: it reappears full size inside the offer
+   card one scroll down, so nothing is actually lost, and the headline, the
+   proof and the button all stay where she can see them. Keyed on height
+   rather than width, because height is what ran out. */
+@media (max-height: 720px) {
+  .kitHeroShot { display: none; }
+  .kitHeroSub { margin-top: 8px; font-size: var(--t-small); }
+  .kitHeroProof { margin-top: 10px; gap: 6px; }
+  .kitHeroProof .kitRev p { font-size: var(--t-small); }
+  .kitHeroRisk { margin-top: 7px; }
+}

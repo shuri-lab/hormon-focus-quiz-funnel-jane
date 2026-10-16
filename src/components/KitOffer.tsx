@@ -1,24 +1,39 @@
-import { useState } from 'react';
 import { SHOP_BASE } from '../lib/logic';
 import { shopUrl, track } from '../lib/analytics';
 import {
   KIT_TAGLINE, KIT_TOTAL_VALUE, KIT_VALUE, MONEY_BACK_BADGE, ONE_MONTH_PRICE, PLAN_NAME,
-  PROTOCOL_PRICE, SHOT_KIT, SHOT_KIT_BOTTLE, SUBSCRIBE_PRICE, dailyPrice, money, perDay,
-  type OfferKind,
+  PROTOCOL_PRICE, SHOT_KIT, SHOT_KIT_BOTTLE, SUBSCRIBE_PRICE, dailyPrice, money,
 } from '../lib/offer';
 import {
-  BOTTLE_NAME, BOTTLE_SUPPLY, FREE_SHIPPING, KIT_BADGE, KIT_CTA, KIT_EYEBROW, KIT_HEAD_PRE,
-  KIT_HEAD_SUB, KIT_TODAY_LABEL, KIT_TOTAL_LABEL, ONCE_CADENCE, ONCE_LABEL, PROMISE_BODY,
-  PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_CADENCE, SUB_LABEL, SUB_NOTE, SUB_PILL,
-  TRUST_ITEMS, kitHeadPrice,
+  BOTTLE_SUPPLY, FREE_SHIPPING, KIT_BADGE, KIT_CTA, KIT_EYEBROW, KIT_HEAD_PRE,
+  KIT_HEAD_SUB, KIT_TODAY_LABEL, KIT_TOTAL_LABEL, OFFER_HEAD, PROMISE_BODY,
+  PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_ALT_LEAD, SUB_ALT_NAME, SUB_CADENCE,
+  SUB_LABEL, SUB_NOTE, SUB_PILL, TRUST_ITEMS, kitHeadPrice,
 } from '../lib/kitCopy';
 
 /* THE OFFER, AS IT IS ON JJ'S OWN PAGE.
  *
  * David's block from hormonefocus.jjsmithonline.com, rebuilt here so the quiz
- * ends on the offer that is already selling: the kit as the lead card with
- * its value stack, then one bottle underneath with a one-time or a
- * subscription choice. Same words, same prices, same cart links.
+ * ends on the offer that is already selling: the kit as the lead card with its
+ * value stack, and one alternative underneath it.
+ *
+ * TWO CHOICES, NOT THREE, since 16 October 2026. The 30-day one-time bottle is
+ * off this page at David's instruction. It cost MORE than the subscription for
+ * the same bottle ($49.99 against $39.99), which made it the one row nobody
+ * should pick, and it set her up to stop at day 30, before the plan she has
+ * just read about has finished.
+ *
+ * THE PRODUCT IS UNTOUCHED. SINGLE_OPTION, SINGLE_VARIANT_ID, ONE_MONTH_PRICE
+ * and its cart path are all exactly where they were in offer.ts, and /offer,
+ * /offer/:slug, /live and /plan still sell it. Only this page stopped offering
+ * it. The crossed-out price on the subscription below is still that bottle, so
+ * the number has not left the page either.
+ *
+ * THE KIT LEADS, DELIBERATELY. With no sales yet, price is not the proven
+ * blocker, so leading on the cheapest row would train her into the option most
+ * likely to make her quit early. The subscription is the one lower-commitment
+ * alternative and it is kept quiet underneath. Once the events are live,
+ * kit-first against subscription-first is the first real test to run.
  *
  * The links go through shopUrl(), so whatever the ad sent her with reaches
  * Shopify the way it does from the page.
@@ -76,25 +91,17 @@ export function kitHref(outcome: string, angle: string): string {
 }
 
 export function KitOffer({ outcome, angle }: Props) {
-  /* One bottle, bought once or on subscription. The kit has no such choice. */
-  const [bottle, setBottle] = useState<Extract<OfferKind, 'single' | 'subscribe'>>('single');
-  const bottlePrice = bottle === 'single' ? ONE_MONTH_PRICE : SUBSCRIBE_PRICE;
-  const bottleCta = bottle === 'single'
-    ? `Get 1 bottle · ${money(ONE_MONTH_PRICE)}`
-    : `${SUB_LABEL} · ${money(SUBSCRIBE_PRICE)}`;
-
-  const choose = (kind: 'single' | 'subscribe') => {
-    if (kind === bottle) return;
-    setBottle(kind);
-    track.selectOption(kind, kind === 'single' ? ONE_MONTH_PRICE : SUBSCRIBE_PRICE);
-  };
-
   return (
     <div className="kitOffer" id="kit-offer">
       <div className="kitIntro">
         <p className="kitEyebrow">{KIT_EYEBROW}</p>
-        <h2 className="kitH2">{KIT_HEAD_PRE}<em>{kitHeadPrice()}</em>.</h2>
-        <p className="kitSub">{KIT_HEAD_SUB}</p>
+        <h2 className="kitH2">{OFFER_HEAD}</h2>
+        {/* The day rate leads rather than headlines: $74.99 beside a button is
+            the number she has to justify, and this is the one she can picture.
+            Her page's own line, kept. */}
+        <p className="kitSub">
+          {KIT_HEAD_PRE}<em>{kitHeadPrice()}</em>. {KIT_HEAD_SUB}
+        </p>
       </div>
 
       {/* ------------------------------------------------- the kit ---- */}
@@ -137,72 +144,55 @@ export function KitOffer({ outcome, angle }: Props) {
         >
           {KIT_CTA} <Arrow />
         </a>
+
+        {/* DIRECTLY UNDER THE BUTTON, which is where risk reversal earns its
+            keep. It used to sit below both cards, past the decision it
+            answers. */}
+        <div className="kitTrust">
+          {TRUST_ITEMS.map((t, i) => (
+            <span key={t}>{i === 0 ? <Shield /> : <Truck />} {t}</span>
+          ))}
+        </div>
       </div>
 
       <p className="kitOr"><span>OR</span></p>
 
-      {/* ---------------------------------------------- one bottle ---- */}
+      {/* --------------------------------------- the one alternative ---- */}
       <div className="kitCard kitQuiet">
+        <p className="kitAltLead">{SUB_ALT_LEAD}</p>
+
         <div className="kitBottleHead">
           <img src={SHOT_KIT_BOTTLE} alt="Hormone Focus, one bottle" width={800} height={800}
             loading="lazy" decoding="async" />
           <div>
-            <p className="kitBottleName">{BOTTLE_NAME}</p>
+            <p className="kitBottleName">
+              {SUB_ALT_NAME} <i className="kitPill">{SUB_PILL}</i>
+            </p>
             <p className="kitBottleSupply">{BOTTLE_SUPPLY}</p>
           </div>
         </div>
 
-        <div className="kitOpts" role="radiogroup" aria-label="How to buy one bottle">
-          <button
-            type="button" role="radio" aria-checked={bottle === 'single'}
-            className={`kitOpt${bottle === 'single' ? ' on' : ''}`}
-            onClick={() => choose('single')}
-          >
-            <span className="kitDot" aria-hidden="true" />
-            <span className="kitOptName">
-              <b>{ONCE_LABEL}</b>
-              <small>{ONCE_CADENCE}</small>
-            </span>
-            <span className="kitOptCost">
-              <b>{money(ONE_MONTH_PRICE)}</b>
-              <small>{perDay('single')} a day</small>
-            </span>
-          </button>
-
-          <button
-            type="button" role="radio" aria-checked={bottle === 'subscribe'}
-            className={`kitOpt${bottle === 'subscribe' ? ' on' : ''}`}
-            onClick={() => choose('subscribe')}
-          >
-            <span className="kitDot" aria-hidden="true" />
-            <span className="kitOptName">
-              <b>{SUB_LABEL} <i className="kitPill">{SUB_PILL}</i></b>
-              <small>{SUB_CADENCE}</small>
-              <span className="kitOptExtra">
-                <span className="kitShip"><Truck /> {FREE_SHIPPING}</span>
-                <small>{SUB_NOTE}</small>
-              </span>
-            </span>
-            <span className="kitOptCost">
-              <b>{money(SUBSCRIBE_PRICE)}</b>
-              <small><s>{money(ONE_MONTH_PRICE)}</s></small>
-            </span>
-          </button>
+        <div className="kitAltRow">
+          <span className="kitAltTerms">
+            <b>{SUB_CADENCE}</b>
+            <span className="kitShip"><Truck /> {FREE_SHIPPING}</span>
+            <small>{SUB_NOTE}</small>
+          </span>
+          {/* The crossed price is the same bottle bought one at a time, which
+              is a real saving and not an invented one. */}
+          <span className="kitAltCost">
+            <b>{money(SUBSCRIBE_PRICE)}</b>
+            <small><s>{money(ONE_MONTH_PRICE)}</s></small>
+          </span>
         </div>
 
         <a
           className="cta kitBtn kitBtnQuiet"
-          href={shopUrl(SHOP_BASE, outcome, angle, bottle)} data-offer={bottle}
-          onClick={() => track.checkout(outcome, bottlePrice, bottle, 'kit-bottle')}
+          href={shopUrl(SHOP_BASE, outcome, angle, 'subscribe')} data-offer="subscribe"
+          onClick={() => track.checkout(outcome, SUBSCRIBE_PRICE, 'subscribe', 'kit-bottle')}
         >
-          {bottleCta} <Arrow />
+          {SUB_LABEL} · {money(SUBSCRIBE_PRICE)} <Arrow />
         </a>
-      </div>
-
-      <div className="kitTrust">
-        {TRUST_ITEMS.map((t, i) => (
-          <span key={t}>{i === 0 ? <Shield /> : <Truck />} {t}</span>
-        ))}
       </div>
     </div>
   );

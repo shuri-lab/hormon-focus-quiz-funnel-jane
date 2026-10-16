@@ -17,6 +17,7 @@
  * contractions, no claim the brand may not make.
  */
 import { dailyPrice } from './offer';
+import type { SymptomId } from './logic';
 
 /* ------------------------------------------------------- the offer block -- */
 
@@ -37,7 +38,19 @@ export const ONCE_LABEL = 'One-time purchase';
 export const ONCE_CADENCE = 'Delivered once';
 export const SUB_LABEL = 'Subscribe & save';
 export const SUB_PILL = '20% OFF';
-export const SUB_CADENCE = 'Delivered every 30 days';
+/*
+ * CHECKED AGAINST THE LIVE CART, 16 October 2026. Adding variant
+ * 54355951845487 on selling plan 5529010287 produces a line whose Frequency
+ * option reads "Deliver every month", so that is what this says. It read
+ * "Delivered every 30 days" before, which was close enough to pass unnoticed
+ * and still not what Shopify tells her at the checkout.
+ *
+ * NOT FIXED HERE, because it is not this page: offer.ts still describes the
+ * same plan as "One bottle every 4 weeks" with SUPPLY_DAYS.subscribe = 28,
+ * which is wrong twice over and renders on /offer and /plan. Flagged for
+ * David rather than changed outside the brief.
+ */
+export const SUB_CADENCE = 'Delivered every month';
 export const SUB_NOTE = 'Pause or cancel anytime';
 
 export const TRUST_ITEMS: string[] = ['60-day money-back guarantee', 'In stock, ships today'];
@@ -141,3 +154,133 @@ export const KIT_FAQ: [string, string][] = [
 /* The button is the brief's. The heading is a PLACEHOLDER. */
 export const CLOSE_HEAD = 'Your next 60 days can start today.';
 export const CLOSE_CTA = 'START MY 60 DAYS';
+
+/* ============================================================ THE REBUILD ==
+ *
+ * 16 October 2026, to David's conversion brief. The page used to open with
+ * three free tips and reach the price at section six of fourteen. It now
+ * opens with the outcome she came for, proof and a button, and the offer sits
+ * directly under it. The tips are not gone: they come back lower as the plan
+ * in action, which argues the plan is simple instead of handing it over.
+ *
+ * !! PENDING JJ SIGN-OFF !!
+ * Every string in this block is a DRAFT in her voice and none of it has been
+ * approved. The already-approved copy around it is untouched and reused where
+ * it exists, which is why this block is as short as it is: the mechanism
+ * section borrows her result-page sentences rather than restating them, and
+ * the kit, the guarantee, the questions, the reviews and the closer are all
+ * the words that were already on the page.
+ *
+ * Held to the same gate as the rest of this file: no contraction, no claim
+ * the brand may not make. "Feel like YOU again in 60 days" is the one shape
+ * worth a second look at sign-off, because sixty days is a timeframe and the
+ * rules say the brand's own voice does not promise one. It is said here the
+ * way the kit, the guarantee and the closer already say it ("Your next 60
+ * days can start today"), which is why it is drafted and not quietly shipped.
+ */
+
+/* ------------------------------------------------------------- the hero -- */
+
+/** Her stage, carried over from the result page she just read. */
+export const HERO_EYEBROW: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'Your 60-day plan',
+  B: 'Your perimenopause plan',
+  C: 'Your menopause plan',
+  E: 'Your early menopause plan',
+};
+
+/**
+ * The dream outcome, named for the thing she said bothers her most.
+ *
+ * Deliberately not a symptom-reduction line. "Less bloating" aimed at the
+ * symptom would be a treatment claim, so each of these names how she wants to
+ * feel rather than what the product would do to a symptom.
+ *
+ * AND DELIBERATELY WITHOUT "IN 60 DAYS", which the brief drafted on all six.
+ * The clock gate in tests/copy.test.ts refused three of them: a duration in
+ * the same sentence as feel, see, notice or change is a promise about how
+ * long a result takes, and the brand's own voice may not make one. It passed
+ * the other three only because "get" and "sleep" are not in its outcome list,
+ * which is a gap in the pattern and not permission: "Get your body back in 60
+ * days" is the same promise as "Feel steady again in 60 days", and shipping
+ * one while the gate refuses the other would be incoherent. So the timeframe
+ * came off all six rather than the gate being widened to wave three through.
+ *
+ * The sixty days is not lost. It is in the eyebrow above this line, in the
+ * offer heading under it, on the button, and in the guarantee: everywhere it
+ * is a plan length, which is a fact, and nowhere it is a date by which she
+ * will feel better, which is a promise.
+ */
+export const HERO_HEAD: Record<SymptomId, string> = {
+  weight: 'Feel at home in your own body again.',
+  sleep: 'Sleep through the night again.',
+  energy: 'Get your energy back.',
+  sweats: 'Sleep cool through the night again.',
+  bloat: 'Feel comfortable in your own clothes again.',
+  mood: 'Feel steady and clear again.',
+};
+
+/** When she named nothing, which is every woman who opens this page cold. */
+export const HERO_HEAD_DEFAULT = 'Feel like YOU again.';
+
+export const HERO_SUB =
+  'One simple plan for your hormones: the right support, the right food, and '
+  + 'a tracker so you can see what changes. Two capsules a day. No overhauls.';
+
+export const HERO_CTA = 'START MY 60 DAYS';
+
+/** Directly under the button, where it does the most good. */
+export const HERO_RISK = '60-day money-back guarantee · Free shipping · Ships today';
+
+/* ------------------------------------------------------------ the offer -- */
+
+/** The benefit, rather than the word "pricing". */
+export const OFFER_HEAD = 'Everything you need for your 60 days, in one kit.';
+
+/** The one alternative, kept quiet under the kit. */
+export const SUB_ALT_LEAD = 'Prefer to start month to month?';
+export const SUB_ALT_NAME = 'Hormone Focus subscription';
+
+/* -------------------------------------------------------- the mechanism -- */
+
+/**
+ * Why it works when trying harder has not.
+ *
+ * The HEADING is the only new sentence. The two below it are her own result
+ * page, read back: the stage sentence for her outcome and the closing line
+ * for the symptom she named. Both are already approved, both are already
+ * personal to her, and reusing them means this section introduces no claim
+ * that was not already cleared.
+ */
+export const MECH_EYEBROW = 'Why it works';
+export const MECH_HEAD = 'This is not about willpower. It is about your hormones.';
+
+/* ------------------------------------------------------------- the plan -- */
+
+/**
+ * The old three tips, reframed as the plan in action.
+ *
+ * Step two is where her own two cards go, so nothing personal is lost by
+ * moving them down the page: threeCards() returns two symptom cards and the
+ * tracker, and they land on steps two and three respectively. Step one is the
+ * bottle, which is the only one of the three she is buying.
+ */
+export const PLAN_EYEBROW = 'On the plan';
+export const PLAN_HEAD = 'Three simple things, every day.';
+export const PLAN_STEP_1 = 'Take two capsules a day.';
+export const PLAN_STEP_1_BODY = 'With a meal and a glass of water. That is the whole dose.';
+export const PLAN_STEP_2 = 'Follow the food and sleep cues in the plan.';
+export const PLAN_STEP_3 = 'Mark the tracker.';
+
+/* ----------------------------------------------------------- the sticky -- */
+
+/**
+ * The bar label, and why it is four words.
+ *
+ * The brief asks for "Feel like you again, from $1.25 a day" here. It does
+ * not fit: this bar holds one line beside a button at 320px, there is a test
+ * on its height for exactly that reason, and the long version wraps to three
+ * lines and makes the bar taller than the button it exists to serve. The day
+ * rate is the half that does the work, so the day rate is what stays.
+ */
+export const STICKY_CTA = 'Start my 60 days';
