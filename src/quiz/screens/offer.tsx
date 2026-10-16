@@ -272,7 +272,7 @@ export function R2() {
         <h2 className="kitH2">{CLOSE_HEAD}</h2>
         <a
           className="cta kitBtn" href={href} data-offer="protocol" data-close
-          onClick={() => track.checkout(outcome, PROTOCOL_PRICE)}
+          onClick={() => track.checkout(outcome, PROTOCOL_PRICE, 'protocol', 'quiz-kit-close')}
         >
           {CLOSE_CTA} &nbsp;&rarr;
         </a>

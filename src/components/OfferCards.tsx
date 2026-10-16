@@ -122,7 +122,7 @@ function Card({ card, outcome, angle }: CardProps) {
           className={`cta ocCta${card.kind === 'protocol' ? '' : ' ocCtaSoft'}`}
           href={href}
           data-offer={card.kind}
-          onClick={() => track.checkout(outcome, price)}
+          onClick={() => track.checkout(outcome, price, card.kind, 'offer-card')}
         >
           {card.cta} <Arrow />
         </a>

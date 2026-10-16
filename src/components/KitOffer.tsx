@@ -133,7 +133,7 @@ export function KitOffer({ outcome, angle }: Props) {
             attributes on. */}
         <a
           className="cta kitBtn" href={kitHref(outcome, angle)} data-offer="protocol"
-          onClick={() => track.checkout(outcome, PROTOCOL_PRICE)}
+          onClick={() => track.checkout(outcome, PROTOCOL_PRICE, 'protocol', 'kit-main')}
         >
           {KIT_CTA} <Arrow />
         </a>
@@ -193,7 +193,7 @@ export function KitOffer({ outcome, angle }: Props) {
         <a
           className="cta kitBtn kitBtnQuiet"
           href={shopUrl(SHOP_BASE, outcome, angle, bottle)} data-offer={bottle}
-          onClick={() => track.checkout(outcome, bottlePrice)}
+          onClick={() => track.checkout(outcome, bottlePrice, bottle, 'kit-bottle')}
         >
           {bottleCta} <Arrow />
         </a>

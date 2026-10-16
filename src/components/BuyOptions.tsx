@@ -165,7 +165,7 @@ export function BuyOptions({ chosen, onChoose, outcome, angle, name, live = fals
         className="cta buyBtn"
         href={href}
         data-offer={chosen}
-        onClick={() => track.checkout(outcome, option.price)}
+        onClick={() => track.checkout(outcome, option.price, chosen, 'buy-options')}
       >
         {option.cta} &nbsp;&rarr;
       </a>

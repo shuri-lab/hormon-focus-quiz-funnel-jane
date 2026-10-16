@@ -10,6 +10,7 @@
 
 import { cartPath, type OfferKind } from './offer';
 import { captureListLink } from './listLink';
+import { initPostHog, phCapture, phIdentify } from './posthog';
 
 declare global {
   interface Window {
@@ -41,6 +42,30 @@ function meta(name: string, props: Props = {}, standard = false) {
   } catch { /* as above */ }
 }
 
+/* PostHog, which is the fourth sink and the only one that can put a session
+   recording next to the step she left at. The hf_ prefix is not decoration:
+   the dashboard and the funnel insight in project 667442 are built against
+   these exact names, so renaming one breaks a saved insight. */
+function ph(name: string, props: Props = {}) {
+  phCapture(name, props);
+}
+
+/**
+ * What PostHog calls each offer.
+ *
+ * THREE THINGS ARE SOLD, NOT TWO. The brief asked for offer_type to be
+ * exactly kit or subscription, and the two-bottle kit and the subscription
+ * do map cleanly. The single bottle is neither, and labelling it as a kit
+ * would make a 49.99 one-off read as a 74.99 kit in every revenue breakdown.
+ * It gets its own value instead, and the funnel counts all three the same
+ * because it counts events, not this property.
+ */
+const OFFER_TYPE: Record<OfferKind, string> = {
+  protocol: 'kit',
+  subscribe: 'subscription',
+  single: 'single',
+};
+
 /* -------------------------------------------------------- SPA pageviews -- */
 
 /**
@@ -61,6 +86,9 @@ export function pageView(path: string, title: string): void {
     page_location: window.location.href,
     page_title: title,
   });
+  /* PostHog's own pageview, sent by hand because capture_pageview is off:
+     see the comment above, which is the same reason. */
+  ph('$pageview', { $current_url: window.location.href, page_path: path });
 }
 
 /* --------------------------------------------------------------- meta -- */
@@ -183,17 +211,26 @@ export const track = {
   landingView(slug: string) {
     push('landing_view', { angle: slug || 'default' });
     meta('ViewContent', { content_name: `landing:${slug || 'default'}` }, true);
+    ph('hf_landing_viewed', { angle: slug || 'default' });
   },
 
   quizStart(slug: string) {
     push('quiz_start', { angle: slug || 'default' });
     meta('QuizStart', { angle: slug || 'default' });
+    ph('hf_quiz_started', { angle: slug || 'default' });
   },
 
   /** Fired once per question answered, so drop-off is visible per step. */
   quizStep(screen: string, index: number, total: number) {
     push('quiz_step', { screen, step: index, total });
     meta('QuizStep', { screen, step: index });
+    /* NO `answer` PROPERTY, deliberately. This fires when a question
+       RENDERS, which is before she has answered it, and what she chose
+       already rides to Klaviyo in full on the lead. Adding the answer here
+       would mean restructuring the hook for data we hold twice over. */
+    ph('hf_quiz_question_answered', {
+      question_number: index, question_id: screen, total,
+    });
   },
 
   /** The last question answered. Fired before the email gate, so the gap
@@ -201,45 +238,78 @@ export const track = {
   quizComplete(outcome: string) {
     push('quiz_complete', { outcome });
     meta('QuizComplete', { outcome });
+    ph('hf_quiz_completed', { quiz_segment: outcome });
   },
 
-  /** The email gate. This is the lead. */
-  lead(outcome: string) {
+  /** The email gate. This is the lead.
+   *
+   *  THE ADDRESS IS WHAT TIES HER TO THE ORDER. It is passed here only to
+   *  become the PostHog distinct id; it is not pushed to dataLayer, not sent
+   *  to Meta, and never put in a URL. */
+  lead(outcome: string, email = '') {
     push('generate_lead', { outcome });
     meta('Lead', { content_name: `outcome:${outcome}` }, true);
+    /* Lower-cased and trimmed HERE, at the edge of the tracking layer, so
+       "Jane@X.com " and "jane@x.com" are one woman and so the string that
+       becomes the distinct id is the one an order can be matched on. */
+    const id = email.trim().toLowerCase();
+    if (id) phIdentify(id, { quiz_segment: outcome });
+    ph('hf_lead_captured', { quiz_segment: outcome });
   },
 
   resultView(outcome: string) {
     push('result_view', { outcome });
     meta('QuizResult', { outcome });
+    ph('hf_result_viewed', { quiz_segment: outcome });
   },
 
   offerView(outcome: string) {
     push('view_offer', { outcome });
     meta('ViewContent', { content_name: 'offer', content_category: outcome }, true);
+    ph('hf_offer_viewed', { offer_variant: outcome, quiz_segment: outcome });
   },
 
   /** The Starter Guide page, by archetype. Her own plan, before any email. */
   planView(archetype: string) {
     push('view_plan', { archetype });
     meta('ViewContent', { content_name: 'plan', content_category: archetype }, true);
+    ph('hf_plan_viewed', { archetype });
   },
 
   /** She changed which bottle count she is buying. Fired on change, not on load. */
   selectOption(offer: string, value: number) {
     push('select_option', { offer, value, currency: 'USD' });
     meta('SelectOption', { offer, value });
+    ph('hf_offer_option_selected', {
+      offer_type: OFFER_TYPE[offer as OfferKind] ?? offer, plan: offer, price: value,
+    });
   },
 
-  /** The click out to the shop. The doctor route never reaches this. */
-  checkout(outcome: string, value: number) {
+  /**
+   * The click out to the shop. The doctor route never reaches this.
+   *
+   * THIS IS THE LAST THING THIS APP CAN SEE. The next paint is Shopify's
+   * cart on shop.jjsmithonline.com, so there is no hf_checkout_loaded and
+   * no hf_purchase_completed from here: both have to come from the store.
+   * Treat hf_cta_clicked as the end of the funnel this repo owns.
+   */
+  checkout(outcome: string, value: number, offer: OfferKind = 'protocol', where = 'offer') {
     push('begin_checkout', { outcome, value, currency: 'USD' });
     meta('InitiateCheckout', { value, currency: 'USD', content_name: 'Hormone Focus' }, true);
+    ph('hf_cta_clicked', {
+      offer_type: OFFER_TYPE[offer],
+      plan: offer,
+      price: value,
+      currency: 'USD',
+      cta_location: where,
+      quiz_segment: outcome,
+    });
   },
 
   doctorRoute(reason: string) {
     push('doctor_route', { reason });
     meta('DoctorRoute', { reason });
+    ph('hf_doctor_route', { reason });
   },
 };
 
@@ -489,4 +559,9 @@ if (typeof window !== 'undefined') {
   captureListLink();
   captureAttribution();
   captureQuizLanding();
+  /* AND POSTHOG, HERE RATHER THAN IN App.tsx, for the reason above: a module
+     every screen imports is reached whichever entry the host boots, and
+     initialising after captureListLink means the first $pageview cannot
+     carry k_id. initPostHog is itself a no-op on a second call. */
+  initPostHog();
 }

@@ -79,7 +79,7 @@ export function Gate() {
     setTouched(true);
     if (!ready || busy) return;
     setBusy(true);
-    track.lead(outcome);
+    track.lead(outcome, S.email);
     await submitLead(S, outcome, angle.slug);
     next();
   }

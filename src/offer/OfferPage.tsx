@@ -282,7 +282,7 @@ export function OfferPage({ live = false }: Props) {
             className="cta buyBtn"
             data-offer={DEFAULT_OFFER}
             href={shopUrl(SHOP_BASE, outcome, angle.slug, DEFAULT_OFFER)}
-            onClick={() => track.checkout(outcome, option.price)}
+            onClick={() => track.checkout(outcome, option.price, DEFAULT_OFFER, 'offer-sticky')}
           >
             {option.ctaShort} &nbsp;&rarr;
           </a>
