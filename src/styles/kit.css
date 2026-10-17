@@ -744,16 +744,6 @@
    needs less air above it than it did as a block of its own. */
 .kitLead .kitTrust { margin-top: 16px; }
 
-/* -- 3. what is inside, now a section of its own ------------------------ */
-
-/* It used to be a small label inside JJ's note. Standing on its own it is a
-   heading, so it is sized like one. .blabel still supplies the rest. */
-.kitSec > .kitPiecesT {
-  margin: 0 0 2px; text-align: center; text-transform: none;
-  font-size: clamp(19px, 4.8vw, 22px); font-weight: 800;
-  letter-spacing: -.01em; color: var(--ink);
-}
-
 /* -- 4. why it works ---------------------------------------------------- */
 
 .kitMech .kitBody { text-align: left; }
@@ -804,4 +794,79 @@
   .kitHeroProof { margin-top: 10px; gap: 6px; }
   .kitHeroProof .kitRev p { font-size: var(--t-small); }
   .kitHeroRisk { margin-top: 7px; }
+}
+
+/* -- the rating, on two lines ------------------------------------------- */
+
+/* It was one wrapping line, and "Verified by" plus the Okendo mark is wide
+   enough that on a phone it broke wherever there happened to be room. The
+   score reads on one line now and who attests to it on the next. */
+.pfRating { flex-direction: column; align-items: center; gap: 4px; }
+.pfRatingScore { display: inline-flex; align-items: center; gap: 7px; }
+.pfRatingBy {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink-3);
+}
+
+/* -- the two rails ------------------------------------------------------ */
+
+/* THE LANDING PAGE'S STRIPS, rebuilt on this page's furniture.
+ *
+ * FULL BLEED THE WAY .kitBand DOES IT: a negative inline margin of exactly one
+ * gutter, so the box ends on the viewport edge rather than past it. The track
+ * inside is wider than the screen by design and is clipped by .pfRailView, so
+ * the document never gains a horizontal scrollbar.
+ *
+ * SPACED BY MARGIN, NOT BY gap, AND THAT IS THE ONE THING CHANGED FROM THE
+ * LANDING PAGE. A doubled track slides -50% to loop, which only lands exactly
+ * on the second copy if the track is precisely twice one copy. With `gap`
+ * there are 2n-1 gaps rather than 2n, so half the width falls half a gap short
+ * and the loop jumps by that much every time it comes round. A right margin on
+ * every image makes each one w+gap wide, the track exactly 2n of them, and the
+ * seam invisible.
+ */
+.kitStrip { margin-top: 26px; }
+.pfRail, .pfPress { margin-inline: calc(var(--gutter) * -1); }
+.pfRailView {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.pfRailTrack {
+  display: flex; width: max-content;
+  animation: pfSlide 64s linear infinite reverse;
+}
+.pfRailTrack img {
+  flex: 0 0 auto; width: 132px; height: 172px; margin-right: 12px;
+  object-fit: cover; object-position: top center;
+  border-radius: 16px; background: var(--wash); box-shadow: var(--shadow);
+}
+
+.pfPress { margin-top: 20px; }
+.pfPressT {
+  margin: 0 var(--gutter) 10px; text-align: center;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.pfPressTrack {
+  display: flex; align-items: center; width: max-content;
+  animation: pfSlide 44s linear infinite;
+}
+.pfPressTrack img { flex: 0 0 auto; height: 44px; width: auto; margin-right: 38px; object-fit: contain; }
+
+@keyframes pfSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Hovering holds it still, so a woman can actually look at one. */
+.pfRail:hover .pfRailTrack, .pfPress:hover .pfPressTrack { animation-play-state: paused; }
+
+/* And it does not move at all for anyone who has asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  .pfRailTrack, .pfPressTrack { animation: none; }
+}
+
+.kitStrip .pfFb { margin-top: 20px; }
+
+@media (width >= 560px) {
+  .pfRailTrack img { width: 158px; height: 198px; margin-right: 16px; }
+  .pfPressTrack img { height: 52px; margin-right: 50px; }
 }

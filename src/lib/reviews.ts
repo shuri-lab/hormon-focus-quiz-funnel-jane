@@ -179,6 +179,29 @@ export const PROOF_FACES: string[] =
 
 export const OKENDO_MARK = '/img/proof/okendo.webp';
 
+/**
+ * Where JJ has been seen, as the landing page runs it.
+ *
+ * Copied from hormon-focus-landing-jane with the files, so the two doors show
+ * the same eight marks at the same sizes. These are JJ's own press, not the
+ * supplement's: no logo here is a claim about Hormone Focus, and none of them
+ * is presented as one.
+ *
+ * The widths are the landing page's, kept because the logos are different
+ * shapes and a uniform width would squash the wide ones. Height is set in CSS
+ * and these are the intrinsic ratios.
+ */
+export const PRESS_LOGOS: [src: string, name: string, w: number, h: number][] = [
+  ['/img/partners/nytimes.webp', 'The New York Times', 206, 70],
+  ['/img/partners/droz.webp', 'The Dr. Oz Show', 62, 70],
+  ['/img/partners/theview.webp', 'The View', 86, 70],
+  ['/img/partners/steveharvey.webp', 'The Steve Harvey Show', 103, 70],
+  ['/img/partners/nbc.webp', 'NBC', 48, 70],
+  ['/img/partners/fox.webp', 'Fox', 66, 70],
+  ['/img/partners/essence.webp', 'Essence', 113, 70],
+  ['/img/partners/womansworld.webp', "Woman's World", 77, 70],
+];
+
 export const FB_COMMENT = {
   src: '/img/proof/fb-comment.webp',
   alt: 'Facebook comment from Martinez Sullivan: this is a game changer, I have literally shed some inches and lbs, not to mention the hot flashes are gone when I take it',

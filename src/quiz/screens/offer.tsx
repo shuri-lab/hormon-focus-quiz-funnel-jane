@@ -6,12 +6,21 @@ import { OkendoWall } from '../../components/OkendoWall';
 import { VideoWall } from '../../components/VideoWall';
 import { mainConcern, stateKey } from '../../lib/logic';
 import { OFFER_DISCLAIMER, triedLine } from '../../lib/content';
+/* KIT_PIECES, KIT_PIECE_IDS, KIT_PIECES_TITLE and KIT_FOCUS_CLAIM are no
+   longer imported. The "What's inside" rows were the same four things the
+   kit card's own value stack already lists, with prices, directly under a
+   photograph of all four. David called it on 16 October: it was the offer
+   said twice. The copy is still exported and still under the claim gate.
+   The structure-function line that rode on the bottle row is not lost
+   either: "DIM. Supports healthy estrogen metabolism." says it in the
+   ingredient table a section below. */
 import {
-  CLOSE, KIT_CLOSE, KIT_FOCUS_CLAIM, KIT_INTRO, KIT_PIECES, KIT_PIECES_TITLE,
-  KIT_PIECE_IDS, KIT_TITLE, PRI, WHY60, WHY60_TITLE,
+  CLOSE, KIT_CLOSE, KIT_INTRO, KIT_TITLE, PRI, WHY60, WHY60_TITLE,
   cardAcks, meansFor, threeCards, underCardAcks,
 } from '../../lib/resultCopy';
-import { FacebookComment, Faces, Quote, RatingBadge } from '../../components/Proof';
+import {
+  FacebookComment, Faces, PhotoRail, PressRail, Quote, RatingBadge,
+} from '../../components/Proof';
 import { kitProof } from '../../lib/reviews';
 import { PROTOCOL_PRICE, dailyPrice, money } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
@@ -152,12 +161,16 @@ export function R2() {
         />
 
         {/* TWO FORMS OF PROOF, ON THE FIRST SCREEN: the rating with its count,
-            the faces, and one woman in her own words. The quote is verbatim
-            from reviews.ts and attributed, which is the only form the claims
-            rules allow. */}
+            and one woman in her own words. The quote is verbatim from
+            reviews.ts and attributed, which is the only form the claims rules
+            allow.
+
+            THE SIX OVERLAPPED FACES CAME OUT on 16 October. The photo rail
+            directly below shows all twelve of the same women at a size you
+            can actually see them, so the circles were the same proof twice,
+            smaller, in the one place on the page where height is scarce. */}
         <div className="kitHeroProof" data-proof="pre">
           <RatingBadge />
-          <Faces count={6} />
           {proof.lead[0] && <Quote review={proof.lead[0]} />}
         </div>
 
@@ -167,7 +180,23 @@ export function R2() {
         <p className="kitHeroRisk">{HERO_RISK}</p>
       </section>
 
-      {/* ------------------------------------------------ 2. the offer ----
+      {/* --------------------------------------------- 2. the proof strip ----
+          THE LANDING PAGE'S TWO RAILS, at David's request: the women first,
+          then where JJ has been seen, then the Facebook comment under both.
+          Same twelve photographs and the same eight marks as
+          hormon-focus-landing-jane, so the two doors agree.
+
+          It sits between the hero and the offer because that is the order the
+          page already argued in: she meets the women before she meets the
+          price. The hero's own button skips straight past it for anyone who
+          has seen enough. */}
+      <section className="kitSec kitStrip" data-proof="rail">
+        <PhotoRail />
+        <PressRail />
+        <FacebookComment />
+      </section>
+
+      {/* ------------------------------------------------ 3. the offer ----
           Moved up from section six. Same cards, same prices, same cart
           links; the one-time bottle is off the page and the subscription is
           the single alternative. */}
@@ -175,29 +204,15 @@ export function R2() {
         <KitOffer outcome={outcome} angle={angle.slug} />
       </section>
 
-      {/* --------------------------------------------- 3. what is inside ----
-          One row per piece: an image slot on the left, one line on the
-          right. The slots are empty until David supplies the pictures.
-          `kitPieceShot` and not `kitShot`: that one is the product
-          photograph, and reusing it restyled the wrong image. */}
-      <section className="kitSec">
-        <p className="blabel kitPiecesT">{KIT_PIECES_TITLE}</p>
-        <div className="kitRows">
-          {KIT_PIECE_IDS.map((id) => (
-            <div key={id} className={`kitRow kitRow-${id}`}>
-              <div className="kitPieceShot" data-kit-shot={id} aria-hidden="true" />
-              <div className="kitSay">
-                <span>{KIT_PIECES[id]}</span>
-                {/* The claim is never the headline: it sits under the dose
-                    line, small, on the bottle row alone. */}
-                {id === 'focus' && <small className="kitClaim">{KIT_FOCUS_CLAIM}</small>}
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* -------------------------------------------- 4. the guarantee ----
+          MOVED UP 16 OCTOBER, at David's request: it used to sit five
+          sections below, after the questions. The guarantee is the answer to
+          the price, so it belongs against the price. */}
+      <section className="kitBand teal">
+        <KitGuarantee />
       </section>
 
-      {/* ------------------------------------------- 4. why it works ----
+      {/* ------------------------------------------- 5. why it works ----
           The one thing that makes this more than the free advice she could
           have had: it is aimed at the hormones, which is why trying harder
           has not worked. The two sentences under the heading are her own
@@ -231,7 +246,7 @@ export function R2() {
         </div>
       </section>
 
-      {/* ------------------------------------------- 5. the wall of love ----
+      {/* ------------------------------------------- 6. the wall of love ----
           Surfaced from section twelve. Nine women on camera, then the live
           Okendo reviews, then the three named testimonials. Stacked, never a
           carousel: a carousel shows one review and hides the weight of the
@@ -259,11 +274,10 @@ export function R2() {
         <div className="kitRevs" data-proof="lead">
           {proof.lead.slice(1).map((r) => <Quote key={r.name} review={r} />)}
         </div>
-        <FacebookComment />
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>
 
-      {/* -------------------------------------------- 6. on the plan ----
+      {/* -------------------------------------------- 7. on the plan ----
           The old opening, in its right place. Three things, because four
           reads as more effort, and her own two cards are what step two
           actually is. Then why it runs sixty days for the concern she
@@ -324,7 +338,7 @@ export function R2() {
         </div>
       </section>
 
-      {/* ------------------------------------------------- 7. questions ---- */}
+      {/* ------------------------------------------------- 8. questions ---- */}
       <section className="kitSec">
         <p className="kitEyebrow">{KIT_FAQ_EYEBROW}</p>
         <h2 className="kitH2">{KIT_FAQ_HEAD}</h2>
@@ -338,13 +352,7 @@ export function R2() {
         </div>
       </section>
 
-      {/* THE GUARANTEE ANSWERS THE PRICE, and the questions ask about it, so
-          the badge is repeated here under them. */}
-      <section className="kitBand teal">
-        <KitGuarantee />
-      </section>
-
-      {/* ---------------------------- 8. one last review, and the button ---- */}
+      {/* ---------------------------- 9. one last review, and the button ---- */}
       <section className="kitSec kitClose">
         <div data-proof="closing"><Quote review={proof.closing} long /></div>
         <h2 className="kitH2">{CLOSE_HEAD}</h2>

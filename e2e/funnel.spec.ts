@@ -209,7 +209,7 @@ test.describe('the quiz', () => {
        carries the stage from the result page she has just read. */
     await expect(heading(page)).toHaveText('Sleep through the night again.');
     await expect(page.locator('.kitHeroEyebrow')).toHaveText('Your perimenopause plan');
-    await expect(page.locator('.kitHeroSub')).toContainText('One simple plan for your hormones');
+    await expect(page.locator('.kitHeroSub')).toContainText('Two capsules a day');
 
     /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
        rebuild: a button, the risk taken off it, and two forms of proof. */
@@ -282,23 +282,35 @@ test.describe('the quiz', () => {
       .toContainText('they start noticing better nights in the first month');
     await expect(page.locator('.why60')).toContainText('Many women tell me');
 
-    /* Four pieces under their own heading, one row each, with a slot for the
-       picture David supplies. `kitPieceShot`, because `kitShot` is the product
-       photograph further down the offer. */
-    await expect(page.locator('.kitPiecesT')).toHaveText("What's inside");
-    await expect(page.locator('.kitRow')).toHaveCount(4);
-    await expect(page.locator('.kitPieceShot')).toHaveCount(4);
-    await expect(page.locator('.kitRow').nth(0)).toContainText('The 60-Day Hormone Fix Guide');
-    await expect(page.locator('.kitRow').nth(3)).toContainText('Two capsules with a meal every day');
-    /* One claim about the bottle, small, under the dose line, and nowhere else. */
-    await expect(page.locator('.kitClaim')).toHaveCount(1);
-    await expect(page.locator('.kitClaim')).toHaveText('Hormone Focus supports healthy estrogen metabolism.');
+    /* "WHAT'S INSIDE" IS OFF THE PAGE, 16 October. Those four rows named the
+       same four things the kit card's value stack already lists, with
+       prices, under a photograph of all four: the offer said twice. The kit
+       card is where she reads what is in it now. */
+    await expect(page.locator('.kitPiecesT')).toHaveCount(0);
+    await expect(page.locator('.kitRow')).toHaveCount(0);
+    await expect(page.locator('.kitClaim')).toHaveCount(0);
+    /* It is still said, where she is reading about the formula rather than
+       about the box. */
+    await expect(page.locator('.kitMg')).toContainText('Supports healthy estrogen metabolism.');
     /* THE FORMULA IS OFF THIS PAGE. It stays on the offer page below. */
     for (const ingredient of ['DIM', 'Calcium D-Glucarate', 'BioPerine']) {
       await expect(page.locator('.nextHow'), ingredient).not.toContainText(ingredient);
     }
     await expect(page.getByText('Not one more thing to try. Just one plan built around feeling like you again.')).toBeVisible();
-    await expect(page.locator('[data-proof="pre"] .pfFaces img')).toHaveCount(6);
+    /* THE SIX OVERLAPPED FACES ARE GONE from the hero, and the rail under it
+       shows all twelve of the same women at a size she can see. Same proof,
+       once, in the place where height is not scarce. */
+    await expect(page.locator('[data-proof="pre"] .pfFaces')).toHaveCount(0);
+    /* Twelve photographs, doubled, which is what makes the loop seamless. */
+    await expect(page.locator('[data-proof="rail"] .pfRailTrack img')).toHaveCount(24);
+    await expect(page.locator('[data-proof="rail"] .pfPressTrack img')).toHaveCount(16);
+    /* Each outlet named once: the second copy of the track is blank so a
+       screen reader does not read the press list twice. */
+    await expect(page.locator('[data-proof="rail"] .pfPressTrack img[alt="The New York Times"]'))
+      .toHaveCount(1);
+    /* And the Facebook comment sits under both rails, not in the review wall. */
+    await expect(page.locator('[data-proof="rail"] .pfFb img'))
+      .toHaveAttribute('alt', /Martinez Sullivan/);
     /* THE LEAD REVIEW IS NO LONGER PERSONALISED. It used to answer her main
        concern — a woman who said sleep met a woman who slept. David asked for
        the four from JJ's own "Join the women" section, which are the same for
@@ -367,8 +379,18 @@ test.describe('the quiz', () => {
       .toBeVisible();
     await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
     await expect(page.locator("[data-proof=\"lead\"]").locator("xpath=..").locator(".pfFaces img")).toHaveCount(12);
-    await expect(page.locator('.kitSec .pfRating').first()).toContainText('171 reviews');
-    await expect(page.locator('.pfFb img')).toHaveAttribute('alt', /Martinez Sullivan/);
+    /* THE HERO'S RATING, which always renders. It used to read the first one
+       inside a .kitSec, and the only one left there is the Okendo fallback's
+       own badge: the wall moved up the page in the 16 October rebuild, so
+       whether that fallback is what renders is now a race with the live
+       fetch. The hero is not a race.
+
+       TWO LINES SINCE 16 OCTOBER: the score, then who verified it. */
+    const rating = page.locator('.kitHeroProof .pfRating');
+    await expect(rating.locator('.pfRatingScore')).toContainText('4.9');
+    await expect(rating.locator('.pfRatingScore')).toContainText('171 reviews');
+    await expect(rating.locator('.pfRatingBy')).toContainText('Verified by');
+    await expect(rating.locator('.pfRatingBy img')).toHaveAttribute('alt', 'Okendo');
 
     /* The guarantee, the questions, and the button again. */
     await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
@@ -688,6 +710,56 @@ test.describe('the kit page', () => {
       expect(order, 'the hero, the offer or the plan is missing').not.toBeNull();
       expect(order!.offerAfterHero, 'the offer must follow the hero').toBe(true);
       expect(order!.planAfterOffer, 'the tips must follow the offer').toBe(true);
+    });
+
+  test('the guarantee answers the price directly, with nothing in between',
+    async ({ page }) => {
+      /* MOVED 16 OCTOBER at David's request. It sat five sections below,
+         after the questions. The guarantee is the answer to the price, so it
+         has to be the next thing she reads after it: asserted as the very
+         next band rather than merely somewhere below, because "after the
+         offer" was true of the old position too. */
+      await page.goto('/quiz/kit');
+      const bands = await page.locator('.kitBand').evaluateAll(
+        (els) => els.map((e) => e.className),
+      );
+      expect(bands[0], 'the offer is the first band').toBe('kitBand');
+      expect(bands[1], 'the guarantee is the one directly under it').toBe('kitBand teal');
+      await expect(page.locator('.kitBand').nth(1).locator('.kitPromise'))
+        .toContainText('60-Day Happiness Guarantee');
+    });
+
+  test('both rails loop seamlessly, which is arithmetic and not a judgement',
+    async ({ page }) => {
+      /* A doubled track slides -50% to loop, so it only lands exactly on the
+         second copy if the track is precisely twice one copy. Spacing it with
+         `gap` gives 2n-1 gaps rather than 2n, and the loop jumps by half a
+         gap every time it comes round. Each image carries its own right
+         margin instead, so this holds: the track is exactly twice the width
+         of one copy of it. */
+      await page.goto('/quiz/kit');
+      const w = await page.evaluate(() => {
+        const one = (sel: string) => {
+          const track = document.querySelector(sel);
+          if (!track) return null;
+          const kids = Array.from(track.children) as HTMLElement[];
+          const total = track.getBoundingClientRect().width;
+          const first = kids.slice(0, kids.length / 2).reduce((n, el) => {
+            const box = el.getBoundingClientRect().width;
+            const gap = parseFloat(getComputedStyle(el).marginRight) || 0;
+            return n + box + gap;
+          }, 0);
+          return { total: Math.round(total), half: Math.round(first) };
+        };
+        return { photos: one('.pfRailTrack'), press: one('.pfPressTrack') };
+      });
+      for (const [name, m] of Object.entries(w)) {
+        expect(m, `${name} rail is missing`).not.toBeNull();
+        expect(
+          Math.abs(m!.total / 2 - m!.half),
+          `the ${name} rail jumps ${Math.abs(m!.total / 2 - m!.half)}px every loop`,
+        ).toBeLessThan(1);
+      }
     });
 
   test('the one-time bottle is off this page and still sold on the offer pages',

@@ -223,9 +223,22 @@ export const HERO_HEAD: Record<SymptomId, string> = {
 /** When she named nothing, which is every woman who opens this page cold. */
 export const HERO_HEAD_DEFAULT = 'Feel like YOU again.';
 
+/**
+ * How it works, and how little it asks of her.
+ *
+ * REWRITTEN 16 October at David's request. The first draft read "One simple
+ * plan for your hormones: the right support, the right food, and a tracker so
+ * you can see what changes", which listed three abstractions before it said
+ * anything she could picture. This one leads with the two capsules, because
+ * that is the whole of what she actually has to do, and closes on JJ's own
+ * line from the bottom of the page.
+ */
 export const HERO_SUB =
-  'One simple plan for your hormones: the right support, the right food, and '
-  + 'a tracker so you can see what changes. Two capsules a day. No overhauls.';
+  'Two capsules a day, meals that keep you full, and a tracker that shows you '
+  + 'what is changing. One plan for your hormones, not one more thing to try.';
+
+/** Over the logo rail. JJ's own press, and never the supplement's. */
+export const PRESS_EYEBROW = 'As seen in';
 
 export const HERO_CTA = 'START MY 60 DAYS';
 

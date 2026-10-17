@@ -1,7 +1,8 @@
 import { Stars } from './icons';
 import {
-  FB_COMMENT, OKENDO_MARK, PROOF_FACES, RATING, REVIEW_COUNT, type Review,
+  FB_COMMENT, OKENDO_MARK, PRESS_LOGOS, PROOF_FACES, RATING, REVIEW_COUNT, type Review,
 } from '../lib/reviews';
+import { PRESS_EYEBROW } from '../lib/kitCopy';
 
 /* SOCIAL PROOF, as it already runs on JJ's offer page.
  *
@@ -9,15 +10,91 @@ import {
  * comment. Every review shown with them is a customer's own words, quoted in
  * full, with "Individual results vary" under it. */
 
-/** "★★★★★ 4.9 · 171 reviews · Verified by Okendo". The count never travels without the rating. */
+/**
+ * The score on one line, who verified it on the next.
+ *
+ * TWO LINES SINCE 16 OCTOBER, at David's request. It was one wrapping line,
+ * and "Verified by" plus the Okendo mark is wide enough that on a phone it
+ * broke wherever there happened to be room: usually after "Verified by",
+ * leaving the mark stranded on a line of its own under a ragged first one.
+ * Breaking it on purpose puts the number she is reading for on one line and
+ * the attestation under it, which is the order she reads them in anyway.
+ *
+ * The count never travels without the rating.
+ */
 export function RatingBadge() {
   return (
     <p className="pfRating">
-      <span className="pfStars"><Stars n={5} /></span>
-      <b>{RATING}</b>
-      <span>· {REVIEW_COUNT} reviews · Verified by</span>
-      <img src={OKENDO_MARK} alt="Okendo" width={315} height={68} loading="lazy" decoding="async" />
+      <span className="pfRatingScore">
+        <span className="pfStars"><Stars n={5} /></span>
+        <b>{RATING}</b>
+        <span>· {REVIEW_COUNT} reviews</span>
+      </span>
+      <span className="pfRatingBy">
+        Verified by
+        <img src={OKENDO_MARK} alt="Okendo" width={315} height={68} loading="lazy" decoding="async" />
+      </span>
     </p>
+  );
+}
+
+/**
+ * The customer photographs, moving.
+ *
+ * THE LANDING PAGE'S OWN STRIP, rebuilt here from the same twelve files so
+ * the two doors show the same women. The track holds the twelve twice and
+ * slides exactly half its width, which is what makes the loop seamless: at
+ * -50% the second copy is sitting precisely where the first one started, so
+ * the jump back to 0 is invisible.
+ *
+ * EVERY IMAGE IS alt="". Twenty-four identical alt strings is noise in a
+ * screen reader, and the strip is decoration: the heading above it and the
+ * reviews below it are what actually carry the proof. The list is labelled
+ * instead.
+ *
+ * It pauses on hover, and it does not move at all for a visitor who has asked
+ * for reduced motion.
+ */
+export function PhotoRail() {
+  return (
+    <div className="pfRail" aria-label="Photographs of Hormone Focus customers">
+      <div className="pfRailView">
+        <div className="pfRailTrack">
+          {[...PROOF_FACES, ...PROOF_FACES].map((src, i) => (
+            <img
+              key={`${src}-${i}`} src={src} alt="" width={300} height={468}
+              loading="lazy" decoding="async"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Where JJ has been seen, moving the other way.
+ *
+ * The logos are named in alt text on the first copy of the track and blank on
+ * the second, so each outlet is announced once rather than twice. Same
+ * doubling and same -50% as the photographs above.
+ */
+export function PressRail() {
+  return (
+    <div className="pfPress">
+      <p className="pfPressT">{PRESS_EYEBROW}</p>
+      <div className="pfRailView">
+        <div className="pfPressTrack">
+          {[...PRESS_LOGOS, ...PRESS_LOGOS].map(([src, name, w, h], i) => (
+            <img
+              key={`${src}-${i}`} src={src} width={w} height={h}
+              alt={i < PRESS_LOGOS.length ? name : ''}
+              loading="lazy" decoding="async"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
