@@ -749,3 +749,20 @@ h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.022em; line-height: 1.
   .coverRailTrack { animation: none; }
   .coverRail { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
+
+/* THE STAR ROW, which has to survive a reset it cannot see.
+ *
+ * The deployed host injects `svg { display: block }` and this repo does not,
+ * so five stars that sat on one line locally stacked into a column live. A
+ * flex container lays its children in a row whether they are inline or block,
+ * which makes the row independent of whatever reset is in scope.
+ *
+ * Every existing size rule still applies: .pfStars svg, .kitRevStars svg,
+ * .okRev svg, .stars svg and .rate svg are all descendant selectors and reach
+ * straight through this wrapper. */
+.starRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+}

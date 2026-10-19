@@ -811,6 +811,54 @@ test.describe('the kit page', () => {
       }
     });
 
+  test('the stars stay in a row under the reset the deployed host injects',
+    async ({ page }) => {
+      /* THE BUG THIS EXISTS FOR, 19 October 2026. Stars() returned a bare
+         fragment of <svg> and borrowed its layout from whatever contained it.
+         An <svg> is display:inline by default, so locally the five of them
+         flowed along a line and every page looked right.
+         The host that builds this src/ injects a CSS reset this repo does
+         not, of the shape every modern one ships:
+             img, svg, video, canvas { display: block; }
+         Under it each star became a block and the five stacked vertically
+         down the side of every live Okendo review. Local inline, live block,
+         and nothing in the repo looked wrong.
+         So the reset is applied here on purpose. Without the flex wrapper in
+         Stars() this fails with the live y positions, 40/56/72/88/104. */
+      await page.addInitScript(() => {
+        addEventListener('DOMContentLoaded', () => {
+          const s = document.createElement('style');
+          s.textContent = 'img,svg,video,canvas,audio,iframe,embed,object{display:block}';
+          document.head.appendChild(s);
+        });
+      });
+
+      for (const route of ['/quiz/kit', '/offer']) {
+        await page.goto(route);
+        const wall = page.locator('.okWall');
+        if (await wall.count()) {
+          await wall.scrollIntoViewIfNeeded();
+          /* Give the live reviews a chance to replace the fallback, because
+             the live ones are the markup that broke. */
+          await page.waitForTimeout(2500);
+        }
+
+        const rows = await page.locator('.starRow').evaluateAll((els) => els.map((row) => {
+          const ys = Array.from(row.children).map((k) => Math.round(k.getBoundingClientRect().y));
+          return { count: ys.length, lines: new Set(ys).size, parent: row.parentElement?.className ?? '?' };
+        }));
+
+        expect(rows.length, `${route} shows no stars at all`).toBeGreaterThan(0);
+        for (const r of rows) {
+          if (r.count < 2) continue;
+          expect(
+            r.lines,
+            `${route}: ${r.count} stars in .${r.parent} fell onto ${r.lines} lines`,
+          ).toBe(1);
+        }
+      }
+    });
+
   test('"What women are saying" shows customers whether or not Okendo answers',
     async ({ page }) => {
       /* The live wall is a network call, so this asserts the contract rather
