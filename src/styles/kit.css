@@ -870,3 +870,10 @@
   .pfRailTrack img { width: 158px; height: 198px; margin-right: 16px; }
   .pfPressTrack img { height: 52px; margin-right: 50px; }
 }
+
+/* The bridge close, the last thing she reads before the button. Set like the
+   result page's own prose rather than as a callout: it is JJ talking, not a
+   banner, and a box here would read as the first piece of selling. */
+.resClose {
+  margin: 22px 0 0; font-size: var(--t-body); line-height: 1.5; color: var(--ink);
+}

@@ -192,12 +192,34 @@ test.describe('the quiz', () => {
 
     /* It is one answer: no hedging between two, and still nothing to buy. */
     const resultText = await page.locator('.rise').innerText();
-    for (const banned of ['between two', 'closer fit', 'may be part of the picture', 'You have ', 'estrogen', '$']) {
+    for (const banned of ['between two', 'closer fit', 'may be part of the picture', 'estrogen', '$']) {
       expect(resultText, banned).not.toContain(banned);
+    }
+    /* NO SENTENCE TELLS HER SHE HAS A STAGE, which is what the bare string
+       'You have ' used to stand in for. The bridge close added on 19 October
+       opens "You have already tried eating better and moving more", which is
+       a statement about what she told the quiz and not a diagnosis, and the
+       crude string could not tell the two apart. The rule it was protecting
+       is written out instead, so it still fails on "You have perimenopause"
+       and no longer fails on a sentence about her own answers. */
+    for (const stage of ['perimenopause', 'menopause', 'a hormonal imbalance', 'early menopause']) {
+      expect(resultText.toLowerCase(), `told she HAS ${stage}`)
+        .not.toContain(`you have ${stage}`);
+      expect(resultText.toLowerCase(), `told she IS in ${stage}`)
+        .not.toContain(`you are in ${stage}`);
     }
     await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
 
-    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
+    /* THE BRIDGE CLOSE, 19 October. The result used to end on the fact above
+       and hand her to a page that opened with a price. This names the reason
+       before she gets there, and the offer page opens on the same thread. */
+    await expect(page.locator('.resClose')).toHaveText(
+      'You have already tried eating better and moving more. This is not about '
+      + 'trying harder. It is about what is happening with your hormones. '
+      + 'Let me show you where I would start.',
+    );
+
+    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME MY PLAN');
     await page.locator('.actionBar .cta').click();
 
     /* RESULT PAGE 2. REBUILT 16 OCTOBER 2026 for conversion. It opened on
@@ -811,7 +833,55 @@ test.describe('the kit page', () => {
       }
     });
 
+  test('why it works renders before the price, which is the point of the change',
+    async ({ page }) => {
+      /* THE CHANGE THIS PR MAKES. The reasoning sat at section five, after the
+         offer and the guarantee, so she met $74.99 before she had been given
+         any reason the product was the answer. Asserted by document position
+         so a later edit that moves it back below the price fails here. */
+      await page.goto('/quiz/kit');
+      const where = await page.evaluate(() => {
+        const mech = document.querySelector('.kitMech');
+        const offer = document.querySelector('#kit-offer');
+        if (!mech || !offer) return null;
+        return {
+          mechFirst: Boolean(mech.compareDocumentPosition(offer) & Node.DOCUMENT_POSITION_FOLLOWING),
+          copies: document.querySelectorAll('.kitMech').length,
+        };
+      });
+      expect(where, 'why-it-works or the offer is missing').not.toBeNull();
+      expect(where!.mechFirst, 'why it works must come before the price').toBe(true);
+      expect(where!.copies, 'the block was moved, not duplicated').toBe(1);
+
+      /* And the two scroll targets still mean the price, not the reasoning. */
+      await page.locator('.kitHeroCta').click();
+      await page.waitForTimeout(1200);
+      const offerTop = (await page.locator('.kitBand').first().boundingBox())!.y;
+      const mechTop = (await page.locator('.kitMech').boundingBox())!.y;
+      expect(Math.abs(offerTop), 'the hero CTA lands on the price').toBeLessThan(140);
+      expect(mechTop, 'and has scrolled past why it works').toBeLessThan(-100);
+    });
+
+  test('the bridge says nothing she did not say', async ({ page }) => {
+    /* The opening clause is a claim about her. A woman who ticked "Nothing
+       yet" never told the quiz she had changed how she eats, so neither page
+       may tell her she did. Deep-linked there are no answers at all, which is
+       the same case with nothing behind it. */
+    await page.goto('/quiz/kit');
+    const mech = await page.locator('.kitMech').innerText();
+    expect(mech, 'deep-linked, so she said nothing')
+      .not.toContain('You have already tried');
+    expect(mech, 'and the rest of the bridge still reads')
+      .toContain('When the change is coming from your hormones');
+
+    await page.goto('/quiz/result');
+    await expect(page.locator('.resClose')).toHaveText(
+      'This is not about trying harder. It is about what is happening with '
+      + 'your hormones. Let me show you where I would start.',
+    );
+  });
   test('the stars stay in a row under the reset the deployed host injects',
+
     async ({ page }) => {
       /* THE BUG THIS EXISTS FOR, 19 October 2026. Stars() returned a bare
          fragment of <svg> and borrowed its layout from whatever contained it.
@@ -870,4 +940,67 @@ test.describe('the kit page', () => {
       await wall.scrollIntoViewIfNeeded();
       await expect(wall.locator('.okRev, .kitRev').first()).toBeVisible({ timeout: 15000 });
     });
+});
+
+/* -------------------------------------- the result to offer handoff -- */
+
+test.describe('the handoff from the result', () => {
+  test('her ad tags cross to the offer and her answers do not', async ({ page }) => {
+    /* TWO RULES AT ONCE, and they pull against each other. Every marketing
+       parameter has to survive the step, and nothing about her body may ride
+       with them: her answers travel in app state, never in the query. */
+    const ad = 'utm_source=fb&utm_campaign=test&fbclid=abc&utm_medium=paid';
+    await startQuiz(page, `/quiz/symptoms?${ad}`);
+
+    await page.locator('.tile').nth(0).click();
+    await page.locator('.tile').nth(1).click();
+    await answerAndWait(page, pressPrimary(page), /Which one bothers you the most/);
+    await answerAndWait(page, pickOption(page, 1), /How old are you/);
+    await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
+    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await page.locator('.opt').nth(1).click();
+
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 10_000 });
+    await page.fill('#nf', 'Renee');
+    await page.fill('#ef', 'renee@example.com');
+    await page.locator('#cf').check();
+    await page.locator('.actionBar .cta').click();
+
+    await expect(page.locator('.resClose')).toBeVisible({ timeout: 10_000 });
+    for (const pair of ad.split('&')) {
+      await expect(page, `${pair} was dropped before the result`).toHaveURL(
+        new RegExp(pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+      );
+    }
+
+    /* The step this PR renamed, and the one the whole handoff turns on. */
+    await page.locator('.actionBar .cta').click();
+    await expect(page).toHaveURL(/\/quiz\/kit/);
+    for (const pair of ad.split('&')) {
+      await expect(page, `${pair} was dropped crossing to the offer`).toHaveURL(
+        new RegExp(pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+      );
+    }
+
+    /* Nothing about her body is in the address bar. */
+    const url = page.url().toLowerCase();
+    for (const leak of ['sleep', 'weight', 'energy', 'perimenopause', 'menopause', 'outcome', 'symptom', 'renee', 'example.com']) {
+      expect(url, `${leak} is in the URL`).not.toContain(leak);
+    }
+
+    /* And the tags are on the cart links she can press from here. */
+    const hrefs = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
+      (as) => as.map((a) => (a as HTMLAnchorElement).href),
+    );
+    expect(hrefs.length).toBeGreaterThanOrEqual(3);
+    for (const href of hrefs) {
+      for (const pair of ad.split('&')) {
+        expect(href, `${pair} is missing from a cart link`).toContain(pair);
+      }
+      expect(href).not.toMatch(/outcome|perimenopause|symptom|renee/i);
+    }
+  });
 });

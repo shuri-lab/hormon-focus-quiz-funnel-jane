@@ -71,6 +71,31 @@ export const STAGE_LINE =
 export const EARLY_DOCTOR_LINE =
   "This is the one result I'd take to your doctor soon, because it's the one where a blood test helps.";
 
+/* ------------------------------------------------- the bridge close ----- */
+
+/*
+ * THE LAST THING SHE READS BEFORE THE BUTTON, and the first half of one
+ * argument that finishes on the offer page.
+ *
+ * The result used to end on a sourced fact and hand straight over to a page
+ * that opened with a price. She met $74.99 before she had been given any
+ * reason the product was the answer, so the warm result read as a pitch the
+ * moment she pressed the button. This names the reason here, in JJ's voice,
+ * and the offer page picks the same thread up above its price.
+ *
+ * NO PRODUCT, PRICE, REVIEW OR LINK, which is not a style choice: the result
+ * page is sell-free and the tests fail the build if that changes.
+ *
+ * TWO PIECES BECAUSE THE FIRST ONE IS A CLAIM ABOUT HER. It is only true of a
+ * woman who told the quiz she has already changed how she eats or moved more,
+ * so it is rendered only for her. Everyone else reads the second piece alone,
+ * which stands on its own as a sentence.
+ */
+export const RESULT_CLOSE_TRIED = 'You have already tried eating better and moving more.';
+export const RESULT_CLOSE =
+  'This is not about trying harder. It is about what is happening with your '
+  + 'hormones. Let me show you where I would start.';
+
 /* ------------------------------------------ the pattern line, by how often */
 
 export const PAT: Record<Pattern, string> = {
@@ -233,6 +258,18 @@ export const ACK: Record<'food' | 'sleep' | 'gym' | 'supps' | 'doctor', string> 
 };
 
 const tried = (S: QuizState, id: TriedId) => S.tried.indexOf(id) > -1;
+
+/**
+ * Did she tell the quiz she has already changed how she eats, or moved more?
+ *
+ * The same two answers the card acknowledgements above are keyed on, read
+ * through the same helper, so the close on the result page and the
+ * acknowledgement inside her weight card can never disagree about what she
+ * said. 'sleep', 'supps' and 'doctor' are attempts too, but they are not
+ * eating better or moving more and this sentence names those two.
+ */
+export const triedDietOrExercise = (S: QuizState): boolean =>
+  tried(S, 'food') || tried(S, 'gym');
 
 /**
  * The acknowledgement that sits inside a card, keyed by the card it belongs to.

@@ -268,6 +268,32 @@ export const SUB_ALT_NAME = 'Hormone Focus subscription';
 export const MECH_EYEBROW = 'Why it works';
 export const MECH_HEAD = 'This is not about willpower. It is about your hormones.';
 
+/*
+ * THE SECOND HALF OF THE ARGUMENT THE RESULT PAGE STARTS.
+ *
+ * She reads "This is not about trying harder. It is about what is happening
+ * with your hormones" on her result, presses the button, and this is the
+ * first thing under the headline on the other side. The two pages are one
+ * argument rather than a warm result that turns into a pitch.
+ *
+ * It sits ABOVE THE PRICE on purpose, which is the point of the change: the
+ * reason the product is the answer has to be read before the number, not five
+ * sections after it.
+ *
+ * SPLIT LIKE THE RESULT PAGE'S CLOSE, and for the same reason. The first
+ * sentence is a claim about her and is only true if she said it, so it is
+ * rendered only for a woman who told the quiz she had already changed how she
+ * eats or moved more. The rest stands alone.
+ *
+ * NO DOSE HERE. HF_BODY says "Two capsules a day with a meal" a few lines
+ * below and saying it twice in one block reads as padding.
+ */
+export const MECH_TRIED = 'You have already tried eating better and moving more.';
+export const MECH_BRIDGE =
+  'When the change is coming from your hormones, trying harder is not the '
+  + 'missing piece. What shifts in these years is how your body processes and '
+  + 'clears used hormones. Hormone Focus is built to support that.';
+
 /* ------------------------------------------------------------- the plan -- */
 
 /**

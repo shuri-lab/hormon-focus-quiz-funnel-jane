@@ -11,7 +11,8 @@ import {
   STAGE_FACT, WANT_PHRASE, cycleShort,
 } from '../../lib/content';
 import {
-  CLOSE, EARLY_DOCTOR_LINE, HEAD, PAT, STAGE_LINE, SYM, meansFor, symExtra,
+  CLOSE, EARLY_DOCTOR_LINE, HEAD, PAT, RESULT_CLOSE, RESULT_CLOSE_TRIED, STAGE_LINE, SYM,
+  meansFor, symExtra, triedDietOrExercise,
 } from '../../lib/resultCopy';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
@@ -125,11 +126,28 @@ export function R1() {
         <p className="resFactSrc">Source: {fact.source}</p>
       </section>
 
+      {/* THE BRIDGE, and the first half of one argument.
+          The page used to end on the fact above and hand her to a screen that
+          opened with a price, so the result read as warm right up to the
+          moment it turned into a pitch. This names the reason before she gets
+          there, and the offer page picks the same thread up above its own
+          price.
+
+          THE FIRST SENTENCE IS A CLAIM ABOUT HER, so it is rendered only when
+          she actually said it. A woman who ticked neither reads the rest on
+          its own, which is a whole sentence by itself. Deep-linked with no
+          answers at all she reads the same fallback, because
+          triedDietOrExercise is false on an empty state. */}
+      <p className="resClose">
+        {triedDietOrExercise(S) && `${RESULT_CLOSE_TRIED} `}
+        {RESULT_CLOSE}
+      </p>
+
       <p className="fine">{CANNOT_TELL}</p>
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
-          SHOW ME WHAT TO DO NEXT &rarr;
+          SHOW ME MY PLAN &rarr;
         </button>
       </ActionBar>
     </Screen>

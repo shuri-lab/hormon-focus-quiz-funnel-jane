@@ -16,7 +16,7 @@ import { OFFER_DISCLAIMER, triedLine } from '../../lib/content';
    ingredient table a section below. */
 import {
   CLOSE, KIT_CLOSE, KIT_INTRO, KIT_TITLE, PRI, WHY60, WHY60_TITLE,
-  cardAcks, meansFor, threeCards, underCardAcks,
+  cardAcks, meansFor, threeCards, triedDietOrExercise, underCardAcks,
 } from '../../lib/resultCopy';
 import {
   FacebookComment, Faces, PhotoRail, PressRail, Quote, RatingBadge,
@@ -27,7 +27,7 @@ import { INGREDIENTS } from '../../lib/offerCopy';
 import {
   CLOSE_CTA, CLOSE_HEAD, HF_BODY, HF_EYEBROW, HF_HEAD, HERO_CTA, HERO_EYEBROW, HERO_HEAD,
   HERO_HEAD_DEFAULT, HERO_RISK, HERO_SUB, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
-  MECH_EYEBROW, MECH_HEAD, PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY,
+  MECH_BRIDGE, MECH_EYEBROW, MECH_HEAD, MECH_TRIED, PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY,
   PLAN_STEP_2, PLAN_STEP_3, PROOF_EYEBROW, PROOF_HEAD, PROOF_NOTE, STICKY_CTA,
 } from '../../lib/kitCopy';
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
@@ -180,46 +180,29 @@ export function R2() {
         <p className="kitHeroRisk">{HERO_RISK}</p>
       </section>
 
-      {/* --------------------------------------------- 2. the proof strip ----
-          THE LANDING PAGE'S TWO RAILS, at David's request: the women first,
-          then where JJ has been seen, then the Facebook comment under both.
-          Same twelve photographs and the same eight marks as
-          hormon-focus-landing-jane, so the two doors agree.
+      {/* -------------------------------------------- 2. why it works ----
+          MOVED ABOVE THE PRICE, 19 October. It was section five, after the
+          offer and the guarantee, so she met $74.99 before she had been given
+          any reason the product was the answer and a warm result turned into
+          a pitch the moment she arrived. The reason comes first now, and it
+          opens on the sentence her result page closed with.
 
-          It sits between the hero and the offer because that is the order the
-          page already argued in: she meets the women before she meets the
-          price. The hero's own button skips straight past it for anyone who
-          has seen enough. */}
-      <section className="kitSec kitStrip" data-proof="rail">
-        <PhotoRail />
-        <PressRail />
-        <FacebookComment />
-      </section>
-
-      {/* ------------------------------------------------ 3. the offer ----
-          Moved up from section six. Same cards, same prices, same cart
-          links; the one-time bottle is off the page and the subscription is
-          the single alternative. */}
-      <section className="kitBand" ref={offer}>
-        <KitOffer outcome={outcome} angle={angle.slug} />
-      </section>
-
-      {/* -------------------------------------------- 4. the guarantee ----
-          MOVED UP 16 OCTOBER, at David's request: it used to sit five
-          sections below, after the questions. The guarantee is the answer to
-          the price, so it belongs against the price. */}
-      <section className="kitBand teal">
-        <KitGuarantee />
-      </section>
-
-      {/* ------------------------------------------- 5. why it works ----
           The one thing that makes this more than the free advice she could
           have had: it is aimed at the hormones, which is why trying harder
-          has not worked. The two sentences under the heading are her own
-          result page, so no new claim arrives with the new section. */}
+          has not worked. The sentences under the bridge are her own result
+          page, so no new claim arrives with the new position. */}
       <section className="kitSec kitMech">
         <p className="kitEyebrow">{MECH_EYEBROW}</p>
         <h2 className="kitH2">{MECH_HEAD}</h2>
+
+        {/* THE THREAD FROM HER RESULT, picked up above the price. The first
+            sentence is a claim about her, so it is rendered only when she
+            told the quiz she had already changed how she eats or moved more,
+            through the same helper her result close uses. */}
+        <p className="kitBody kitMechBridge">
+          {triedDietOrExercise(S) && `${MECH_TRIED} `}
+          {MECH_BRIDGE}
+        </p>
         {/* THE FIRST TWO SENTENCES, NOT THE SECOND ONE ALONE.
             The mechanism sentence is index 1 of her block, and taking it on
             its own broke outcome A: MEANS.A[1] opens "When it slips", and
@@ -244,6 +227,38 @@ export function R2() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* --------------------------------------------- 3. the proof strip ----
+          THE LANDING PAGE'S TWO RAILS, at David's request: the women first,
+          then where JJ has been seen, then the Facebook comment under both.
+          Same twelve photographs and the same eight marks as
+          hormon-focus-landing-jane, so the two doors agree.
+
+          It sits between the hero and the offer because that is the order the
+          page already argued in: she meets the women before she meets the
+          price. The hero's own button skips straight past it for anyone who
+          has seen enough. */}
+      <section className="kitSec kitStrip" data-proof="rail">
+        <PhotoRail />
+        <PressRail />
+        <FacebookComment />
+      </section>
+
+      {/* ------------------------------------------------ 4. the offer ----
+          Moved up from section six. Same cards, same prices, same cart
+          links; the one-time bottle is off the page and the subscription is
+          the single alternative. */}
+      <section className="kitBand" ref={offer}>
+        <KitOffer outcome={outcome} angle={angle.slug} />
+      </section>
+
+      {/* -------------------------------------------- 5. the guarantee ----
+          MOVED UP 16 OCTOBER, at David's request: it used to sit five
+          sections below, after the questions. The guarantee is the answer to
+          the price, so it belongs against the price. */}
+      <section className="kitBand teal">
+        <KitGuarantee />
       </section>
 
       {/* ------------------------------------------- 6. the wall of love ----
