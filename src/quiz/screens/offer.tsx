@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle } from '../../components/Screen';
@@ -33,6 +33,7 @@ import {
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
 import { SHOT_KIT } from '../../lib/offer';
 import { track } from '../../lib/analytics';
+import { useHydrated } from '../../lib/useHydrated';
 
 /* ---------------------------------------------------------------- r2 ---- */
 
@@ -89,7 +90,11 @@ export function R2() {
   const cards = threeCards(S);
   const acks = cardAcks(S, cards);
   const underAcks = underCardAcks(S);
-  const href = kitHref(outcome, angle.slug);
+  /* Rebuilt once she is in a browser, for the reason in useHydrated.ts: the
+     server has no sessionStorage, so this link was being served with her
+     attribution missing and never rebuilt. */
+  const hydrated = useHydrated();
+  const href = useMemo(() => kitHref(outcome, angle.slug), [outcome, angle.slug, hydrated]);
 
   /* Her two symptom cards and the tracker, which is always the third. Split
      rather than re-derived, so the one source of truth stays threeCards(). */

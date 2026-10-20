@@ -1,4 +1,6 @@
 import { SHOP_BASE } from '../lib/logic';
+import { useHydrated } from '../lib/useHydrated';
+import { useMemo } from 'react';
 import { shopUrl, track } from '../lib/analytics';
 import {
   KIT_TAGLINE, KIT_TOTAL_VALUE, KIT_VALUE, MONEY_BACK_BADGE, ONE_MONTH_PRICE, PLAN_NAME,
@@ -91,6 +93,20 @@ export function kitHref(outcome: string, angle: string): string {
 }
 
 export function KitOffer({ outcome, angle }: Props) {
+  /* THE LINKS ARE REBUILT ONCE SHE IS IN A BROWSER. The host renders this on
+     a server, where sessionStorage does not exist, so shopUrl() cannot see
+     her attribution and every cart link shipped without a utm_*. Reading
+     this gives the second render that rebuilds them. See useHydrated.ts. */
+  const hydrated = useHydrated();
+  const kit = useMemo(
+    () => kitHref(outcome, angle),
+    [outcome, angle, hydrated],
+  );
+  const sub = useMemo(
+    () => shopUrl(SHOP_BASE, outcome, angle, 'subscribe'),
+    [outcome, angle, hydrated],
+  );
+
   return (
     <div className="kitOffer" id="kit-offer">
       <div className="kitIntro">
@@ -139,7 +155,7 @@ export function KitOffer({ outcome, angle }: Props) {
         {/* Same tab, and no rel: noreferrer would strip the Referer Shopify
             attributes on. */}
         <a
-          className="cta kitBtn" href={kitHref(outcome, angle)} data-offer="protocol"
+          className="cta kitBtn" href={kit} data-offer="protocol"
           onClick={() => track.checkout(outcome, PROTOCOL_PRICE, 'protocol', 'kit-main')}
         >
           {KIT_CTA} <Arrow />
@@ -188,7 +204,7 @@ export function KitOffer({ outcome, angle }: Props) {
 
         <a
           className="cta kitBtn kitBtnQuiet"
-          href={shopUrl(SHOP_BASE, outcome, angle, 'subscribe')} data-offer="subscribe"
+          href={sub} data-offer="subscribe"
           onClick={() => track.checkout(outcome, SUBSCRIBE_PRICE, 'subscribe', 'kit-bottle')}
         >
           {SUB_LABEL} · {money(SUBSCRIBE_PRICE)} <Arrow />
