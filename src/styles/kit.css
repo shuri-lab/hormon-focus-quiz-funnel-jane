@@ -781,15 +781,26 @@
 .kitPlan .kitBody { text-align: left; }
 .kitPlan .nextHow { margin-top: 22px; }
 
-/* A SHORT SCREEN KEEPS THE BUTTON AND LOSES THE PICTURE.
-   On a 320x568 phone the hero runs to 742px and the button lands 126px below
-   the fold, which is the exact failure this rebuild exists to fix. The kit
-   shot is the only part that can go: it reappears full size inside the offer
-   card one scroll down, so nothing is actually lost, and the headline, the
-   proof and the button all stay where she can see them. Keyed on height
-   rather than width, because height is what ran out. */
+/* A SHORT SCREEN SHRINKS THE PICTURE. IT DOES NOT THROW IT AWAY.
+ *
+ * This hid .kitHeroShot outright, to keep the button above the fold on a
+ * 320x568 phone. That was the right problem and the wrong reach, and it cost
+ * far more than it looked like it would: an in-app browser spends a third of
+ * the screen on its own chrome, so Facebook and Instagram hand this page a
+ * viewport around 560 to 600px tall. Every one of them tripped this rule.
+ * Three quarters of the women who see this page were getting a hero with no
+ * product in it, and it read as a broken image rather than a design.
+ *
+ * Capping the height instead keeps the button above the fold on the same
+ * short screens and still shows her what she is buying. 18vh is about 100px
+ * in an in-app browser and about 86px on the shortest phone, which is small
+ * but is a picture. */
 @media (max-height: 720px) {
-  .kitHeroShot { display: none; }
+  /* 16vh, not 18. At 18 a 320px screen with a two-line personalised
+     headline put the button 7px under the fold: the deep-linked page reads
+     "Feel like YOU again" on one line and hers wraps. Measured against the
+     longest of the six, not the shortest. */
+  .kitHeroShot { max-height: 16vh; margin-top: 8px; }
   .kitHeroSub { margin-top: 8px; font-size: var(--t-small); }
   .kitHeroProof { margin-top: 10px; gap: 6px; }
   .kitHeroProof .kitRev p { font-size: var(--t-small); }
@@ -869,4 +880,40 @@
 @media (width >= 560px) {
   .pfRailTrack img { width: 158px; height: 198px; margin-right: 16px; }
   .pfPressTrack img { height: 52px; margin-right: 50px; }
+}
+
+/* AND A TIER BELOW THAT, for a screen shorter than any in-app browser hands
+   out. Facebook and Instagram leave about 560 to 600px; this is for the old
+   small phone whose own chrome takes it under 520, where 18vh of picture is
+   still enough to put the button under the fold. The picture gets smaller
+   rather than disappearing, for the same reason as above. */
+@media (max-height: 520px) {
+  .kitHeroShot { max-height: 12vh; margin-top: 6px; }
+  .kitHeroSub { margin-top: 6px; }
+  .kitHeroProof { margin-top: 8px; gap: 4px; }
+  .kitHeroProof .kitRev { display: none; }
+  .kitHeroRisk { margin-top: 6px; }
+}
+
+/* NARROW AND SHORT AT ONCE, which is the real worst case and not either one
+   alone. At 320px the longest of the six headlines ("Feel comfortable in
+   your own clothes again.") takes three lines, and on a 568px screen that
+   put the button 12px under the fold while 320x480 was fine, because the
+   shorter tier above had already trimmed that one.
+   The quote is what gives way, not the picture and not the rating: the
+   rating carries the number and the Okendo mark, and it costs one line
+   against the quote's three. */
+@media (max-height: 720px) and (max-width: 360px) {
+  .kitHeroProof .kitRev { display: none; }
+  .kitHeroShot { max-height: 14vh; }
+}
+
+/* THE SMALLEST THING THIS RUNS ON: an old 320px phone inside an in-app
+   browser, which leaves about 440px of page. The headline gives way here
+   rather than the picture or the proof, because at three lines it is the
+   biggest single block on the screen. */
+@media (max-height: 460px) {
+  .kitHeroH1 { font-size: clamp(21px, 6.2vw, 26px); }
+  .kitHeroShot { max-height: 10vh; }
+  .kitHeroEyebrow { margin-bottom: 3px; font-size: 11px; }
 }

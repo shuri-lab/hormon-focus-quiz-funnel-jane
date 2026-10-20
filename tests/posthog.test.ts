@@ -9,13 +9,18 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-const sent: Array<{ event: string; props: Record<string, unknown> }> = [];
+const sent: Array<{ event: string; props: Record<string, unknown>; beacon: boolean }> = [];
 const identified: Array<{ id: string; props: Record<string, unknown> }> = [];
 
+/* phCaptureBeacon is mocked alongside phCapture and NOT folded into it: which
+   of the two an event goes through is the thing the test below is about, and
+   a mock that answered both the same way could not see the difference. */
 vi.mock('../src/lib/posthog', () => ({
   initPostHog: () => {},
   phCapture: (event: string, props: Record<string, unknown> = {}) =>
-    void sent.push({ event, props }),
+    void sent.push({ event, props, beacon: false }),
+  phCaptureBeacon: (event: string, props: Record<string, unknown> = {}) =>
+    void sent.push({ event, props, beacon: true }),
   phIdentify: (id: string, props: Record<string, unknown> = {}) =>
     void identified.push({ id, props }),
 }));
@@ -131,5 +136,51 @@ describe('what the click out to Shopify says it is selling', () => {
     track.checkout('menopause', 74.99, 'protocol', 'quiz-kit-close');
 
     expect(propsOf('hf_cta_clicked').cta_location).toBe('quiz-kit-close');
+  });
+});
+
+describe('the event fired on the way out of the page', () => {
+  /* THE ONE EVENT THAT IS NOT FOLLOWED BY HER STAYING HERE. The three buy
+     links navigate to Shopify on the same tab, so the click handler runs and
+     the page is gone. posthog-js 1.438.12 does drain its queue through
+     sendBeacon on pagehide, events first, which normally carries it; this
+     does not need pagehide to fire at all, which an Android webview handing
+     the tab to another origin is the worst case for. */
+  test('hf_cta_clicked is beaconed, and nothing else is', async () => {
+    const { track } = await import('../src/lib/analytics');
+    sent.length = 0;
+
+    track.resultView('B');
+    track.offerView('B');
+    track.selectOption('subscribe', 39.99);
+    track.checkout('B', 74.99, 'protocol', 'kit-main');
+    track.doctorRoute('young');
+
+    const beaconed = sent.filter((e) => e.beacon).map((e) => e.event);
+    expect(beaconed, 'exactly the click-out, by name').toEqual(['hf_cta_clicked']);
+
+    /* And every other event stays on the ordinary queue, which is what lets
+       posthog-js batch them and beacon the backlog on pagehide. Sending each
+       one alone would leave it nothing to drain. */
+    for (const e of sent.filter((x) => x.event !== 'hf_cta_clicked')) {
+      expect(e.beacon, `${e.event} does not need a beacon`).toBe(false);
+    }
+  });
+
+  test('beaconing changed what carries it, not what it says', async () => {
+    const { track } = await import('../src/lib/analytics');
+    sent.length = 0;
+    track.checkout('C', 39.99, 'subscribe', 'kit-bottle');
+
+    const e = sent.find((x) => x.event === 'hf_cta_clicked');
+    expect(e, 'the event still fires').toBeTruthy();
+    expect(e!.props).toMatchObject({
+      offer_type: 'subscription',
+      plan: 'subscribe',
+      price: 39.99,
+      currency: 'USD',
+      cta_location: 'kit-bottle',
+      quiz_segment: 'C',
+    });
   });
 });

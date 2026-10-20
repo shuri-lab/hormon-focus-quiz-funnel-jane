@@ -107,6 +107,42 @@ export function phCapture(event: string, props: Record<string, unknown> = {}): v
 }
 
 /**
+ * The same capture, handed straight to navigator.sendBeacon.
+ *
+ * FOR EVENTS FIRED IMMEDIATELY BEFORE LEAVING THE PAGE, which here is
+ * hf_cta_clicked and nothing else: the three buy links navigate to Shopify on
+ * the same tab, so the click handler runs and the page is gone.
+ *
+ * posthog-js ALREADY HAS A SAFETY NET and this is a second one, not a
+ * replacement. Checked in the installed 1.438.12: on pagehide its request
+ * queue drains through sendBeacon, event requests first
+ *
+ *     [...events, ...rest].map(t => this.fl({ ...t, callback: undefined }, 'sendBeacon'))
+ *
+ * so a queued click normally survives. What that depends on is pagehide
+ * firing, and an Android webview handing the tab to another origin is exactly
+ * where that is least dependable. Beaconing at click time does not need the
+ * page to get a word in.
+ *
+ * THE CAST IS NOT A HACK AROUND AN UNSUPPORTED OPTION. CaptureOptions in this
+ * version declares only timestamp, uuid, set and setOnce, but the runtime
+ * reads options.transport: the library's own unload path calls
+ * `this.capture($pageleave, null, { transport: 'sendBeacon' })`. The type is
+ * narrower than the function. Re-check this on a posthog-js upgrade; if the
+ * option is ever genuinely dropped, the cast silently becomes a normal
+ * capture and the pagehide drain above is what still carries it.
+ *
+ * NOT request_batching: false, which looks like the obvious knob and is the
+ * wrong one. With batching off a capture leaves as an immediate XHR that the
+ * navigation can cancel, and nothing is left queued for the drain to beacon.
+ */
+export function phCaptureBeacon(event: string, props: Record<string, unknown> = {}): void {
+  queue((p) => {
+    p.capture(event, props, { transport: 'sendBeacon' } as Parameters<typeof p.capture>[2]);
+  });
+}
+
+/**
  * Her address becomes the distinct id at the email gate.
  *
  * IT MUST BE THE SAME STRING THE ORDER CARRIES, or the purchase lands on an

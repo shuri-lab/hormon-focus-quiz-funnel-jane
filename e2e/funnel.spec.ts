@@ -811,6 +811,85 @@ test.describe('the kit page', () => {
       }
     });
 
+  test('the in-app browsers get the product picture and the button',
+    async ({ page }) => {
+      /* THE BUG THIS EXISTS FOR, 20 October 2026. The hero shot was hidden
+         outright under `@media (max-height: 720px)`, added to keep the button
+         above the fold on a 320x568 phone. An in-app browser spends a third
+         of the screen on its own chrome, so Facebook and Instagram hand this
+         page roughly 560 to 600px of height and every one of them tripped
+         that rule. Three quarters of this funnel's traffic is in-app, so
+         three quarters of the women who reached the offer saw a hero with no
+         product in it, and it read as a broken image.
+
+         Both halves are asserted together on purpose: showing the picture is
+         only right if the button is still reachable without scrolling, and
+         hiding it was only ever a way of buying that. The headline is set to
+         the longest of the six first, because the personalised one wraps
+         where the deep-linked default does not. */
+      const LONGEST = 'Feel comfortable in your own clothes again.';
+      for (const [w, h] of [[390, 600], [390, 560], [360, 520], [320, 568], [320, 480]]) {
+        await page.setViewportSize({ width: w, height: h });
+        await page.goto('/quiz/kit');
+        await page.waitForTimeout(250);
+        await page.evaluate((t) => {
+          const el = document.querySelector('.kitHeroH1');
+          if (el) el.textContent = t;
+        }, LONGEST);
+        await page.waitForTimeout(200);
+
+        const shot = page.locator('.kitHeroShot');
+        await expect(shot, `${w}x${h}: the kit shot is in the DOM`).toHaveCount(1);
+        const shown = await shot.evaluate((el) => {
+          const cs = getComputedStyle(el);
+          return {
+            display: cs.display,
+            height: Math.round(el.getBoundingClientRect().height),
+            loaded: (el as HTMLImageElement).naturalWidth > 0,
+          };
+        });
+        expect(shown.display, `${w}x${h}: the kit shot is hidden`).not.toBe('none');
+        expect(shown.height, `${w}x${h}: the kit shot has no height`).toBeGreaterThan(30);
+        expect(shown.loaded, `${w}x${h}: the kit shot did not load`).toBe(true);
+
+        const cta = (await page.locator('.kitHeroCta').boundingBox())!;
+        expect(
+          Math.round(cta.y + cta.height),
+          `${w}x${h}: the button fell below the fold`,
+        ).toBeLessThanOrEqual(h);
+      }
+    });
+
+  test('nothing on the offer page fails to load in an in-app browser',
+    async ({ page }) => {
+      /* Every image, at an in-app viewport, after a full scroll so the lazy
+         ones are given their chance. naturalWidth is the only honest test:
+         a broken <img> is present, visible and counted by everything else. */
+      await page.setViewportSize({ width: 390, height: 600 });
+      const http4xx: string[] = [];
+      page.on('response', (r) => {
+        if (r.status() >= 400 && /\.(webp|jpg|jpeg|png|svg|avif)/i.test(r.url())) {
+          http4xx.push(`${r.status()} ${r.url().split('/').pop()}`);
+        }
+      });
+      await page.goto('/quiz/kit');
+      await page.evaluate(async () => {
+        const h = document.body.scrollHeight;
+        for (let y = 0; y < h; y += 500) {
+          window.scrollTo(0, y);
+          await new Promise((r) => { setTimeout(r, 60); });
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(2000);
+
+      const broken = await page.evaluate(() => Array.from(document.querySelectorAll('img'))
+        .filter((im) => im.complete && im.naturalWidth === 0)
+        .map((im) => (im.currentSrc || im.src).split('/').pop() ?? '?'));
+      expect(broken, 'images that failed to load').toEqual([]);
+      expect(http4xx, 'image requests the server refused').toEqual([]);
+    });
+
   test('the stars stay in a row under the reset the deployed host injects',
     async ({ page }) => {
       /* THE BUG THIS EXISTS FOR, 19 October 2026. Stars() returned a bare

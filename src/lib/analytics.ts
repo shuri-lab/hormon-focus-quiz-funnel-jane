@@ -10,7 +10,7 @@
 
 import { cartPath, type OfferKind } from './offer';
 import { captureListLink } from './listLink';
-import { initPostHog, phCapture, phIdentify } from './posthog';
+import { initPostHog, phCapture, phCaptureBeacon, phIdentify } from './posthog';
 
 declare global {
   interface Window {
@@ -48,6 +48,18 @@ function meta(name: string, props: Props = {}, standard = false) {
    these exact names, so renaming one breaks a saved insight. */
 function ph(name: string, props: Props = {}) {
   phCapture(name, props);
+}
+
+/**
+ * The same, for an event fired on the way out of the page.
+ *
+ * Only hf_cta_clicked uses this. Every other event here is followed by the
+ * woman staying exactly where she is, so the ordinary queue is right for
+ * them: batching is what lets posthog-js beacon the backlog on pagehide, and
+ * sending each one alone would give it nothing to drain.
+ */
+function phOut(name: string, props: Props = {}) {
+  phCaptureBeacon(name, props);
 }
 
 /**
@@ -296,7 +308,11 @@ export const track = {
   checkout(outcome: string, value: number, offer: OfferKind = 'protocol', where = 'offer') {
     push('begin_checkout', { outcome, value, currency: 'USD' });
     meta('InitiateCheckout', { value, currency: 'USD', content_name: 'Hormone Focus' }, true);
-    ph('hf_cta_clicked', {
+    /* BEACONED, because the next thing that happens is Shopify. See
+       phCaptureBeacon: the queue drain on pagehide would usually carry this,
+       and usually is doing a lot of work in an Android webview handing the
+       tab to another origin. */
+    phOut('hf_cta_clicked', {
       offer_type: OFFER_TYPE[offer],
       plan: offer,
       price: value,
