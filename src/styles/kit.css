@@ -917,3 +917,16 @@
   .kitHeroShot { max-height: 10vh; }
   .kitHeroEyebrow { margin-bottom: 3px; font-size: 11px; }
 }
+
+/* The hand-off, last line of "what you want most". Set apart from her keyed
+   want above it so the two are not read as one sentence. */
+.resHandoff {
+  margin: 10px 0 0; font-size: var(--t-sub); line-height: 1.5; color: var(--ink-2);
+}
+
+/* The one-line introduction to JJ, above the proof, for cold traffic. Set as
+   quiet prose rather than a callout: it is context, not a claim. */
+.kitTrustLead {
+  margin: 0 0 18px; text-align: center;
+  font-size: var(--t-sub); line-height: 1.5; color: var(--ink-2);
+}

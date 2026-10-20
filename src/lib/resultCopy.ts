@@ -71,6 +71,65 @@ export const STAGE_LINE =
 export const EARLY_DOCTOR_LINE =
   "This is the one result I'd take to your doctor soon, because it's the one where a blood test helps.";
 
+/* --------------------------------------- the part most women miss ------- */
+
+/*
+ * THE GAP, NAMED BEFORE THE PLAN IS OFFERED.
+ *
+ * It sits between "why your sleep has changed" and "what you want most", and
+ * its whole job is to say that effort was never the missing piece. The offer
+ * page then opens on the plan rather than on a price.
+ *
+ * NO PRODUCT, PRICE, REVIEW OR LINK, which is not a style note: the result
+ * page is sell-free and the tests fail the build if that changes.
+ *
+ * !! PENDING JJ SIGN-OFF !! Drafted in her result voice, where contractions
+ * are hers and deliberate (see the carve-out in copy.test.ts). The claim gate
+ * still reads every line here.
+ *
+ * THE SECOND SENTENCE IS A CLAIM ABOUT HER, so there are three of them and
+ * she gets the one that is true. A woman who ticked "Nothing yet" is never
+ * told she has already tried anything, and a woman who only talked to her
+ * doctor is not told she changed how she eats.
+ */
+export const MISS_TITLE = 'The part most women miss';
+
+export const MISS_LEAD =
+  "This isn't something you can push through by trying harder. What changed "
+  + 'is on the inside, in how your body handles its hormones.';
+
+/** She ticked eating differently, exercising more, or both. */
+export const MISS_TRIED =
+  "You've already tried eating better and moving more. Those are good, and "
+  + "they're not the missing piece, because they don't reach what actually "
+  + 'shifted.';
+
+/** She tried something, but not food and not the gym. */
+export const MISS_OTHER =
+  "You've been doing what you can. The piece most women miss is the one on "
+  + 'the inside.';
+
+/** "Nothing yet", and the deep-linked page with no answers behind it. */
+export const MISS_NOTHING =
+  'No one really tells you what shifted, so it is hard to know where to start.';
+
+/* ------------------------------------------------- the hand-off --------- */
+
+/*
+ * The last line of "what you want most", which hands her to the plan.
+ *
+ * TWO OF THEM, because one answer makes the ordinary line read wrong. A woman
+ * whose want is "understand what is happening to my body" has just spent a
+ * page understanding it, and telling her there is a simple place to start
+ * reads as though the page had not been listening. Hers pivots from
+ * understanding to doing instead.
+ */
+export const WANT_HANDOFF =
+  "There's a simple place to start. Let me show you the plan I'd build for you.";
+
+export const WANT_HANDOFF_UNDERSTAND =
+  "Now that you can see what it is, here is where I'd start.";
+
 /* ------------------------------------------ the pattern line, by how often */
 
 export const PAT: Record<Pattern, string> = {
@@ -233,6 +292,21 @@ export const ACK: Record<'food' | 'sleep' | 'gym' | 'supps' | 'doctor', string> 
 };
 
 const tried = (S: QuizState, id: TriedId) => S.tried.indexOf(id) > -1;
+
+/**
+ * Which of the three "part most women miss" lines is true of her.
+ *
+ * Read through the same `tried` helper the card acknowledgements below use,
+ * so her result and the acknowledgement inside her weight card can never
+ * disagree about what she said. 'wait' counts as having done something,
+ * because she told us what she has been doing; only 'nothing' and an empty
+ * answer fall to the last line.
+ */
+export function missLine(S: QuizState): string {
+  if (tried(S, 'food') || tried(S, 'gym')) return MISS_TRIED;
+  if (S.tried.some((id) => id !== 'nothing')) return MISS_OTHER;
+  return MISS_NOTHING;
+}
 
 /**
  * The acknowledgement that sits inside a card, keyed by the card it belongs to.

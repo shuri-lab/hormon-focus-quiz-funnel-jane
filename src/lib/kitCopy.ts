@@ -183,10 +183,13 @@ export const CLOSE_CTA = 'START MY 60 DAYS';
 
 /** Her stage, carried over from the result page she just read. */
 export const HERO_EYEBROW: Record<'A' | 'B' | 'C' | 'E', string> = {
-  A: 'Your 60-day plan',
+  /* NOT "your 60-day plan", which is what this read before and is the one of
+     the four that named a length instead of her. A is the outcome with no
+     stage word to use, so it names what the plan is for. */
+  A: 'Your hormone-balance plan',
   B: 'Your perimenopause plan',
   C: 'Your menopause plan',
-  E: 'Your early menopause plan',
+  E: 'Your early-menopause plan',
 };
 
 /**
@@ -233,9 +236,16 @@ export const HERO_HEAD_DEFAULT = 'Feel like YOU again.';
  * that is the whole of what she actually has to do, and closes on JJ's own
  * line from the bottom of the page.
  */
+/*
+ * TIGHTENED 20 October, when the plan moved directly under the hero.
+ *
+ * It used to carry the three things she would do, which was the right job
+ * for a hero that had a price under it. The three steps are now the next
+ * thing she reads, in full, so saying them here first was the same sentence
+ * twice. What the hero keeps is the framing.
+ */
 export const HERO_SUB =
-  'Two capsules a day, meals that keep you full, and a tracker that shows you '
-  + 'what is changing. One plan for your hormones, not one more thing to try.';
+  'One simple plan for your hormones. Not one more thing to try.';
 
 /** Over the logo rail. JJ's own press, and never the supplement's. */
 export const PRESS_EYEBROW = 'As seen in';
@@ -253,6 +263,25 @@ export const OFFER_HEAD = 'Everything you need for your 60 days, in one kit.';
 /** The one alternative, kept quiet under the kit. */
 export const SUB_ALT_LEAD = 'Prefer to start month to month?';
 export const SUB_ALT_NAME = 'Hormone Focus subscription';
+
+/* ----------------------------------------------------- who JJ is -------- */
+
+/**
+ * The lead-in to the proof, for a woman who has never heard of her.
+ *
+ * COLD TRAFFIC ONLY. A woman arriving from JJ's own list already knows who
+ * she is, and being introduced to her would read as a page that has not
+ * noticed who it is talking to. offer.tsx shows this only when skipEmail is
+ * false, which is the same flag the email screen is stepped over on.
+ *
+ * !! PENDING JJ SIGN-OFF !! Both sentences are about her rather than about
+ * the supplement, which is why they carry no claim: the bestseller is a
+ * fact, and the following is attributed to her approach and not to a result
+ * anybody got.
+ */
+export const TRUST_LEAD =
+  'You may not know JJ Smith yet. She is a New York Times bestselling author, '
+  + 'and millions of women have followed her approach.';
 
 /* -------------------------------------------------------- the mechanism -- */
 

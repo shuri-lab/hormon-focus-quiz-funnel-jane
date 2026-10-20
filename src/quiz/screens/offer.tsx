@@ -29,6 +29,7 @@ import {
   HERO_HEAD_DEFAULT, HERO_RISK, HERO_SUB, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
   MECH_EYEBROW, MECH_HEAD, PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY,
   PLAN_STEP_2, PLAN_STEP_3, PROOF_EYEBROW, PROOF_HEAD, PROOF_NOTE, STICKY_CTA,
+  TRUST_LEAD,
 } from '../../lib/kitCopy';
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
 import { SHOT_KIT } from '../../lib/offer';
@@ -185,104 +186,7 @@ export function R2() {
         <p className="kitHeroRisk">{HERO_RISK}</p>
       </section>
 
-      {/* --------------------------------------------- 2. the proof strip ----
-          THE LANDING PAGE'S TWO RAILS, at David's request: the women first,
-          then where JJ has been seen, then the Facebook comment under both.
-          Same twelve photographs and the same eight marks as
-          hormon-focus-landing-jane, so the two doors agree.
-
-          It sits between the hero and the offer because that is the order the
-          page already argued in: she meets the women before she meets the
-          price. The hero's own button skips straight past it for anyone who
-          has seen enough. */}
-      <section className="kitSec kitStrip" data-proof="rail">
-        <PhotoRail />
-        <PressRail />
-        <FacebookComment />
-      </section>
-
-      {/* ------------------------------------------------ 3. the offer ----
-          Moved up from section six. Same cards, same prices, same cart
-          links; the one-time bottle is off the page and the subscription is
-          the single alternative. */}
-      <section className="kitBand" ref={offer}>
-        <KitOffer outcome={outcome} angle={angle.slug} />
-      </section>
-
-      {/* -------------------------------------------- 4. the guarantee ----
-          MOVED UP 16 OCTOBER, at David's request: it used to sit five
-          sections below, after the questions. The guarantee is the answer to
-          the price, so it belongs against the price. */}
-      <section className="kitBand teal">
-        <KitGuarantee />
-      </section>
-
-      {/* ------------------------------------------- 5. why it works ----
-          The one thing that makes this more than the free advice she could
-          have had: it is aimed at the hormones, which is why trying harder
-          has not worked. The two sentences under the heading are her own
-          result page, so no new claim arrives with the new section. */}
-      <section className="kitSec kitMech">
-        <p className="kitEyebrow">{MECH_EYEBROW}</p>
-        <h2 className="kitH2">{MECH_HEAD}</h2>
-        {/* THE FIRST TWO SENTENCES, NOT THE SECOND ONE ALONE.
-            The mechanism sentence is index 1 of her block, and taking it on
-            its own broke outcome A: MEANS.A[1] opens "When it slips", and
-            what slips is the rhythm named in the sentence before it, which
-            left the paragraph starting on a pronoun with nothing to point
-            at. Two sentences stand up for all three outcomes. The third,
-            where there is one, is the "many women describe the same" line,
-            which belongs on the result page and not here. */}
-        {meansFor(outcome).slice(0, 2).map((para) => (
-          <p className="kitBody" key={para}>{para}</p>
-        ))}
-        {main && <p className="kitBody kitMechWhy">{CLOSE[main]}</p>}
-        <p className="kitBody">{HF_BODY}</p>
-
-        <p className="kitEyebrow kitMgEyebrow">{HF_EYEBROW}</p>
-        <h3 className="kitH3">{HF_HEAD}</h3>
-        <div className="kitMg">
-          {INGREDIENTS.map(([dose, name, what]) => (
-            <div key={name}>
-              <b>{dose}</b>
-              <span><strong>{name}.</strong> {what}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ------------------------------------------- 6. the wall of love ----
-          Surfaced from section twelve. Nine women on camera, then the live
-          Okendo reviews, then the three named testimonials. Stacked, never a
-          carousel: a carousel shows one review and hides the weight of the
-          rest, which is the whole point of a wall.
-
-          LIVE FROM OKENDO, the same store and product JJ's page reads, so the
-          two cannot disagree about what customers said. The authored reviews
-          are the fallback: if Okendo is slow, blocked or down she reads
-          customers rather than a spinner. */}
-      <section className="kitSec" id="all-reviews">
-        <p className="kitEyebrow">{PROOF_EYEBROW}</p>
-        <h2 className="kitH2">{PROOF_HEAD}</h2>
-        <Faces count={12} />
-        <VideoWall />
-        <OkendoWall
-          fallback={(
-            <>
-              <RatingBadge />
-              <div className="kitRevs" data-proof="more">
-                {proof.more.map((r) => <Quote key={r.name} review={r} />)}
-              </div>
-            </>
-          )}
-        />
-        <div className="kitRevs" data-proof="lead">
-          {proof.lead.slice(1).map((r) => <Quote key={r.name} review={r} />)}
-        </div>
-        <p className="kitNote">{PROOF_NOTE}</p>
-      </section>
-
-      {/* -------------------------------------------- 7. on the plan ----
+      {/* -------------------------------------------- 2. on the plan ----
           The old opening, in its right place. Three things, because four
           reads as more effort, and her own two cards are what step two
           actually is. Then why it runs sixty days for the concern she
@@ -343,7 +247,109 @@ export function R2() {
         </div>
       </section>
 
-      {/* ------------------------------------------------- 8. questions ---- */}
+      {/* ------------------------------------------- 3. why it works ----
+          The one thing that makes this more than the free advice she could
+          have had: it is aimed at the hormones, which is why trying harder
+          has not worked. The two sentences under the heading are her own
+          result page, so no new claim arrives with the new section. */}
+      <section className="kitSec kitMech">
+        <p className="kitEyebrow">{MECH_EYEBROW}</p>
+        <h2 className="kitH2">{MECH_HEAD}</h2>
+        {/* THE FIRST TWO SENTENCES, NOT THE SECOND ONE ALONE.
+            The mechanism sentence is index 1 of her block, and taking it on
+            its own broke outcome A: MEANS.A[1] opens "When it slips", and
+            what slips is the rhythm named in the sentence before it, which
+            left the paragraph starting on a pronoun with nothing to point
+            at. Two sentences stand up for all three outcomes. The third,
+            where there is one, is the "many women describe the same" line,
+            which belongs on the result page and not here. */}
+        {meansFor(outcome).slice(0, 2).map((para) => (
+          <p className="kitBody" key={para}>{para}</p>
+        ))}
+        {main && <p className="kitBody kitMechWhy">{CLOSE[main]}</p>}
+        <p className="kitBody">{HF_BODY}</p>
+
+        <p className="kitEyebrow kitMgEyebrow">{HF_EYEBROW}</p>
+        <h3 className="kitH3">{HF_HEAD}</h3>
+        <div className="kitMg">
+          {INGREDIENTS.map(([dose, name, what]) => (
+            <div key={name}>
+              <b>{dose}</b>
+              <span><strong>{name}.</strong> {what}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------ 4. trust and proof ----
+          EVERY PROOF BLOCK THE PAGE ALREADY HAD, GATHERED INTO ONE ZONE and
+          moved above the price. Not one of them is new and not one was
+          rebuilt: the photo rail, the press marks, the live Okendo wall with
+          its authored fallback, the nine women on camera, the Facebook
+          comment, the twelve faces and the three named testimonials are the
+          same components with the same props they had when they were split
+          across two sections further down.
+
+          The order is the brief's: the women, where JJ has been seen, what
+          customers wrote, what they said on camera, the comment, then the
+          three long ones.
+
+          LIVE FROM OKENDO, the same store and product JJ's page reads, so the
+          two cannot disagree about what customers said. The authored reviews
+          are the fallback: if Okendo is slow, blocked or down she reads
+          customers rather than a spinner. */}
+      <section className="kitSec kitStrip" id="all-reviews" data-proof="rail">
+        {/* WHO SHE IS, FOR SOMEONE WHO HAS NEVER HEARD OF HER. Cold traffic
+            only: a woman who arrived from JJ's own list is being introduced
+            to someone she already follows, which reads as a page that has
+            not noticed who it is talking to. Same flag the email screen is
+            stepped over on. */}
+        {!S.skipEmail && <p className="kitTrustLead">{TRUST_LEAD}</p>}
+
+        <p className="kitEyebrow">{PROOF_EYEBROW}</p>
+        <h2 className="kitH2">{PROOF_HEAD}</h2>
+
+        <PhotoRail />
+        <PressRail />
+
+        <OkendoWall
+          fallback={(
+            <>
+              <RatingBadge />
+              <div className="kitRevs" data-proof="more">
+                {proof.more.map((r) => <Quote key={r.name} review={r} />)}
+              </div>
+            </>
+          )}
+        />
+
+        <VideoWall />
+        <FacebookComment />
+
+        <Faces count={12} />
+        <div className="kitRevs" data-proof="lead">
+          {proof.lead.slice(1).map((r) => <Quote key={r.name} review={r} />)}
+        </div>
+        <p className="kitNote">{PROOF_NOTE}</p>
+      </section>
+
+      {/* ------------------------------------------------ 5. the offer ----
+          Moved up from section six. Same cards, same prices, same cart
+          links; the one-time bottle is off the page and the subscription is
+          the single alternative. */}
+      <section className="kitBand" ref={offer}>
+        <KitOffer outcome={outcome} angle={angle.slug} />
+      </section>
+
+      {/* -------------------------------------------- 6. the guarantee ----
+          MOVED UP 16 OCTOBER, at David's request: it used to sit five
+          sections below, after the questions. The guarantee is the answer to
+          the price, so it belongs against the price. */}
+      <section className="kitBand teal">
+        <KitGuarantee />
+      </section>
+
+      {/* ------------------------------------------------- 7. questions ---- */}
       <section className="kitSec">
         <p className="kitEyebrow">{KIT_FAQ_EYEBROW}</p>
         <h2 className="kitH2">{KIT_FAQ_HEAD}</h2>
@@ -357,7 +363,7 @@ export function R2() {
         </div>
       </section>
 
-      {/* ---------------------------- 9. one last review, and the button ---- */}
+      {/* ---------------------------- 8. one last review, and the button ---- */}
       <section className="kitSec kitClose">
         <div data-proof="closing"><Quote review={proof.closing} long /></div>
         <h2 className="kitH2">{CLOSE_HEAD}</h2>

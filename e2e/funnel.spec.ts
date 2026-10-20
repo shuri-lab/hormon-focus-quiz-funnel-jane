@@ -197,7 +197,20 @@ test.describe('the quiz', () => {
     }
     await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
 
-    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT TO DO NEXT');
+    /* THE PART MOST WOMEN MISS, 20 October: the gap named before the plan is
+       offered, so the next page can open on the plan rather than on a price.
+       She ticked eating differently and exercising more, so she gets the line
+       that says so. */
+    const miss = page.locator('.block').filter({ hasText: 'The part most women miss' });
+    await expect(miss).toHaveCount(1);
+    await expect(miss).toContainText('What changed is on the inside');
+    await expect(miss).toContainText("You've already tried eating better and moving more");
+
+    /* And the hand-off, which is the last thing she reads before the button. */
+    await expect(page.locator('.resHandoff'))
+      .toHaveText("There's a simple place to start. Let me show you the plan I'd build for you.");
+
+    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME MY PLAN');
     await page.locator('.actionBar .cta').click();
 
     /* RESULT PAGE 2. REBUILT 16 OCTOBER 2026 for conversion. It opened on
@@ -209,7 +222,11 @@ test.describe('the quiz', () => {
        carries the stage from the result page she has just read. */
     await expect(heading(page)).toHaveText('Sleep through the night again.');
     await expect(page.locator('.kitHeroEyebrow')).toHaveText('Your perimenopause plan');
-    await expect(page.locator('.kitHeroSub')).toContainText('Two capsules a day');
+    /* TIGHTENED when the plan moved under the hero: the sub used to carry the
+       three things she would do, and the three steps are now the next thing
+       she reads in full. */
+    await expect(page.locator('.kitHeroSub'))
+      .toHaveText('One simple plan for your hormones. Not one more thing to try.');
 
     /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
        rebuild: a button, the risk taken off it, and two forms of proof. */
@@ -664,8 +681,30 @@ test.describe('the kit page', () => {
   test('the sticky bar takes her to the offer and then gets out of the way',
     async ({ page }) => {
       await page.goto('/quiz/kit');
-      const h = await page.evaluate(() => document.body.scrollHeight);
-      await page.evaluate((y) => window.scrollTo(0, y), Math.round(h * 0.6));
+
+      /* SCROLLED TO A POSITION DERIVED FROM THE OFFER, not to a fraction of
+         the page. This used to scroll to 60% and that stopped meaning
+         anything when the offer moved below the plan, the reason and the
+         proof on 20 October: at 60% of a desktop page the offer is already
+         on screen, the bar correctly stands down, and the test failed
+         looking for a bar that was right to be absent.
+
+         The bar shows while she is past the hero and the offer is not yet in
+         view. That window is computed here, which also makes the assertion
+         worth something: if the offer ever sits so close to the top that
+         there is no window at all, the bar can never appear and this says
+         so instead of silently passing. */
+      const where = await page.evaluate(() => {
+        const band = document.querySelector('.kitBand')!.getBoundingClientRect();
+        const offerTop = band.top + window.scrollY;
+        const lo = window.innerHeight;
+        const hi = offerTop - window.innerHeight * 0.85;
+        return { lo: Math.round(lo), hi: Math.round(hi) };
+      });
+      expect(where.hi, 'the sticky bar has no window in which it can show')
+        .toBeGreaterThan(where.lo);
+
+      await page.evaluate((y) => window.scrollTo(0, y), Math.round((where.lo + where.hi) / 2));
       await page.waitForTimeout(400);
 
       await page.locator('.kitSticky button').click();
@@ -686,30 +725,41 @@ test.describe('the kit page', () => {
 
   /* ------------------------------------------- the 16 October rebuild -- */
 
-  test('the offer is above the tips, which is the whole point of the rebuild',
+  test('the plan, the reason and the proof all come before the price',
     async ({ page }) => {
-      /* THE ORDER IS THE CHANGE. The page opened on three free tips and
-         reached the price at section six of fourteen, which handed a warm
-         woman the answer for nothing and asked 60% of them to scroll for the
-         offer. Asserted by document position rather than by eye, so a later
-         edit that quietly moves the offer back down fails here. */
+      /* REVERSED ON PURPOSE, 20 October. This used to assert the opposite:
+         the offer directly under the hero and the tips below it, which was
+         the right call when the page opened on three free tips and reached
+         the price at section six of fourteen. The order now earns the price
+         instead of leading with it: what she will do, why it works, who
+         already did it, and then what it costs.
+         Asserted by document position, as the old one was, so an edit that
+         quietly moves the price back up fails here. */
       await page.goto('/quiz/kit');
-      const order = await page.evaluate(() => {
-        const at = (sel: string) => document.querySelector(sel);
-        const hero = at('.kitHero');
-        const offer = at('#kit-offer');
-        const plan = at('.kitPlan');
-        if (!hero || !offer || !plan) return null;
-        const follows = (a: Element, b: Element) =>
-          Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-        return {
-          offerAfterHero: follows(hero, offer),
-          planAfterOffer: follows(offer, plan),
-        };
+      const seen = await page.evaluate(() => {
+        const want = [
+          ['hero', '.kitHero'],
+          ['plan', '.kitPlan'],
+          ['why it works', '.kitMech'],
+          ['trust and proof', '.kitStrip'],
+          ['the offer', '#kit-offer'],
+          ['guarantee', '.kitPromise'],
+          ['questions', '.kitFaq'],
+          ['closer', '.kitClose'],
+        ] as const;
+        const out: { name: string; top: number }[] = [];
+        for (const [name, sel] of want) {
+          const el = document.querySelector(sel);
+          if (!el) return { missing: name, order: [] };
+          out.push({ name, top: Math.round(el.getBoundingClientRect().top + window.scrollY) });
+        }
+        return { missing: null as string | null, order: out };
       });
-      expect(order, 'the hero, the offer or the plan is missing').not.toBeNull();
-      expect(order!.offerAfterHero, 'the offer must follow the hero').toBe(true);
-      expect(order!.planAfterOffer, 'the tips must follow the offer').toBe(true);
+
+      expect(seen.missing, 'a section vanished in the re-order').toBeNull();
+      const names = seen.order.map((o) => o.name);
+      const sorted = [...seen.order].sort((a, b) => a.top - b.top).map((o) => o.name);
+      expect(sorted, 'the sections are not in the order the page argues in').toEqual(names);
     });
 
   test('the guarantee answers the price directly, with nothing in between',
@@ -890,7 +940,62 @@ test.describe('the kit page', () => {
       expect(http4xx, 'image requests the server refused').toEqual([]);
     });
 
+  test('the re-order moved every proof block and dropped none of them',
+    async ({ page }) => {
+      /* THE RISK IN A RE-ORDER IS SILENT LOSS. The proof used to be split
+         across two sections either side of the price; it is one zone above
+         the price now, and a block that failed to come along would look
+         exactly like a page that simply scrolls shorter. So this counts
+         them. Every number here is what the page carried before the move. */
+      await page.goto('/quiz/kit');
+      await page.evaluate(async () => {
+        const h = document.body.scrollHeight;
+        for (let y = 0; y < h; y += 500) {
+          window.scrollTo(0, y);
+          await new Promise((r) => { setTimeout(r, 60); });
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(2500);
+
+      const n = async (sel: string) => page.locator(sel).count();
+      expect(await n('.pfRailTrack img'), 'the customer photo rail').toBe(24);
+      expect(await n('.pfPressTrack img'), 'the press logos').toBe(16);
+      expect(await n('.okWall'), 'the Okendo wall').toBe(1);
+      expect(await n('.vid'), 'the nine women on camera').toBe(9);
+      expect(await n('.pfFb img'), 'the Facebook comment').toBe(1);
+      expect(await n('.pfFaces img'), 'the faces').toBe(12);
+      expect(await n('[data-proof="lead"] .kitRev'), 'the three named testimonials').toBe(3);
+      expect(await n('[data-proof="closing"] .kitRev'), 'the closing testimonial').toBe(1);
+      expect(await n('.kitFaq details'), "JJ's six questions").toBe(6);
+      expect(await n('.kitPromise'), 'the guarantee').toBe(1);
+      expect(await n('.kitVs li'), 'the value stack').toBe(4);
+      expect(await n('.planSteps > li'), 'the three plan steps').toBe(3);
+      expect(await n('.kitMg > div'), 'the three ingredients').toBe(3);
+      expect(await n('a[href*="shop.jjsmithonline.com"]'), 'the buy links').toBe(3);
+
+      const broken = await page.evaluate(() => Array.from(document.querySelectorAll('img'))
+        .filter((im) => im.complete && im.naturalWidth === 0).length);
+      expect(broken, 'images that failed to load').toBe(0);
+    });
+
+  test('JJ is introduced to cold traffic and not to her own list', async ({ page }) => {
+    /* A woman who arrived from JJ's own list is being introduced to someone
+       she already follows, which reads as a page that has not noticed who it
+       is talking to. Same flag the email screen is stepped over on. */
+    await page.goto('/quiz/kit');
+    await expect(page.locator('.kitTrustLead')).toHaveText(
+      'You may not know JJ Smith yet. She is a New York Times bestselling '
+      + 'author, and millions of women have followed her approach.',
+    );
+
+    await page.goto('/quiz/kit?skip_email=1');
+    await expect(page.locator('.kitTrustLead'), 'she already knows JJ').toHaveCount(0);
+    /* And the rest of the zone is unchanged for her. */
+    await expect(page.locator('.pfRailTrack img')).toHaveCount(24);
+  });
   test('the stars stay in a row under the reset the deployed host injects',
+
     async ({ page }) => {
       /* THE BUG THIS EXISTS FOR, 19 October 2026. Stars() returned a bare
          fragment of <svg> and borrowed its layout from whatever contained it.
@@ -949,4 +1054,38 @@ test.describe('the kit page', () => {
       await wall.scrollIntoViewIfNeeded();
       await expect(wall.locator('.okRev, .kitRev').first()).toBeVisible({ timeout: 15000 });
     });
+});
+
+/* ------------------------------ what she did not say, on both pages -- */
+
+test.describe('the result page says nothing she did not say', () => {
+  test('"Nothing yet" is never read back as an attempt', async ({ page }) => {
+    /* THE CONDITIONAL THAT MATTERS. "The part most women miss" has three
+       second sentences and she gets the one that is true. A woman who ticked
+       "Nothing yet" must never be told she has already tried anything, on
+       the result or in step two of the plan. */
+    await startQuiz(page, '/quiz/symptoms?skip_email=1');
+    await page.locator('.tile').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 0), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 0), /When do you notice these changes most/);
+    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
+    await page.locator('.opt').nth(6).click();            // Nothing yet
+    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await page.locator('.opt').nth(0).click();
+
+    const miss = page.locator('.block').filter({ hasText: 'The part most women miss' });
+    await expect(miss).toContainText('No one really tells you what shifted');
+    await expect(miss, 'she tried nothing').not.toContainText('already tried');
+    await expect(miss, 'and nothing was acknowledged').not.toContainText('doing what you can');
+
+    const result = await page.locator('.rise').innerText();
+    expect(result, 'no attempt is claimed anywhere').not.toContain('You have already tried');
+    expect(result, 'and nothing is sold here').not.toContain('$');
+
+    await page.locator('.actionBar .cta').click();
+    await expect(page.locator('.kitPlan')).toBeVisible();
+    await expect(page.locator('.kitPlan'), 'nor on the plan')
+      .not.toContainText('You told us you have already tried');
+  });
 });

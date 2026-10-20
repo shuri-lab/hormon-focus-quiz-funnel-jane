@@ -11,7 +11,8 @@ import {
   STAGE_FACT, WANT_PHRASE, cycleShort,
 } from '../../lib/content';
 import {
-  CLOSE, EARLY_DOCTOR_LINE, HEAD, PAT, STAGE_LINE, SYM, meansFor, symExtra,
+  CLOSE, EARLY_DOCTOR_LINE, HEAD, MISS_LEAD, MISS_TITLE, PAT, STAGE_LINE, SYM,
+  WANT_HANDOFF, WANT_HANDOFF_UNDERSTAND, meansFor, missLine, symExtra,
 } from '../../lib/resultCopy';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
@@ -109,10 +110,27 @@ export function R1() {
         </div>
       )}
 
+      {/* THE GAP, between what changed and what she wants.
+          Effort was never the missing piece, and saying so here is what lets
+          the next page open on a plan rather than on a price. The second
+          line is a claim about her, so she gets the one that is true: see
+          missLine(). Nothing here names a product, a price or a link. */}
+      <div className="block">
+        <p className="blabel">{MISS_TITLE}</p>
+        <p>{MISS_LEAD}</p>
+        <p>{missLine(S)}</p>
+      </div>
+
       {S.want && (
         <div className="block key">
           <p className="blabel">What you want most</p>
           <p className="lead">{WANT_PHRASE[S.want]}</p>
+          {/* And the hand-off. A woman who came to understand what is
+              happening has just done that, so hers pivots to doing instead
+              of telling her again. */}
+          <p className="resHandoff">
+            {S.want === 'understand' ? WANT_HANDOFF_UNDERSTAND : WANT_HANDOFF}
+          </p>
         </div>
       )}
 
@@ -129,7 +147,7 @@ export function R1() {
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
-          SHOW ME WHAT TO DO NEXT &rarr;
+          SHOW ME MY PLAN &rarr;
         </button>
       </ActionBar>
     </Screen>
