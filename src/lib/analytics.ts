@@ -487,8 +487,11 @@ export function shopUrl(
   _outcome: string,
   _angle: string,
   offer: OfferKind = 'single',
+  /* A discount code for this link only. The quiz offer page passes one for
+     the single bottle; /offer and /plan pass nothing and are unchanged. */
+  discount: string | null = null,
 ): string {
-  const url = new URL(cartPath(offer), base);
+  const url = new URL(cartPath(offer, discount), base);
   const ad = readAttribution();
 
   /* The cart, not the checkout. Asserted rather than assumed from the base,

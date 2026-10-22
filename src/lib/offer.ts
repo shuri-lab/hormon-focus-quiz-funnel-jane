@@ -115,6 +115,37 @@ export const PROTOCOL_DISCOUNT_CODE: string | null = 'PROTOCOL';
  */
 export const KIT_SHIPPING_CODE: string | null = 'HF60FREESHIP';
 
+/**
+ * Ten percent off one bottle, for the quiz offer page only.
+ *
+ * VERIFIED AGAINST THE LIVE CHECKOUT, 22 October 2026, by typing it into
+ * Shopify's own discount field and by loading the cart permalink that carries
+ * it. Both produce the same thing on variant 41200079175791:
+ *
+ *   Subtotal $49.99 · Order discount JJTEN -$4.99 · Total USD $45.00
+ *
+ * The code David first gave was JJ10, and Shopify answered that one with
+ * "Enter a valid discount code". Nothing was built on it. Do not change this
+ * string without putting the new one through the same check: a code the page
+ * promises and the cart refuses is worse than no discount at all.
+ *
+ * NOT ON /offer. Those pages sell the same bottle at full price and are out
+ * of this change's scope, so the code is threaded through cartPath by the
+ * caller rather than baked into the single-bottle path.
+ */
+export const SINGLE_DISCOUNT_CODE: string | null = 'JJTEN';
+
+/**
+ * What Shopify actually charges for one bottle with that code: $45.00.
+ *
+ * NOT 44.99, AND NOT ARITHMETIC. Ten percent of 49.99 is 4.999, Shopify
+ * rounds the DISCOUNT to $4.99 rather than the total to $44.99, and the
+ * customer pays $45.00. Computing it here would print a price a cent under
+ * what she is charged, which is the exact failure the page must not have.
+ * Read off the live checkout and written down.
+ */
+export const SINGLE_AFTER_DISCOUNT = 45.00;
+
 /** True when the subscription plan exists. False keeps the option unrendered. */
 export const SUBSCRIPTION_LIVE = true;
 
@@ -433,8 +464,17 @@ export const NEXT_BATCH = 'December';
  */
 export const LIVE_DEADLINE: string | null = null;
 
-/** The kit price over sixty days, to the cent. */
+/** The kit price over sixty days, to the cent. Still used by /offer. */
 export const dailyPrice = (): string => money(PROTOCOL_PRICE / 60);
+
+/**
+ * One discounted bottle over the thirty days it lasts: $1.50.
+ *
+ * The quiz offer page leads with the bottle now, so $1.25 a day is the wrong
+ * number there: that is the kit's rate, over sixty days, and the kit is not
+ * on that page any more.
+ */
+export const singleDailyPrice = (): string => money(SINGLE_AFTER_DISCOUNT / 30);
 
 /** 2280 reads as 2,280. */
 export const batchCount = (): string => BATCH_ON_SHELF.toLocaleString('en-US');
@@ -453,7 +493,7 @@ export const batchCount = (): string => BATCH_ON_SHELF.toLocaleString('en-US');
  * it is set. With neither a variant nor a code, the Protocol falls back to two
  * bottles at full price rather than to a broken link.
  */
-export function cartPath(kind: OfferKind): string {
+export function cartPath(kind: OfferKind, discount: string | null = null): string {
   if (kind === 'subscribe') return SUBSCRIBE_PATH;
 
   if (kind === 'protocol') {
@@ -469,6 +509,12 @@ export function cartPath(kind: OfferKind): string {
     return `/cart/${SINGLE_VARIANT_ID}:2?storefront=true${code}`;
   }
 
-  return `/cart/${SINGLE_VARIANT_ID}:1?storefront=true`;
+  /* THE DISCOUNT IS THE CALLER'S, NOT THIS PATH'S. /offer and /plan sell the
+     same bottle at full price and call this with nothing, so they are
+     unchanged; the quiz offer page passes SINGLE_DISCOUNT_CODE. Shopify takes
+     one `discount` parameter, so a code here is instead of a code, never as
+     well as one. */
+  const code = discount ? `&discount=${encodeURIComponent(discount)}` : '';
+  return `/cart/${SINGLE_VARIANT_ID}:1?storefront=true${code}`;
 }
 

@@ -3,14 +3,15 @@ import { useHydrated } from '../lib/useHydrated';
 import { useMemo } from 'react';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  KIT_TAGLINE, KIT_TOTAL_VALUE, KIT_VALUE, MONEY_BACK_BADGE, ONE_MONTH_PRICE, PLAN_NAME,
-  PROTOCOL_PRICE, SHOT_KIT, SHOT_KIT_BOTTLE, SUBSCRIBE_PRICE, dailyPrice, money,
+  MONEY_BACK_BADGE, ONE_MONTH_PRICE, SHOT_KIT_BOTTLE, SINGLE_AFTER_DISCOUNT,
+  SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money, singleDailyPrice,
 } from '../lib/offer';
 import {
-  BOTTLE_SUPPLY, FREE_SHIPPING, KIT_BADGE, KIT_CTA, KIT_EYEBROW, KIT_HEAD_PRE,
-  KIT_HEAD_SUB, KIT_TODAY_LABEL, KIT_TOTAL_LABEL, OFFER_HEAD, PROMISE_BODY,
-  PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_ALT_LEAD, SUB_ALT_NAME, SUB_CADENCE,
-  SUB_LABEL, SUB_NOTE, SUB_PILL, TRUST_ITEMS, kitHeadPrice,
+  BOTTLE_SUPPLY, FREE_SHIPPING, KIT_EYEBROW, KIT_HEAD_PRE, KIT_HEAD_SUB,
+  KIT_TODAY_LABEL, OFFER_HEAD, PROMISE_BODY, PROMISE_EYEBROW, PROMISE_FINE,
+  PROMISE_HEAD, SINGLE_BADGE, SINGLE_CTA, SINGLE_DISCOUNT_NOTE, SINGLE_NAME,
+  SINGLE_ONCE, SINGLE_WAS_LABEL, SUB_ALT_LEAD, SUB_ALT_NAME, SUB_CADENCE,
+  SUB_LABEL, SUB_NOTE, SUB_PILL, TRUST_ITEMS,
 } from '../lib/kitCopy';
 
 /* THE OFFER, AS IT IS ON JJ'S OWN PAGE.
@@ -40,15 +41,6 @@ import {
  * The links go through shopUrl(), so whatever the ad sent her with reaches
  * Shopify the way it does from the page.
  */
-
-function Tick() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12.5l4.5 4.5L19 7.5" />
-    </svg>
-  );
-}
 
 function Truck() {
   return (
@@ -87,9 +79,17 @@ interface Props {
   angle: string;
 }
 
-/** The kit's own cart link, for any button on the page that buys it. */
+/**
+ * The lead offer's cart link, for any button on this page that buys it.
+ *
+ * ONE BOTTLE WITH THE 10% CODE since 22 October, where this was the kit. The
+ * name is kept so the closer and the rest of the page keep working through
+ * one helper; what changed is what the page leads with, not how it links.
+ * SINGLE_DISCOUNT_CODE is passed here and nowhere else, which is what keeps
+ * /offer and /plan selling the same bottle at full price.
+ */
 export function kitHref(outcome: string, angle: string): string {
-  return shopUrl(SHOP_BASE, outcome, angle, 'protocol');
+  return shopUrl(SHOP_BASE, outcome, angle, 'single', SINGLE_DISCOUNT_CODE);
 }
 
 export function KitOffer({ outcome, angle }: Props) {
@@ -98,7 +98,7 @@ export function KitOffer({ outcome, angle }: Props) {
      her attribution and every cart link shipped without a utm_*. Reading
      this gives the second render that rebuilds them. See useHydrated.ts. */
   const hydrated = useHydrated();
-  const kit = useMemo(
+  const lead = useMemo(
     () => kitHref(outcome, angle),
     [outcome, angle, hydrated],
   );
@@ -116,54 +116,61 @@ export function KitOffer({ outcome, angle }: Props) {
             the number she has to justify, and this is the one she can picture.
             Her page's own line, kept. */}
         <p className="kitSub">
-          {KIT_HEAD_PRE}<em>{kitHeadPrice()}</em>. {KIT_HEAD_SUB}
+          {KIT_HEAD_PRE}<em>{singleDailyPrice()} a day</em>. {KIT_HEAD_SUB}
         </p>
       </div>
 
-      {/* ------------------------------------------------- the kit ---- */}
-      <div className="kitCard kitLead">
-        <div className="kitBadge">{KIT_BADGE}</div>
-        <h3 className="srOnly">{PLAN_NAME}. {KIT_TAGLINE}</h3>
-        <img
-          className="kitShot" src={SHOT_KIT}
-          alt="The 60-Day Feel Like YOU Again Kit: 2 bottles of Hormone Focus, The 60-Day Hormone Fix eBook, Hormone Healthy Recipes eBook and Daily Symptom Tracker"
-          width={768} height={576} decoding="async"
-        />
+      {/* --------------------------------------- the single bottle ---- */}
+      {/* THE SAME CARD THE KIT USED, with the kit taken out of it. Every
+          class here is the one that was already styled: kitCard kitLead, the
+          badge, kitDeal and its two columns, the button and the trust row.
+          What changed is what the card sells.
 
-        <ul className="kitVs">
-          {KIT_VALUE.map(([what, worth]) => (
-            <li key={what}>
-              <span className="kitVsName"><span className="kitVsTick"><Tick /></span>{what}</span>
-              <span className="kitVsVal"><s>{worth}</s></span>
-            </li>
-          ))}
-        </ul>
+          GONE WITH THE KIT: its photograph, its four-line value stack and
+          the $196.99 total. Those described a product this page no longer
+          offers. /offer and /plan still sell it and are untouched. */}
+      <div className="kitCard kitLead">
+        <div className="kitBadge">{SINGLE_BADGE}</div>
+
+        <div className="kitBottleHead">
+          <img src={SHOT_KIT_BOTTLE} alt="Hormone Focus, one bottle" width={800} height={800}
+            decoding="async" />
+          <div>
+            <p className="kitBottleName">{SINGLE_NAME}</p>
+            <p className="kitBottleSupply">{BOTTLE_SUPPLY}</p>
+            <p className="kitBottleSupply">{SINGLE_ONCE}</p>
+          </div>
+        </div>
 
         <div className="kitDeal">
           <div className="kitDealCol">
-            <span className="kitDealL">{KIT_TOTAL_LABEL}</span>
-            <s className="kitDealWas">{KIT_TOTAL_VALUE}</s>
-            <span className="kitShip"><Truck /> {FREE_SHIPPING}</span>
+            <span className="kitDealL">{SINGLE_WAS_LABEL}</span>
+            <s className="kitDealWas">{money(ONE_MONTH_PRICE)}</s>
           </div>
           <div className="kitDealCol kitDealNow">
             <span className="kitDealL">{KIT_TODAY_LABEL}</span>
-            <span className="kitNow">{money(PROTOCOL_PRICE)}</span>
-            <span className="kitDay">{dailyPrice()} a day</span>
+            <span className="kitNow">{money(SINGLE_AFTER_DISCOUNT)}</span>
+            <span className="kitDay">{singleDailyPrice()} a day</span>
           </div>
         </div>
+
+        {/* What the checkout will actually do, said plainly. She types
+            nothing: the code rides on the link. */}
+        <p className="kitNote kitDiscountNote">{SINGLE_DISCOUNT_NOTE}</p>
 
         {/* Same tab, and no rel: noreferrer would strip the Referer Shopify
             attributes on. */}
         <a
-          className="cta kitBtn" href={kit} data-offer="protocol"
-          onClick={() => track.checkout(outcome, PROTOCOL_PRICE, 'protocol', 'kit-main')}
+          className="cta kitBtn" href={lead} data-offer="single"
+          onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'kit-main')}
         >
-          {KIT_CTA} <Arrow />
+          {SINGLE_CTA} <Arrow />
         </a>
 
         {/* DIRECTLY UNDER THE BUTTON, which is where risk reversal earns its
-            keep. It used to sit below both cards, past the decision it
-            answers. */}
+            keep. Neither line claims free shipping, which the bottle does not
+            get: the 10% code occupies the one discount parameter Shopify
+            takes, so HF60FREESHIP cannot ride with it. */}
         <div className="kitTrust">
           {TRUST_ITEMS.map((t, i) => (
             <span key={t}>{i === 0 ? <Shield /> : <Truck />} {t}</span>

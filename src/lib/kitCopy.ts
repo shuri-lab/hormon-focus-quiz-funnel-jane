@@ -152,8 +152,8 @@ export const KIT_FAQ: [string, string][] = [
 /* ------------------------------------------------------------- the closer -- */
 
 /* The button is the brief's. The heading is a PLACEHOLDER. */
-export const CLOSE_HEAD = 'Your next 60 days can start today.';
-export const CLOSE_CTA = 'START MY 60 DAYS';
+export const CLOSE_HEAD = 'Your first bottle can be on its way today.';
+export const CLOSE_CTA = 'START WITH ONE BOTTLE';
 
 /* ============================================================ THE REBUILD ==
  *
@@ -250,18 +250,78 @@ export const HERO_SUB =
 /** Over the logo rail. JJ's own press, and never the supplement's. */
 export const PRESS_EYEBROW = 'As seen in';
 
-export const HERO_CTA = 'START MY 60 DAYS';
+/*
+ * "60 DAYS" CAME OFF THE BUTTONS, 22 October.
+ *
+ * The kit was sixty days. What this page sells now is one bottle, which is
+ * thirty, so a button reading START MY 60 DAYS promised a length the
+ * purchase does not have. !! PENDING JJ SIGN-OFF !!
+ */
+export const HERO_CTA = 'START WITH ONE BOTTLE';
 
-/** Directly under the button, where it does the most good. */
-export const HERO_RISK = '60-day money-back guarantee · Free shipping · Ships today';
+/**
+ * Directly under the button, where it does the most good.
+ *
+ * "FREE SHIPPING" CAME OFF, 22 October, and it had to. This line sat under
+ * the hero while the page led with the kit, whose link carries
+ * HF60FREESHIP. The bottle's link carries the 10% code instead, Shopify
+ * takes one discount parameter, and no free-shipping threshold is published
+ * on the store. Leaving the words there would have promised something the
+ * checkout does not give her.
+ */
+export const HERO_RISK = '60-day money-back guarantee · 10% off your first bottle · Ships today';
 
 /* ------------------------------------------------------------ the offer -- */
 
-/** The benefit, rather than the word "pricing". */
-export const OFFER_HEAD = 'Everything you need for your 60 days, in one kit.';
+/*
+ * THE OFFER BLOCK NOW LEADS WITH ONE BOTTLE, 22 October 2026.
+ *
+ * David's call: put a smaller, less committing first purchase in front of
+ * cold traffic. The kit is off this page; /offer and /plan still sell it and
+ * the product is untouched in the store.
+ *
+ * !! PENDING JJ SIGN-OFF !! for the three lines below that are new.
+ *
+ * THE HEADING CHANGED BECAUSE IT HAD TO. It read "Everything you need for
+ * your 60 days, in one kit", and the kit is the one thing this block no
+ * longer sells.
+ */
+export const OFFER_HEAD = 'Start with one bottle of Hormone Focus.';
+
+/**
+ * On the lead card, where KIT_BADGE used to say BESTSELLER.
+ *
+ * NOT "BESTSELLER" MOVED ACROSS. That word was earned by the kit, and
+ * hanging it on the bottle would be a claim about sales nobody has checked.
+ * This says what the card is for and asserts nothing.
+ */
+export const SINGLE_BADGE = 'START HERE';
+
+export const SINGLE_NAME = '30-Day Supply';
+export const SINGLE_ONCE = 'One-time purchase. No subscription.';
+
+/**
+ * The discount, said the way the checkout says it.
+ *
+ * VERIFIED 22 October: Subtotal $49.99, order discount JJTEN -$4.99, total
+ * $45.00. The code is applied by the link, so she does not type anything,
+ * and the page says "applied at checkout" rather than "use code JJTEN"
+ * because there is nothing for her to use.
+ *
+ * NOTHING HERE SAYS FREE SHIPPING, and that is deliberate. Shopify takes one
+ * discount parameter: the bottle carries the 10% code, so it cannot also
+ * carry HF60FREESHIP, and no free-shipping threshold is published on the
+ * store. Shipping is calculated at checkout and the page does not pretend
+ * otherwise.
+ */
+export const SINGLE_DISCOUNT_NOTE = '10% off applied at checkout';
+
+/** Over the struck price on the lead card, where the kit said "Total value". */
+export const SINGLE_WAS_LABEL = 'Usually';
+export const SINGLE_CTA = 'Get my first bottle';
 
 /** The one alternative, kept quiet under the kit. */
-export const SUB_ALT_LEAD = 'Prefer to start month to month?';
+export const SUB_ALT_LEAD = 'Or subscribe and save more:';
 export const SUB_ALT_NAME = 'Hormone Focus subscription';
 
 /* ----------------------------------------------------- who JJ is -------- */
@@ -325,4 +385,4 @@ export const PLAN_STEP_3 = 'Mark the tracker.';
  * lines and makes the bar taller than the button it exists to serve. The day
  * rate is the half that does the work, so the day rate is what stays.
  */
-export const STICKY_CTA = 'Start my 60 days';
+export const STICKY_CTA = 'Start with one bottle';

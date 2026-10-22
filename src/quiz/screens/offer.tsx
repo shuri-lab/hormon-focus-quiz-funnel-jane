@@ -22,13 +22,14 @@ import {
   FacebookComment, Faces, PhotoRail, PressRail, Quote, RatingBadge,
 } from '../../components/Proof';
 import { kitProof } from '../../lib/reviews';
-import { PROTOCOL_PRICE, dailyPrice, money } from '../../lib/offer';
+import { SINGLE_AFTER_DISCOUNT, money, singleDailyPrice } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
 import {
   CLOSE_CTA, CLOSE_HEAD, HF_BODY, HF_EYEBROW, HF_HEAD, HERO_CTA, HERO_EYEBROW, HERO_HEAD,
   HERO_HEAD_DEFAULT, HERO_RISK, HERO_SUB, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
   MECH_EYEBROW, MECH_HEAD, PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY,
-  PLAN_STEP_2, PLAN_STEP_3, PROOF_EYEBROW, PROOF_HEAD, PROOF_NOTE, STICKY_CTA,
+  PLAN_STEP_2, PLAN_STEP_3, PROOF_EYEBROW, PROOF_HEAD, PROOF_NOTE,
+  SINGLE_DISCOUNT_NOTE, STICKY_CTA,
   TRUST_LEAD,
 } from '../../lib/kitCopy';
 import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
@@ -368,12 +369,20 @@ export function R2() {
         <div data-proof="closing"><Quote review={proof.closing} long /></div>
         <h2 className="kitH2">{CLOSE_HEAD}</h2>
         <a
-          className="cta kitBtn" href={href} data-offer="protocol" data-close
-          onClick={() => track.checkout(outcome, PROTOCOL_PRICE, 'protocol', 'quiz-kit-close')}
+          className="cta kitBtn" href={href} data-offer="single" data-close
+          onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'quiz-kit-close')}
         >
           {CLOSE_CTA} &nbsp;&rarr;
         </a>
-        <p className="kitNote">{money(PROTOCOL_PRICE)} · free shipping · 60-day money-back guarantee</p>
+        {/* NOT "free shipping" ANY MORE, and that is the point. It said so
+            while this button bought the kit, whose link carries
+            HF60FREESHIP. The bottle's link carries the 10% code instead,
+            Shopify takes one discount parameter, and no free-shipping
+            threshold is published on the store. The line now says what she
+            actually gets. */}
+        <p className="kitNote">
+          {money(SINGLE_AFTER_DISCOUNT)} · {SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee
+        </p>
       </section>
 
       <p className="fine" ref={foot}>*{OFFER_DISCLAIMER}</p>
@@ -392,7 +401,7 @@ export function R2() {
               the number she has to justify; $1.25 a day is the one she can
               picture. Derived from PROTOCOL_PRICE / 60, so it follows the
               price rather than being typed beside it. */}
-          <span className="kitStickyFrom">From {dailyPrice()} a day</span>
+          <span className="kitStickyFrom">From {singleDailyPrice()} a day</span>
           {/* THIS TAKES HER TO THE OFFER, IT DOES NOT BUY. She is somewhere
               down a long page with no price in view; the honest move is to
               put the choice back in front of her and let her pick, not to

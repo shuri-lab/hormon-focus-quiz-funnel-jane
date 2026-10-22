@@ -230,9 +230,14 @@ test.describe('the quiz', () => {
 
     /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
        rebuild: a button, the risk taken off it, and two forms of proof. */
-    await expect(page.locator('.kitHeroCta')).toHaveText(/START MY 60 DAYS/);
+    await expect(page.locator('.kitHeroCta')).toHaveText(/START WITH ONE BOTTLE/);
+    /* NO FREE-SHIPPING PROMISE, anywhere above the fold. It said so while the
+       kit led this page and its link carried HF60FREESHIP; the bottle's link
+       carries the 10% code instead and Shopify takes one of them. */
     await expect(page.locator('.kitHeroRisk'))
-      .toHaveText('60-day money-back guarantee · Free shipping · Ships today');
+      .toHaveText('60-day money-back guarantee · 10% off your first bottle · Ships today');
+    await expect(page.locator('.kitHero'), 'no free shipping above the fold')
+      .not.toContainText('Free shipping');
     const fold = page.viewportSize()!.height;
     const ctaBox = (await page.locator('.kitHeroCta').boundingBox())!;
     expect(
@@ -347,14 +352,31 @@ test.describe('the quiz', () => {
     await expectTapTargets(page, 'r2 kit page');
 
     /* The offer is the one on JJ's page: the kit first, one bottle under it. */
-    const kit = page.locator('.kitLead');
-    await expect(kit.locator('.kitVs li')).toHaveCount(4);
-    await expect(kit).toContainText('$196.99');
-    await expect(kit.locator('.kitNow')).toHaveText('$74.99');
-    await expect(kit.locator('.kitDay')).toHaveText('$1.25 a day');
-    await expect(kit.locator('a.kitBtn')).toContainText('Get the 60-Day Kit');
-    await expect(kit.locator('a.kitBtn'))
-      .toHaveAttribute('href', /shop\.jjsmithonline\.com\/cart\/54330638663791:1.*discount=HF60FREESHIP/);
+    /* THE LEAD CARD IS ONE BOTTLE, 22 October. It was the kit, with its
+       value stack and its $196.99. David's call: a smaller first purchase in
+       front of cold traffic. The kit is off this page and unchanged on
+       /offer, which the test below holds.
+
+       $45.00 AND NOT $44.99, which is the number that matters here. Ten
+       percent of 49.99 is 4.999, Shopify rounds the DISCOUNT to $4.99, and
+       she is charged $45.00. Verified at the live checkout on 22 October:
+       Subtotal $49.99, order discount JJTEN -$4.99, total USD $45.00. If
+       this assertion and the checkout ever disagree, the page is lying
+       about a price and this is the thing that says so. */
+    const lead = page.locator('.kitLead');
+    await expect(lead.locator('.kitDealWas')).toHaveText('$49.99');
+    await expect(lead.locator('.kitNow')).toHaveText('$45.00');
+    await expect(lead.locator('.kitDay')).toHaveText('$1.50 a day');
+    await expect(lead.locator('.kitDiscountNote')).toHaveText('10% off applied at checkout');
+    await expect(lead.locator('a.kitBtn')).toContainText('Get my first bottle');
+    await expect(lead.locator('a.kitBtn'))
+      .toHaveAttribute('href', /cart\/41200079175791:1.*discount=JJTEN/);
+    /* And no free-shipping promise anywhere on it: the 10% code takes the one
+       discount parameter Shopify allows, so HF60FREESHIP cannot ride too. */
+    await expect(lead, 'the bottle does not get free shipping')
+      .not.toContainText('FREE SHIPPING');
+    await expect(page.locator('.kitLead .kitVs li'), 'the kit value stack went with the kit')
+      .toHaveCount(0);
 
     /* TWO CHOICES, NOT THREE, since 16 October 2026. The 30-day one-time
        bottle is off this page: it cost MORE than the subscription for the
@@ -366,7 +388,10 @@ test.describe('the quiz', () => {
        and /plan still sell it, and offer.spec.ts still holds them to it. */
     const bottle = page.locator('.kitQuiet');
     await expect(bottle.locator('.kitOpt')).toHaveCount(0);
-    await expect(bottle).toContainText('Prefer to start month to month?');
+    /* The lead-in changed when the bottle took the lead card: it read
+       "Prefer to start month to month?" against the kit, and against a
+       one-time bottle the honest framing is that subscribing saves more. */
+    await expect(bottle).toContainText('Or subscribe and save more:');
     await expect(bottle).not.toContainText('One-time purchase');
     await expect(bottle.locator('a.kitBtn')).toContainText('Subscribe & save · $39.99');
     await expect(bottle.locator('a.kitBtn'))
@@ -379,7 +404,18 @@ test.describe('the quiz', () => {
     /* The crossed price is the same bottle bought one at a time, which is why
        the one-time price is still a number on this page. */
     await expect(bottle.locator('.kitAltCost')).toContainText('$49.99');
-    await expect(page.locator('a[href*="41200079175791"]'), 'the one-time cart link is off the page')
+    /* REVERSED 22 October: the one-time bottle is what this page sells now,
+       so its cart link is expected rather than forbidden. What must be
+       absent is the kit's. Both links to the bottle, the lead card and the
+       closer, carry the discount. */
+    const bottleLinks = await page.locator('a[href*="41200079175791"]').evaluateAll(
+      (as) => as.map((a) => (a as HTMLAnchorElement).href),
+    );
+    expect(bottleLinks.length, 'the lead card and the closer').toBe(2);
+    for (const h of bottleLinks) {
+      expect(h, 'a bottle link without the discount').toContain('discount=JJTEN');
+    }
+    await expect(page.locator('a[href*="54330638663791"]'), 'the kit cart link is off this page')
       .toHaveCount(0);
 
     /* Proof comes after the offer, in three places. She said sleep bothers
@@ -413,9 +449,15 @@ test.describe('the quiz', () => {
     await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
     /* JJ's own six questions now, at David's request. */
     await expect(page.locator('.kitFaq details')).toHaveCount(6);
-    await expect(page.locator('a[data-close]')).toHaveText(/START MY 60 DAYS/);
+    /* The closer buys what the page leads with, which is the bottle now, so
+       it carries the 10% code rather than the kit's free-shipping one. */
+    await expect(page.locator('a[data-close]')).toHaveText(/START WITH ONE BOTTLE/);
     await expect(page.locator('a[data-close]'))
-      .toHaveAttribute('href', /54330638663791:1.*discount=HF60FREESHIP/);
+      .toHaveAttribute('href', /41200079175791:1.*discount=JJTEN/);
+    /* And its note says the price she is charged, with no free shipping on
+       it: $45.00, read off the live checkout. */
+    await expect(page.locator('.kitClose .kitNote').first())
+      .toContainText('$45.00 · 10% off applied at checkout · 60-day money-back guarantee');
 
     /* No health answer or result rides in any link out. */
     const out = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
@@ -469,7 +511,7 @@ test.describe('the quiz', () => {
        she came for. 'Start with these 3 for hot flashes' until 16 October. */
     await expect(heading(page)).toHaveText('Sleep cool through the night again.');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
-    await expect(page.locator('.kitLead .kitNow')).toHaveText('$74.99');
+    await expect(page.locator('.kitLead .kitNow')).toHaveText('$45.00');
     /* Same four whatever she answered — see the note on the lead review above. */
     await expect(page.locator('[data-proof="pre"] .kitRev').first())
       .toContainText('given me my life back');
@@ -812,16 +854,33 @@ test.describe('the kit page', () => {
       }
     });
 
-  test('the one-time bottle is off this page and still sold on the offer pages',
+  test('the kit is off this page and still sold on the offer pages',
     async ({ page }) => {
-      /* Removed from the PAGE, not from the product. Two places have to stay
-         true at once or the removal has quietly become a delisting. */
+      /* REVERSED 22 October. This used to assert the opposite: the one-time
+         bottle off the quiz page and the kit leading it. The bottle leads
+         now and the kit is the one that came off.
+
+         Removed from the PAGE, not from the product. Both halves have to
+         stay true at once or the removal has quietly become a delisting. */
       await page.goto('/quiz/kit');
-      await expect(page.locator('a[href*="41200079175791"]')).toHaveCount(0);
-      await expect(page.getByText('One-time purchase')).toHaveCount(0);
+      await expect(page.locator('a[href*="54330638663791"]'), 'the kit cart link')
+        .toHaveCount(0);
+      await expect(page.getByText('Total value'), "the kit's value stack")
+        .toHaveCount(0);
+      await expect(page.locator('a[href*="41200079175791"]').first(), 'the bottle leads')
+        .toBeAttached();
 
       await page.goto('/offer');
-      await expect(page.locator('a[href*="41200079175791"]').first()).toBeAttached();
+      await expect(page.locator('a[href*="54330638663791"]').first(), 'the kit still sells there')
+        .toBeAttached();
+      /* And there it is still the full-price bottle: the 10% code is passed
+         by the quiz page alone, which is what keeps these pages apart. */
+      const offerHrefs = await page.locator('a[href*="41200079175791"]').evaluateAll(
+        (as) => as.map((a) => (a as HTMLAnchorElement).href),
+      );
+      for (const h of offerHrefs) {
+        expect(h, 'JJTEN leaked onto /offer').not.toContain('JJTEN');
+      }
     });
 
   test('both buy buttons still carry her ad tags, and never her answers',
@@ -969,7 +1028,6 @@ test.describe('the kit page', () => {
       expect(await n('[data-proof="closing"] .kitRev'), 'the closing testimonial').toBe(1);
       expect(await n('.kitFaq details'), "JJ's six questions").toBe(6);
       expect(await n('.kitPromise'), 'the guarantee').toBe(1);
-      expect(await n('.kitVs li'), 'the value stack').toBe(4);
       expect(await n('.planSteps > li'), 'the three plan steps').toBe(3);
       expect(await n('.kitMg > div'), 'the three ingredients').toBe(3);
       expect(await n('a[href*="shop.jjsmithonline.com"]'), 'the buy links').toBe(3);

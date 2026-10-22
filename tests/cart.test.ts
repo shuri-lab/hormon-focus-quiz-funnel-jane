@@ -425,3 +425,49 @@ test('the two permalink offers need no return_to, because they keep their query'
     expect(u.searchParams.get('return_to'), kind).toBeNull();
   }
 });
+
+/* --------------------------------------- the quiz page's 10% bottle ----- */
+
+test('the discounted bottle is priced at what Shopify actually charges', async () => {
+  const { SINGLE_AFTER_DISCOUNT, ONE_MONTH_PRICE, singleDailyPrice } =
+    await import('../src/lib/offer');
+
+  /* $45.00 AND NOT $44.99, which is the whole point of this test.
+     Ten percent of 49.99 is 4.999. Shopify rounds the DISCOUNT to $4.99,
+     not the total to $44.99, so she pays $45.00. Verified at the live
+     checkout on 22 October 2026: Subtotal $49.99, order discount JJTEN
+     -$4.99, total USD $45.00.
+     Anyone "fixing" this to the arithmetic would make the page promise a
+     cent less than the cart charges, which is the exact failure the brief
+     called worse than having no discount at all. */
+  expect(SINGLE_AFTER_DISCOUNT).toBe(45.00);
+  expect(
+    SINGLE_AFTER_DISCOUNT,
+    'the naive arithmetic is a cent under what the checkout charges',
+  ).not.toBe(Number((ONE_MONTH_PRICE * 0.9).toFixed(2)));
+
+  /* And the day rate is the bottle's thirty days, not the kit's sixty. */
+  expect(singleDailyPrice()).toBe('$1.50');
+});
+
+test('the code rides on the quiz link and on no other', async () => {
+  const { cartPath, SINGLE_DISCOUNT_CODE, SINGLE_VARIANT_ID: V } =
+    await import('../src/lib/offer');
+
+  /* THE QUIZ PAGE PASSES IT. Nothing else does, and that is what keeps
+     /offer and /plan selling the same bottle at full price. */
+  const withCode = cartPath('single', SINGLE_DISCOUNT_CODE);
+  expect(withCode).toContain(`/cart/${V}:1`);
+  expect(withCode).toContain('discount=JJTEN');
+  expect(withCode).toContain('storefront=true');
+
+  const plain = cartPath('single');
+  expect(plain, '/offer must not inherit the quiz discount').not.toContain('discount');
+  expect(plain).toContain(`/cart/${V}:1`);
+
+  /* ONE DISCOUNT PARAMETER, EVER. Shopify takes a single code, so the
+     bottle carrying JJTEN cannot also carry the kit's free-shipping code.
+     This is why no copy on that page promises free shipping. */
+  expect((withCode.match(/discount=/g) || []).length).toBe(1);
+  expect(withCode).not.toContain('HF60FREESHIP');
+});
