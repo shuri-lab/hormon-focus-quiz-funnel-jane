@@ -124,8 +124,16 @@ export const MISS_NOTHING =
  * reads as though the page had not been listening. Hers pivots from
  * understanding to doing instead.
  */
+/*
+ * "THE PLAN I'D BUILD FOR YOU" CAME OFF, 22 October.
+ *
+ * The page she presses through to sells one bottle of Hormone Focus. It
+ * stopped being a plan when the kit came off it, and a hand-off promising
+ * one would have been the result page writing a cheque the offer page no
+ * longer cashes.
+ */
 export const WANT_HANDOFF =
-  "There's a simple place to start. Let me show you the plan I'd build for you.";
+  "There's a simple place to start. Let me show you where I'd start.";
 
 export const WANT_HANDOFF_UNDERSTAND =
   "Now that you can see what it is, here is where I'd start.";

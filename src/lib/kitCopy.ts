@@ -153,7 +153,7 @@ export const KIT_FAQ: [string, string][] = [
 
 /* The button is the brief's. The heading is a PLACEHOLDER. */
 export const CLOSE_HEAD = 'Your first bottle can be on its way today.';
-export const CLOSE_CTA = 'START WITH ONE BOTTLE';
+export const CLOSE_CTA = 'Get Hormone Focus';
 
 /* ============================================================ THE REBUILD ==
  *
@@ -182,14 +182,30 @@ export const CLOSE_CTA = 'START WITH ONE BOTTLE';
 /* ------------------------------------------------------------- the hero -- */
 
 /** Her stage, carried over from the result page she just read. */
+/*
+ * THE PAGE SELLS ONE BOTTLE, SO IT STOPPED CALLING ITSELF A PLAN.
+ * 22 October: the kit is off this page, and with it went the guide, the
+ * recipes and the tracker. Every line that promised a plan went with them.
+ * The eyebrow labels her result instead.
+ */
 export const HERO_EYEBROW: Record<'A' | 'B' | 'C' | 'E', string> = {
-  /* NOT "your 60-day plan", which is what this read before and is the one of
-     the four that named a length instead of her. A is the outcome with no
-     stage word to use, so it names what the plan is for. */
-  A: 'Your hormone-balance plan',
-  B: 'Your perimenopause plan',
-  C: 'Your menopause plan',
-  E: 'Your early-menopause plan',
+  A: 'Your result · Hormonal imbalance',
+  B: 'Your result · Perimenopause',
+  C: 'Your result · Menopause',
+  E: 'Your result · Early menopause',
+};
+
+/**
+ * What the product is, in one sentence, by the stage she is in.
+ *
+ * It replaces "One simple plan for your hormones", which described something
+ * this page no longer sells. !! PENDING JJ SIGN-OFF !!
+ */
+export const HERO_SUB_BY_STAGE: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'Hormone Focus is a daily supplement for women whose hormones are changing. Two capsules a day.',
+  B: 'Hormone Focus is a daily supplement for women in perimenopause. Two capsules a day.',
+  C: 'Hormone Focus is a daily supplement for women in menopause. Two capsules a day.',
+  E: 'Hormone Focus is a daily supplement for women in early menopause. Two capsules a day.',
 };
 
 /**
@@ -257,7 +273,7 @@ export const PRESS_EYEBROW = 'As seen in';
  * thirty, so a button reading START MY 60 DAYS promised a length the
  * purchase does not have. !! PENDING JJ SIGN-OFF !!
  */
-export const HERO_CTA = 'START WITH ONE BOTTLE';
+export const HERO_CTA = 'Get Hormone Focus';
 
 /**
  * Directly under the button, where it does the most good.
@@ -385,4 +401,70 @@ export const PLAN_STEP_3 = 'Mark the tracker.';
  * lines and makes the bar taller than the button it exists to serve. The day
  * rate is the half that does the work, so the day rate is what stays.
  */
-export const STICKY_CTA = 'Start with one bottle';
+export const STICKY_CTA = 'Get Hormone Focus';
+
+/* ================================ THE SINGLE-BOTTLE PAGE, 22 October 2026 ==
+ *
+ * !! PENDING JJ SIGN-OFF !! for everything new below.
+ *
+ * THE KIT IS GONE FROM THIS PAGE and so is every word that depended on it:
+ * the three-step plan, "Why 60 days", JJ's note about the Kit, "the
+ * supplement in the kit", and the plan framing in the hero. What is left
+ * describes one bottle of Hormone Focus and nothing else.
+ *
+ * "60-day money-back guarantee" STAYS, and that is not an oversight. It is
+ * the store's guarantee, it is named in the brief's own sections, and it is
+ * the one place sixty days is a fact about the refund window rather than a
+ * claim about a plan she is not buying.
+ */
+
+/* -------------------------------------------------------- review teaser -- */
+
+export const TEASER_HEAD = 'What women say about it';
+
+/* ---------------------------------------------------------- why it works -- */
+
+/** Her own words, said back, by the symptom she named. */
+export const WHY_OPENER: Record<SymptomId, string> = {
+  sleep: 'You told us your sleep breaks at night.',
+  weight: 'You told us the weight is not shifting the way it used to.',
+  energy: 'You told us your energy is low.',
+  sweats: 'You told us the heat comes on, day and night.',
+  bloat: 'You told us you feel bloated.',
+  mood: 'You told us your mood and your focus are not what they were.',
+};
+
+/** Why that happens, by the stage her answers point to. */
+export const WHY_STAGE: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'When your hormones stop keeping their usual rhythm, changes like that show up in more than one place at once.',
+  B: 'In perimenopause your hormones get less steady, which is why that happens even when nothing else changed.',
+  C: 'After your periods stop your body runs on less estrogen, which is why that happens even when nothing else changed.',
+  E: 'In early menopause your body runs on less estrogen sooner than most women, which is why that happens even when nothing else changed.',
+};
+
+/** The one thing the product is said to do. The asterisk is the disclaimer. */
+export const WHY_PRODUCT =
+  'Hormone Focus supports healthy hormone balance, so your body has the '
+  + 'support it needs.*';
+
+/* ---------------------------------------------------------- how to take -- */
+
+/*
+ * DOSAGE AND NOTHING ELSE.
+ *
+ * This replaced a three-step plan whose step two told her to fix her own
+ * sleep and meals. On a page selling a supplement that reads as the product
+ * admitting it is not the thing that helps, and she did not buy a diet.
+ */
+export const HOW_HEAD = 'How to take it';
+export const HOW_BODY =
+  'Two capsules a day, with a meal and a glass of water. That is the whole '
+  + 'routine. Take it every day and give it time.';
+
+/* ------------------------------------------------------- the offer card -- */
+
+export const OFFER_CARD_HEAD = '30-Day Supply';
+export const OFFER_CARD_SUB = 'One bottle of Hormone Focus, 60 capsules, two a day.';
+
+/** Under the two options, where the risk comes off. */
+export const OFFER_ONCE_NOTE = '10% off applied at checkout';

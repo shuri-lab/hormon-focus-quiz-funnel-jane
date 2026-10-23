@@ -112,7 +112,7 @@ export function R1() {
 
       {/* THE GAP, between what changed and what she wants.
           Effort was never the missing piece, and saying so here is what lets
-          the next page open on a plan rather than on a price. The second
+          the next page open on the reason rather than on a price. The second
           line is a claim about her, so she gets the one that is true: see
           missLine(). Nothing here names a product, a price or a link. */}
       <div className="block">
@@ -147,7 +147,7 @@ export function R1() {
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
-          SHOW ME MY PLAN &rarr;
+          SHOW ME WHERE TO START &rarr;
         </button>
       </ActionBar>
     </Screen>
