@@ -11,6 +11,7 @@
 import { cartPath, type OfferKind } from './offer';
 import { captureListLink } from './listLink';
 import { initPostHog, phCapture, phCaptureBeacon, phIdentify } from './posthog';
+import { REVIEW } from '../review/flag';
 
 declare global {
   interface Window {
@@ -38,6 +39,27 @@ function push(event: string, props: Props = {}) {
 /** Meta's own vocabulary. Standard events where one fits, custom otherwise. */
 function meta(name: string, props: Props = {}, standard = false) {
   try {
+    /* OUR PIXEL FIRST, OR IT MISSES THIS EVENT.
+     *
+     * fbq('track', ...) reaches the pixels initialised AT THAT MOMENT, and
+     * initMeta used to be reached only from App.tsx's effect. React runs
+     * effects child-first, so a screen's own effect — track.landingView,
+     * track.offerView — got there before the parent App effect did, and the
+     * first ViewContent of the session left with only JJ's pixel listening.
+     * The recorded sequence was:
+     *
+     *   fbq(track, ViewContent, landing:default)   <-- ours not initialised
+     *   fbq(init, 4065719966895182)
+     *   fbq(trackSingle, 4065719966895182, PageView)
+     *
+     * So whichever call comes first now does the initialising. initMeta is
+     * idempotent on window.__hfMeta, which makes this free on every call
+     * after the first, and it costs no accuracy in its host-pixel guard:
+     * a child effect and its parent's effect run in the same commit, the
+     * same tick, microseconds apart.
+     *
+     * It fires fbq directly, not through meta(), so there is no recursion. */
+    initMeta();
     window.fbq?.(standard ? 'track' : 'trackCustom', name, props);
   } catch { /* as above */ }
 }
@@ -113,6 +135,34 @@ export function pageView(path: string, title: string): void {
 export const META_DATASET_ID = '1614860232058835';
 
 /**
+ * OUR OWN PIXEL, BESIDE JJ'S. Null until the id is supplied.
+ *
+ * Janey's pixel, supplied by David on 29 October 2026. The brief that asked
+ * for this carried the literal text "<PASTE JANEY'S PIXEL ID>", so it shipped
+ * as null for a day rather than as a guess. Setting it back to null turns the
+ * second pixel off and changes nothing else.
+ *
+ * WHY THE HOST GUARD WAS NOT THE REAL OBSTACLE. The brief read the guard
+ * below as the thing stopping a second pixel. It is not: fbq('track', ...)
+ * delivers to EVERY initialised pixel, so the moment ours is initialised it
+ * receives ViewContent and InitiateCheckout along with JJ's, with no further
+ * change. What it would not receive is PageView, because that is fired only
+ * in the branch where no host pixel exists. Hence trackSingle below: it
+ * sends one PageView to ours alone, instead of a shared track() that would
+ * hand JJ's pixel a second one.
+ *
+ * AND NOT index.html, which the brief offers as an alternative. The deployed
+ * host does not use that file: it builds src/ behind its own entry, which is
+ * why ?skip_email=1 did nothing in production for a week in October. A
+ * snippet there would never run. This is the init path, which does.
+ *
+ * GTM is the other route the brief names. The container is configuration
+ * rather than code, so it cannot be changed from this repo; if the tag is
+ * added there instead, leave this null so the pixel is not initialised twice.
+ */
+export const OUR_PIXEL_ID: string | null = '4065719966895182';
+
+/**
  * Microsoft's pixel, with Jane's host guard.
  *
  * THE GUARD IS THE POINT. If a pixel is already on the page — a host, a tag
@@ -126,6 +176,9 @@ export const META_DATASET_ID = '1614860232058835';
  */
 export function initMeta(): void {
   try {
+    /* The review build fires nothing. Guarded here rather than only at the
+       App.tsx call site, because meta() below is a second caller. */
+    if (REVIEW) return;
     if (window.__hfMeta) return;
     window.__hfMeta = true;
 
@@ -155,7 +208,23 @@ export function initMeta(): void {
       window.fbq?.('track', 'PageView');
     }
 
-    /* Fires whether or not we own the pixel: one ViewContent for the quiz. */
+    /* OURS, ALONGSIDE WHOEVER ELSE IS HERE.
+     *
+     * Initialised whether or not a host pixel was found, which is the whole
+     * point: once it is initialised, every fbq('track', ...) below and in
+     * meta() reaches it as well as JJ's.
+     *
+     * trackSingle for the PageView, and only for the PageView. A shared
+     * track('PageView') would give JJ's pixel a second one on top of the one
+     * its own snippet already fired, which is the double count the guard
+     * above exists to prevent. trackSingle addresses ours and nothing else. */
+    if (OUR_PIXEL_ID) {
+      window.fbq?.('init', OUR_PIXEL_ID);
+      window.fbq?.('trackSingle', OUR_PIXEL_ID, 'PageView');
+    }
+
+    /* Fires whether or not we own the pixel: one ViewContent for the quiz,
+       to every pixel initialised above. */
     window.fbq?.('track', 'ViewContent', {
       content_name: 'Hormone Focus quiz',
       content_ids: ['hormone-focus'],
@@ -462,6 +531,23 @@ export function readQuizLanding(): string {
 /** The value hf_funnel carries on every cart link the quiz builds. */
 export const QUIZ_FUNNEL = 'quiz';
 
+/**
+ * The campaign the quiz reports itself as, for GA4 and Shopify's own
+ * marketing attribution.
+ *
+ * IT FILLS A GAP, IT NEVER OVERWRITES. If she arrived from an ad carrying
+ * utm_campaign, that is the campaign that paid for her and it stays exactly
+ * as it arrived; this is set only when there is nothing there. The brief
+ * named utm_source and utm_content as the ones to protect, but overwriting
+ * utm_campaign would destroy acquisition data the same way, and this repo
+ * has a standing rule against it (see PASS_THROUGH, and the note on
+ * utm_source=bridge in tests/cart.test.ts).
+ *
+ * The quiz still says it converted her through hf_funnel, the attributes
+ * below, and this campaign where the slot was free.
+ */
+export const QUIZ_CAMPAIGN = 'hf_quiz';
+
 const PASS_THROUGH = [
   /* The acquisition, exactly as it arrived. */
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
@@ -513,6 +599,36 @@ export function shopUrl(
      answer: the door is not health information. */
   url.searchParams.set('hf_quiz_landing', readQuizLanding());
 
+  /* THE SAME TWO AS CART ATTRIBUTES, WHICH IS THE ONLY HALF THAT REACHES THE
+   * ORDER.
+   *
+   * hf_funnel above is a custom query parameter. It gets as far as the cart
+   * page and stops: Shopify does not persist unknown parameters onto the
+   * order, which is why a scan of 7,378 orders found hf_funnel zero times in
+   * landing_site, referrer, tags or note_attributes, and why every quiz sale
+   * so far has been unattributable.
+   *
+   * attributes[...] are cart attributes, and Shopify carries those onto the
+   * order as note_attributes, which the store's read_orders scope can read.
+   *
+   * THE PERMALINK CARRIES THEM, so nothing had to be restructured. The brief
+   * expected /cart/<variant>:<qty> to lose attributes across Shopify's
+   * rewrite to /cart?cart_link_id=... and asked for all three paths to be
+   * moved to /cart/add if so. Measured against the live store instead, and
+   * the rewrite keeps them: the permalink, the permalink with a discount,
+   * and /cart/add with a selling plan all arrive with
+   * {"hf_funnel":"quiz","hf_quiz_landing":"<slug>"} on the cart. The
+   * subscription keeps its plan, and the kit keeps its price. So the link
+   * shapes are untouched and this is two more parameters. */
+  url.searchParams.set('attributes[hf_funnel]', QUIZ_FUNNEL);
+  url.searchParams.set('attributes[hf_quiz_landing]', readQuizLanding());
+
+  /* A REAL UTM, for GA4 and Shopify's marketing reports, and only where she
+     did not bring one of her own. See QUIZ_CAMPAIGN. */
+  if (!url.searchParams.get('utm_campaign')) {
+    url.searchParams.set('utm_campaign', QUIZ_CAMPAIGN);
+  }
+
   /* THE SUBSCRIPTION NEEDS ONE MORE THING, and this is the bug it fixes.
    *
    * A cart permalink keeps its query across Shopify's redirect:
@@ -536,6 +652,10 @@ export function shopUrl(
       /* The cart's own instructions stay on /cart/add; only the marketing
          parameters need to survive to the cart page. */
       if (k === 'id' || k === 'quantity' || k === 'selling_plan') continue;
+      /* The cart attributes are applied by the /cart/add request itself, so
+         they are already on the cart by the time this redirect happens.
+         Repeating them in return_to would only lengthen the URL. */
+      if (k.startsWith('attributes[')) continue;
       carried.set(k, v);
     }
     url.searchParams.set('return_to', `/cart?${carried.toString()}`);

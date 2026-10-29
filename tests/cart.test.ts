@@ -155,9 +155,64 @@ test('traffic with no attribution gets a clean link, not invented values', () =>
      an acquisition she did not arrive with. No empty utm_*. */
   /* What Shopify needs, the funnel mark and the door — and nothing standing
      in for an acquisition she did not arrive with. No empty utm_*. */
-  expect([...u.searchParams.keys()].sort())
-    .toEqual(['hf_funnel', 'hf_quiz_landing', 'storefront']);
+  expect([...u.searchParams.keys()].sort()).toEqual([
+    'attributes[hf_funnel]', 'attributes[hf_quiz_landing]',
+    'hf_funnel', 'hf_quiz_landing', 'storefront', 'utm_campaign',
+  ]);
   expect(u.searchParams.get('hf_funnel')).toBe('quiz');
+});
+
+/* ------------------------------------------- what reaches the ORDER ----- */
+
+/* THE QUERY PARAMETER NEVER REACHED THE ORDER, which is the whole reason
+   these exist. hf_funnel is a custom parameter: it gets as far as the cart
+   page and stops, and a scan of 7,378 orders found it zero times in
+   landing_site, referrer, tags or note_attributes. Cart attributes are the
+   ones Shopify carries onto the order, as note_attributes.
+
+   MEASURED, NOT ASSUMED, against the live store on 29 October: the
+   permalink, the permalink with a discount, and /cart/add with a selling
+   plan all arrive with {"hf_funnel":"quiz","hf_quiz_landing":"<slug>"} on
+   the cart, so the link shapes did not have to change. */
+test('every cart link carries the quiz mark as a cart attribute', () => {
+  for (const kind of ['single', 'protocol', 'subscribe'] as const) {
+    const u = new URL(shopUrl(SHOP_BASE, 'B', 'weight', kind));
+    expect(u.searchParams.get('attributes[hf_funnel]'), kind).toBe('quiz');
+    expect(u.searchParams.get('attributes[hf_quiz_landing]'), kind).toBeTruthy();
+  }
+});
+
+test('the quiz campaign fills an empty slot and never takes an occupied one', () => {
+  /* Nothing of hers to protect: the quiz names itself. */
+  const bare = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'single'));
+  expect(bare.searchParams.get('utm_campaign')).toBe('hf_quiz');
+
+  /* SHE CAME FROM AN AD WITH A CAMPAIGN, so that campaign stays. Overwriting
+     it would destroy the acquisition the ad paid for, which is the same rule
+     that keeps utm_source from being rewritten to 'bridge' below. */
+  store.set('hf_attribution', JSON.stringify({
+    utm_source: 'fb', utm_campaign: 'peri_q3', utm_content: 'vid_07',
+  }));
+  const fromAd = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'single'));
+  expect(fromAd.searchParams.get('utm_campaign')).toBe('peri_q3');
+  expect(fromAd.searchParams.get('utm_source')).toBe('fb');
+  expect(fromAd.searchParams.get('utm_content')).toBe('vid_07');
+  /* And the mark that says the quiz converted her is still there, in both
+     the parameter and the attribute. */
+  expect(fromAd.searchParams.get('hf_funnel')).toBe('quiz');
+  expect(fromAd.searchParams.get('attributes[hf_funnel]')).toBe('quiz');
+});
+
+test('the subscription applies its attributes itself, and return_to stays lean', () => {
+  const u = new URL(shopUrl(SHOP_BASE, 'B', 'weight', 'subscribe'));
+  expect(u.pathname).toBe('/cart/add');
+  expect(u.searchParams.get('attributes[hf_funnel]')).toBe('quiz');
+  /* /cart/add applies them server side, so repeating them in the redirect
+     target would only lengthen the URL. */
+  const back = u.searchParams.get('return_to') ?? '';
+  expect(back).not.toContain('attributes');
+  expect(back, 'the marketing parameters still ride through the redirect')
+    .toContain('hf_funnel=quiz');
 });
 
 /* --------------------------------------------------------------- rows -- */
