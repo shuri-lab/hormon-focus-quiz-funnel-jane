@@ -85,7 +85,7 @@ test.describe('skip_email', () => {
     await expect(page.getByText(GATE)).toHaveCount(0);
 
     /* Her name came from the gate, so the result must not greet a blank. */
-    await expect(page.locator('.resKicker')).toHaveText('Your Hormone Check result');
+    await expect(page.locator('.resKicker')).toHaveText('Here is your result');
 
     /* 6. Nothing downstream cleared it. */
     expect(await stored(page), 'still set at the result').toEqual({ skipEmail: true, profileId: null });

@@ -77,3 +77,27 @@ export async function answerAndWait(page: Page, click: () => Promise<void>, next
 export const pickOption = (page: Page, i: number) => () => page.locator('.opt').nth(i).click();
 export const pressPrimary = (page: Page) => () => page.locator('.actionBar .cta').first().click();
 export const pressSecondary = (page: Page) => () => page.locator('.actionBar .cta').nth(1).click();
+
+/**
+ * The three screens between her result and the price, walked.
+ *
+ * ADDED 29 October 2026 with the screens themselves. Before them, one click on
+ * the result page's button landed on the offer; now it lands on the first of
+ * three. Every walk that ends at the offer calls this, so the day a fourth
+ * screen is added or one is dropped, it is one edit here and not six.
+ *
+ * It starts on `cause`, which is where the result page's button leaves her,
+ * and it leaves her on the offer page. Each heading is asserted on the way
+ * through, so a screen that silently stops rendering fails here rather than
+ * surfacing as a confusing timeout on the offer page.
+ */
+export async function throughNurture(page: Page) {
+  for (const h of [
+    'The real problem is too much estrogen.',
+    'Three simple things. That is the whole plan.',
+    'Meet Hormone Focus.',
+  ]) {
+    await expect(heading(page), `the nurture screen reading "${h}"`).toHaveText(h);
+    await page.locator('.actionBar .cta').click();
+  }
+}

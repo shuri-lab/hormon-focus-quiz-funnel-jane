@@ -10,9 +10,14 @@ import {
   CANNOT_TELL, DOC, DOC_TITLE, IMG, MASKED_NOTE, PATTERN_SHORT, QUIZ_DISCLAIMER, RESULT,
   STAGE_FACT, WANT_PHRASE, cycleShort,
 } from '../../lib/content';
+/* HEAD, PAT, STAGE_LINE, SYM, meansFor, missLine and symExtra are no longer
+   imported. The result page carried the whole explanation while it was the
+   last thing before the price; `cause`, `plan` and `meet` carry it now, so
+   this page names her result and hands over. All seven are still exported
+   and still read by the copy gate. */
 import {
-  CLOSE, EARLY_DOCTOR_LINE, HEAD, MISS_LEAD, MISS_TITLE, PAT, STAGE_LINE, SYM,
-  WANT_HANDOFF, WANT_HANDOFF_UNDERSTAND, meansFor, missLine, symExtra,
+  CLOSE, EARLY_DOCTOR_LINE, MISS_LEAD, MISS_TITLE, RESULT_REASSURE, UNIFY,
+  WANT_HANDOFF, WANT_HANDOFF_UNDERSTAND, meansShortFor, resultKicker,
 } from '../../lib/resultCopy';
 import type { Outcome, SymptomId } from '../../lib/logic';
 
@@ -60,11 +65,21 @@ export function R1() {
 
   return (
     <Screen id="r1">
+      {/* ------------------------------------------------ 1. her result ----
+          THE HEADLINE IS RESULT[outcome].line, VERBATIM. It always begins
+          "Your answers may point to", which is the softening the whole page
+          is built on: the quiz suggests, it never diagnoses. Shortening it
+          or rewording it is the one edit this file must never make. */}
       <div className="resHero">
-        <p className="resKicker">{name ? `${name}, your Hormone Check result` : 'Your Hormone Check result'}</p>
+        <p className="resKicker">{resultKicker(name)}</p>
         <ScreenTitle className="resName">{copy.line}</ScreenTitle>
+        <p className="resReassure">{RESULT_REASSURE}</p>
       </div>
 
+      {/* ------------------------------------------ 2. what she told us ----
+          Unchanged: the same pictures she tapped, the one she said bothers
+          her most flagged, and the two facts she gave about her pattern and
+          her cycle. Lighter styling only. */}
       {picked.length > 0 && (
         <section className="resSec">
           <p className="blabel">What you told us</p>
@@ -88,66 +103,97 @@ export function R1() {
         </section>
       )}
 
-      {/* What this means: the stage in Jane's words, then the one line that
-          ties it to the thing she said bothers her most, then how often it
-          hits her. All of it is data in resultCopy.ts, keyed by outcome,
-          symptom and pattern. None of it is built from her tile label. */}
-      <div className="block">
-        <p className="blabel">What this means</p>
-        {meansFor(outcome).map((para) => <p key={para}>{para}</p>)}
-        {masked(S) && <p>{MASKED_NOTE}</p>}
-        {main && <p>{CLOSE[main]}</p>}
-        <p>{STAGE_LINE}</p>
-        {outcome === 'E' && <p>{EARLY_DOCTOR_LINE}</p>}
-        {S.pattern && <p>{PAT[S.pattern]}</p>}
+      {/* --------------------------------------- 3. what this means ----
+          TWO LINES, WHERE THERE WERE SIX PARAGRAPHS AND TWO SECTIONS.
+
+          The old page carried meansFor() in full, a separate "Why your
+          sleep changed" block built from SYM and HEAD, and the PAT line, for
+          about four hundred words before she reached the hand-off. It had to:
+          it was the last thing before the price. Three screens explain the
+          cause now, so this is the stage in one line and her own symptom in
+          the next. MEANS, SYM, HEAD, PAT and STAGE_LINE are all still
+          exported and still gated; they simply stop rendering here.
+
+          STILL KEYED TO HER. meansShortFor() reads her outcome and CLOSE
+          reads the symptom she said bothers her most, exactly as before. */}
+      <div className="resMeans">
+        <p className="resMeansLead">{meansShortFor(outcome)}</p>
+        {/* THE UNIFY CLAUSE ONLY WHERE THERE IS SOMETHING TO UNIFY. She can
+            tick one symptom or four; telling a woman who named one that "it
+            is one thing, not several" is answering a question she did not
+            ask. CLOSE[main] still reads her own symptom either way. */}
+        {main && (
+          <p className="resMeansSym">
+            {CLOSE[main]}{picked.length > 1 ? UNIFY : ''}
+          </p>
+        )}
+        {masked(S) && <p className="resMeansNote">{MASKED_NOTE}</p>}
+        {/* EARLY MENOPAUSE IS TOLD TO SEE A DOCTOR, and it is told here
+            rather than in the fine print at the foot. It is the one piece of
+            advice on this page that could matter medically. */}
+        {outcome === 'E' && <p className="resDoctor">{EARLY_DOCTOR_LINE}</p>}
       </div>
 
-      {main && (
-        <div className="block">
-          <p className="blabel">{HEAD[main]}</p>
-          <p>{SYM[main]}</p>
-          {symExtra(S, main) && <p>{symExtra(S, main)}</p>}
-        </div>
-      )}
-
-      {/* THE GAP, between what changed and what she wants.
-          Effort was never the missing piece, and saying so here is what lets
-          the next page open on the reason rather than on a price. The second
-          line is a claim about her, so she gets the one that is true: see
-          missLine(). Nothing here names a product, a price or a link. */}
-      <div className="block">
-        <p className="blabel">{MISS_TITLE}</p>
-        <p>{MISS_LEAD}</p>
-        <p>{missLine(S)}</p>
+      {/* ------------------------------------------------ 4. the hook ----
+          Effort was never the missing piece. The line now points at the next
+          screen instead of explaining, which is what lets `cause` open on the
+          reason rather than repeating this one. missLine(S) is no longer
+          rendered: it was a second line making a claim about what she had
+          already tried, and the hook reads shorter without it. */}
+      <div className="resHook">
+        <p className="resHookTitle">
+          <span className="resHookIcon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" /><path d="M12 8v5" /><path d="M12 16.5v.01" />
+            </svg>
+          </span>
+          {MISS_TITLE}
+        </p>
+        <p className="resHookBody">{MISS_LEAD}</p>
       </div>
 
+      {/* ------------------------------------ 5. she is not the only one ----
+          The number pulled large where the fact has one, and the sentence it
+          came from under it. `big` lives beside its own fact in content.ts,
+          so this is outcome-aware without a second table to keep in step. */}
+      <section className="resStat" data-proof="result">
+        {/* THE KICKER IS THE FACT'S OWN. It read "You are not the only one"
+            over a large "four years", which is not a number of women. It is
+            true of a count (A and E) and false of a duration or an average
+            age, so it belongs to the fact rather than to this component. */}
+        <p className="blabel">{fact.kicker}</p>
+        {fact.big
+          ? (
+            <>
+              <p className="resStatBig">{fact.big}</p>
+              {/* And what the number IS, directly under it. */}
+              {fact.bigLabel && <p className="resStatBigLabel">{fact.bigLabel}</p>}
+            </>
+          )
+          : <p className="resStatFact">{fact.fact}</p>}
+        <p className="resStatLine">{fact.line}</p>
+        <p className="resStatSrc">Source: {fact.source}</p>
+      </section>
+
+      {/* -------------------------------------------- 6. the hand-off ----
+          What she said she wants, and the line that hands her to the next
+          screen. A woman who came to understand what is happening gets the
+          version that pivots to showing her, rather than promising again. */}
       {S.want && (
-        <div className="block key">
-          <p className="blabel">What you want most</p>
-          <p className="lead">{WANT_PHRASE[S.want]}</p>
-          {/* And the hand-off. A woman who came to understand what is
-              happening has just done that, so hers pivots to doing instead
-              of telling her again. */}
+        <div className="resWant">
+          <p className="resWantLead">{WANT_PHRASE[S.want]}</p>
           <p className="resHandoff">
             {S.want === 'understand' ? WANT_HANDOFF_UNDERSTAND : WANT_HANDOFF}
           </p>
         </div>
       )}
 
-      {/* One fact about women at her stage, and no product yet: the kit and
-          the women who use it come on the next page. */}
-      <section className="resFact" data-proof="result">
-        <p className="blabel">You are not the only one</p>
-        <p className="resFactBig">{fact.fact}</p>
-        <p>{fact.line}</p>
-        <p className="resFactSrc">Source: {fact.source}</p>
-      </section>
-
       <p className="fine">{CANNOT_TELL}</p>
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
-          SHOW ME WHERE TO START &rarr;
+          SHOW ME WHAT IS GOING ON &rarr;
         </button>
       </ActionBar>
     </Screen>

@@ -55,7 +55,13 @@ export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
  * women over 40, a plan. "Protocol" is a delivery vehicle and it is our word
  * for it, not hers.
  */
-export const PLAN_NAME = 'The 60-Day Feel Like YOU Again Kit';
+/* RENAMED 30 October 2026, David: the kit is "The Feel Like YOU Again Kit"
+   and the 60-Day wording comes off its name.
+   WHAT KEEPS ITS SIXTY DAYS, because none of it is the kit's name: the
+   60-Day Happiness Guarantee is the refund window and a policy term, The
+   60-Day Hormone Fix is the ebook's own title, and PLAN_SHORT below still
+   names the TWO-bottle pack on /offer, which really is sixty days of it. */
+export const PLAN_NAME = 'The Feel Like YOU Again Kit';
 export const PLAN_SHORT = 'The 60-Day Kit';
 
 /** The three digital pieces, as one line for a card. */
@@ -146,6 +152,98 @@ export const SINGLE_DISCOUNT_CODE: string | null = 'JJTEN';
  */
 export const SINGLE_AFTER_DISCOUNT = 45.00;
 
+/* ------------------------------------------ the quiz page's 60-Day Kit -- */
+
+/**
+ * WHAT THE QUIZ OFFER PAGE SELLS, as of 29 October 2026: the bottle and the
+ * three digital pieces together, under the name JJ already uses for them.
+ *
+ * ONE BOTTLE, NOT TWO, which is the whole reason this is its own array and
+ * not KIT_VALUE above. JJ's page sells the kit as two bottles against a
+ * $196.99 value. This page sells ONE bottle with the same three bonuses, so
+ * the arithmetic is genuinely different and reading both off one array would
+ * put a two-bottle value over a one-bottle order.
+ *
+ * NOTHING NEW IS PROMISED HERE. The three pieces are the ones already named
+ * in KIT_BONUS and already listed in BONUSES for the offer pages. What is
+ * new is only that they are priced, which is what makes a value stack a
+ * value stack.
+ *
+ * WHAT SHOPIFY ACTUALLY SHIPS IS STILL ONE BOTTLE. The kit has no variant of
+ * its own yet, so every button on that page still buys SINGLE_VARIANT_ID.
+ * The three bonuses are a fulfilment promise this repo cannot keep on its
+ * own; see the note on the page itself.
+ */
+const BONUS_FIX_WORTH = 49;
+const BONUS_RECIPES_WORTH = 29;
+const BONUS_TRACKER_WORTH = 19;
+
+/** Whole dollars print without cents, as they do on JJ's own stack. */
+const worth = (n: number): string => (Number.isInteger(n) ? `$${n}` : money(n));
+
+/* Typed as StackItem so the offer pages' own ValueStack component renders
+   these rows, rather than the quiz page carrying a second copy of the same
+   markup. KitRow was that second type and is gone. */
+export const QUIZ_KIT_ROWS: StackItem[] = [
+  {
+    what: 'Hormone Focus, 30-day supply', worth: worth(ONE_MONTH_PRICE),
+    img: '/img/kit-bottle-thumb.webp',
+  },
+  {
+    what: 'The 60-Day Hormone Fix', worth: worth(BONUS_FIX_WORTH),
+    free: true, bonus: true, img: '/img/kit-guide-thumb.webp',
+  },
+  {
+    what: 'Hormone Healthy Recipes', worth: worth(BONUS_RECIPES_WORTH),
+    free: true, bonus: true, img: '/img/kit-recipes-thumb.webp',
+  },
+  {
+    what: 'The Daily Symptom Tracker', worth: worth(BONUS_TRACKER_WORTH),
+    free: true, bonus: true, img: '/img/kit-tracker-thumb.webp',
+  },
+  {
+    what: 'The 60-Day Happiness Guarantee', worth: 'included',
+    /* THE SEAL ITSELF, not a tick. David, 30 October: the row carries the
+       same badge the guarantee band further down the page carries.
+
+       THE SAME FILE, deliberately. That band renders MONEY_BACK_BADGE too,
+       so this costs no second request: whichever of the two she reaches
+       first warms the cache for the other. */
+    img: MONEY_BACK_BADGE,
+  },
+];
+
+/**
+ * The sum of the rows above, COMPUTED.
+ *
+ * Typed, it is a number that goes stale the first time a price moves and
+ * nobody notices, which is the same class of mistake as the $44.99 note
+ * further up. A test holds it to $146.99 so a deliberate change still has to
+ * be a deliberate change.
+ */
+const QUIZ_KIT_VALUE_NUM =
+  ONE_MONTH_PRICE + BONUS_FIX_WORTH + BONUS_RECIPES_WORTH + BONUS_TRACKER_WORTH;
+
+export const QUIZ_KIT_VALUE_TOTAL = money(QUIZ_KIT_VALUE_NUM);
+
+/**
+ * What the price block says she keeps: $101.99.
+ *
+ * Subtracted rather than typed, for the same reason the total is summed. The
+ * badge beside a price is the first thing anybody checks with a calculator.
+ */
+export const QUIZ_KIT_SAVING = money(QUIZ_KIT_VALUE_NUM - SINGLE_AFTER_DISCOUNT);
+
+/** The kit shot for the quiz page's hero: the bottle and all three pieces. */
+export const SHOT_KIT_HERO = '/img/kit-60-day-hero.webp';
+
+/* The two strings the kit's own rows need. They live here rather than in
+   kitCopy.ts because kitCopy imports from this file; kitCopy re-exports them
+   under the names the page already uses, so there is one source and no cycle.
+   Both are read by the copy gate either way. */
+export const KIT_BUY_CTA = 'Get my Kit';
+export const KIT_DISCOUNT_NOTE = '10% off applied at checkout';
+
 /** True when the subscription plan exists. False keeps the option unrendered. */
 export const SUBSCRIPTION_LIVE = true;
 
@@ -198,6 +296,13 @@ export interface OfferOption {
   priceNote: string;
   /** The pill beside the title, where there is one. */
   badge?: string;
+  /**
+   * The price this row is down FROM, struck through beside it.
+   *
+   * ADDED FOR THE KIT, 29 October 2026, and optional so every row that had no
+   * crossed-out price still has none. /offer and /live are untouched.
+   */
+  was?: number;
 }
 
 const SINGLE_OPTION: OfferOption = {
@@ -252,6 +357,48 @@ export const optionsFor = (live: boolean): OfferOption[] =>
 
 export const optionFor = (kind: OfferKind): OfferOption =>
   OFFER_OPTIONS.find((o) => o.kind === kind) ?? PROTOCOL_OPTION;
+
+/**
+ * THE KIT'S TWO ROWS, in the same shape as every other row on the site.
+ *
+ * A FUNCTION, NOT A CONST, because singleDailyPrice() is declared further down
+ * this file; a const here would read it during module initialisation and get
+ * undefined. Called at render, it is simply there.
+ *
+ * SEPARATE FROM OFFER_OPTIONS ON PURPOSE. Those three rows are what /offer,
+ * /live and /plan sell, at full price, and the kit is a different offer at a
+ * different price with a discount code on it. Putting it in that array would
+ * put it on those pages.
+ *
+ * THE KINDS ARE STILL 'single' AND 'subscribe', which is what keeps the cart
+ * honest: they are the two things Shopify actually sells here, and the kit has
+ * no variant of its own yet.
+ */
+export function kitOptions(): OfferOption[] {
+  return [
+    {
+      kind: 'single',
+      title: 'One-time purchase',
+      detail: `Delivered once \u00b7 ${KIT_DISCOUNT_NOTE}`,
+      cta: KIT_BUY_CTA,
+      ctaShort: KIT_BUY_CTA,
+      price: SINGLE_AFTER_DISCOUNT,
+      was: ONE_MONTH_PRICE,
+      priceNote: `${singleDailyPrice()} a day`,
+    },
+    {
+      kind: 'subscribe',
+      title: 'Subscribe & save',
+      detail: 'Delivered every month \u00b7 free shipping \u00b7 pause anytime',
+      cta: 'Subscribe & save',
+      ctaShort: 'Subscribe & save',
+      price: SUBSCRIBE_PRICE,
+      was: ONE_MONTH_PRICE,
+      priceNote: 'per delivery',
+      badge: 'Best value \u00b7 20% off',
+    },
+  ];
+}
 
 /* ------------------------------------------------------- the offer cards -- */
 
@@ -353,6 +500,20 @@ export interface StackItem {
   worth: string;
   /** Named as a bonus, because a bonus named is worth more than one folded in. */
   bonus?: boolean;
+  /**
+   * Free with this offer: `worth` is struck through and "free" shown beside it.
+   *
+   * A bonus with no number against it is worth nothing in a value stack, and a
+   * number with nothing marking it free reads as something she is paying for.
+   * The kit's three bonuses need both at once.
+   */
+  free?: boolean;
+  /**
+   * A picture of the thing, for a stack that shows its bonuses rather than
+   * only listing them. Added 30 October with the kit's own stack; the offer
+   * pages' rows have none and render exactly as before.
+   */
+  img?: string;
 }
 
 /**

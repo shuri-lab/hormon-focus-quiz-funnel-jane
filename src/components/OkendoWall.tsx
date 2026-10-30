@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchReviews, withText, type ReviewsData } from '../lib/okendo';
+import { OKENDO_MARK } from '../lib/reviews';
 import { Stars } from './icons';
 
 /**
@@ -53,11 +54,22 @@ export function OkendoWall({ fallback, count = 6 }: { fallback: React.ReactNode;
       {data && live.length > 0 ? (
         <>
           <p className="okMeta">
-            <Stars n={5} />
-            <b>{data.average.toFixed(1)}</b>
-            <span>
-              from {data.total.toLocaleString('en-US')} verified review
-              {data.total === 1 ? '' : 's'}
+            <span className="okMetaScore">
+              <Stars n={5} />
+              <b>{data.average.toFixed(1)}</b>
+              <span>
+                from {data.total.toLocaleString('en-US')} verified review
+                {data.total === 1 ? '' : 's'}
+              </span>
+            </span>
+            {/* WHO SAYS SO, on the wall as well as in the hero badge. These
+                are read live from Okendo and every one of them is attached
+                to an order; the mark is what tells her that, and David asked
+                for it here where the reviews actually are. */}
+            <span className="okBy">
+              Verified by
+              <img src={OKENDO_MARK} alt="Okendo" width={315} height={68}
+                loading="lazy" decoding="async" />
             </span>
           </p>
 

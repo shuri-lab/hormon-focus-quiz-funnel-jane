@@ -21,15 +21,23 @@ import { kitProof } from '../../lib/reviews';
 import { REVIEW_COUNT } from '../../lib/reviews';
 import { SINGLE_AFTER_DISCOUNT, money, singleDailyPrice } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
+/* HERO_HEAD, HERO_HEAD_DEFAULT and HERO_SUB_BY_STAGE are no longer imported:
+   the hero sells the package now, so its headline and sub are the kit's
+   rather than her symptom's. HOW_HEAD and HOW_BODY went the same way, step
+   one of the plan being the dose. CLOSE_HEAD said "Your first bottle"; the
+   kit's closer replaces it. All six are still exported and still gated. */
 import {
-  CLOSE_CTA, CLOSE_HEAD, HERO_CTA, HERO_EYEBROW, HERO_HEAD, HERO_HEAD_DEFAULT,
-  HERO_RISK, HERO_SUB_BY_STAGE, HF_EYEBROW, HF_HEAD, HOW_BODY, HOW_HEAD, KIT_FAQ,
-  KIT_FAQ_EYEBROW, KIT_FAQ_HEAD, MECH_EYEBROW, MECH_HEAD, PROOF_EYEBROW, PROOF_HEAD,
-  PROOF_NOTE, SINGLE_DISCOUNT_NOTE, STICKY_CTA, TEASER_HEAD, TRUST_LEAD,
+  CLOSE_CTA, HERO_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
+  KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD, KIT_HERO_HEAD,
+  KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD,
+  PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY, PLAN_STEP_2,
+  PLAN_STEP_2_BODY, PLAN_STEP_3, PLAN_STEP_3_BODY, PROOF_EYEBROW, PROOF_HEAD,
+  PROOF_MORE_HEAD, PROOF_NOTE, SINGLE_DISCOUNT_NOTE, STICKY_CTA, TEASER_HEAD,
+  TRUST_LEAD,
   WHY_OPENER, WHY_PRODUCT, WHY_STAGE,
 } from '../../lib/kitCopy';
-import { KitGuarantee, KitOffer, kitHref } from '../../components/KitOffer';
-import { SHOT_KIT_BOTTLE } from '../../lib/offer';
+import { KitGuarantee, KitOffer, KitPrice, kitHref } from '../../components/KitOffer';
+import { SHOT_KIT_HERO } from '../../lib/offer';
 import { track } from '../../lib/analytics';
 import { useHydrated } from '../../lib/useHydrated';
 
@@ -142,39 +150,43 @@ export function R2() {
   return (
     <Screen id="r2">
       {/* ------------------------------------------------- 1. the hero ----
-          Everything the brief puts on the first screen: her stage, the
-          outcome she came for, how it works in one line, two forms of proof,
-          a button, and the risk taken off it. */}
-      <section className="kitHero">
-        <p className="kitHeroEyebrow">{HERO_EYEBROW[stageOf(outcome)]}</p>
-        <ScreenTitle className="kitHeroH1">
-          {/* HER SYMPTOM, UNLESS WHAT SHE WANTED WAS TO UNDERSTAND. A woman
-              who came to find out what is happening has just been told, and
-              a symptom headline over the offer reads as the page starting
-              the conversation again. */}
-          {main && S.want !== 'understand' ? HERO_HEAD[main] : HERO_HEAD_DEFAULT}
-        </ScreenTitle>
-        <p className="kitHeroSub">{HERO_SUB_BY_STAGE[stageOf(outcome)]}</p>
+          THE KIT, NOT THE BOTTLE, from 29 October. Her stage, the package by
+          name, what is in it, the picture of all four pieces, the rating,
+          the value against the price, a button, and the risk taken off it.
 
+          THE PERSONALISED HEADLINE CAME OUT HERE. It was her own symptom
+          read back ("Feel comfortable in your own clothes again"); the
+          brief's headline sells the package instead. She is still read back
+          twice on this page: the eyebrow is her stage, and "why it works"
+          below opens on the symptom she named. */}
+      <section className="kitHero">
+        {/* THREE, NOT FOUR. The kit's name sat on its own plum line between
+            the eyebrow and the headline, which made four stacked lines before
+            she reached the picture. The name is in the headline now. */}
+        <p className="kitHeroEyebrow">{HERO_EYEBROW[stageOf(outcome)]}</p>
+        <ScreenTitle className="kitHeroH1">{KIT_HERO_HEAD}</ScreenTitle>
+        <p className="kitHeroSub">{KIT_HERO_SUB}</p>
+
+        {/* 4:3, WHERE THE BOTTLE WAS SQUARE, and it carries its own name,
+            tagline and price in the artwork. Everything printed into it is
+            also on the page as text, which is what a screen reader, a slow
+            connection and a 320px phone each need. */}
         <img
-          className="kitHeroShot" src={SHOT_KIT_BOTTLE}
-          alt="Hormone Focus, one bottle"
-          width={800} height={800} decoding="async"
+          className="kitHeroShot isKit" src={SHOT_KIT_HERO}
+          alt={KIT_SHOT_ALT}
+          width={768} height={576} decoding="async" fetchPriority="high"
         />
 
-        {/* TWO FORMS OF PROOF, ON THE FIRST SCREEN: the rating with its count,
-            and one woman in her own words. The quote is verbatim from
-            reviews.ts and attributed, which is the only form the claims rules
-            allow.
-
-            THE SIX OVERLAPPED FACES CAME OUT on 16 October. The photo rail
-            directly below shows all twelve of the same women at a size you
-            can actually see them, so the circles were the same proof twice,
-            smaller, in the one place on the page where height is scarce. */}
+        {/* THE RATING ALONE. The hero's one woman in her own words moved to
+            the proof block directly below, where the other three already
+            were: the brief puts the price line in this space instead, and
+            the four named reviews now sit together rather than one up here
+            and three a screen away. */}
         <div className="kitHeroProof" data-proof="pre">
           <RatingBadge />
-          {proof.lead[0] && <Quote review={proof.lead[0]} />}
         </div>
+
+        <KitPrice />
 
         <button type="button" className="cta kitBtn kitHeroCta" onClick={toOffer}>
           {HERO_CTA} &nbsp;&rarr;
@@ -182,23 +194,21 @@ export function R2() {
         <p className="kitHeroRisk">{HERO_RISK}</p>
       </section>
 
-      {/* --------------------------------------- 2. the customer rail ----
-          The landing page's own strip, unchanged, lifted straight out of the
-          proof zone it used to sit in. */}
-      <section className="kitSec kitStrip" data-proof="rail">
+      {/* -------------------------------------- 2. proof, straight away ----
+          The brief's order inside this zone: the women, then two of them in
+          their own words with a way down to all of them, then the press.
+          Three sections rather than one so each keeps the padding and the
+          overflow behaviour it already had. */}
+      <section className="kitBand surface kitStrip" data-proof="rail">
         <PhotoRail />
+        {/* DIRECTLY UNDER THE WOMEN, 29 October. The press logos were a
+            section of their own below the review teaser, which put two
+            screens between "here are the women" and "here is where you have
+            seen us". They are one proof block, so they sit together. */}
         <PressRail />
       </section>
 
-      {/* ------------------------------------------- 3. the review teaser ----
-          A taste, not the wall. Two women in their own words and a way down
-          to all of them; the wall itself is section 9, where the Okendo
-          feed, the nine videos and the Facebook comment all still live. */}
       <section className="kitSec kitTeaser" data-proof="teaser">
-        {/* WHO SHE IS, FOR SOMEONE WHO HAS NEVER HEARD OF HER. Cold traffic
-            only: a woman from JJ's own list is being introduced to someone
-            she already follows. */}
-        {!S.skipEmail && <p className="kitTrustLead">{TRUST_LEAD}</p>}
         <h2 className="kitH2">{TEASER_HEAD}</h2>
         <RatingBadge />
         <div className="kitRevs">
@@ -210,12 +220,27 @@ export function R2() {
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>
 
+      {/* --------------------------------------------- 3. who JJ is ----
+          Its own line now, where it used to open the review teaser. Cold
+          traffic only: a woman from JJ's own list is being introduced to
+          someone she already follows. */}
+      {!S.skipEmail && (
+        <section className="kitSec kitWho">
+          <p className="kitTrustLead">{TRUST_LEAD}</p>
+        </section>
+      )}
+
       {/* ------------------------------------------- 4. why it works ----
           Her symptom, the stage it belongs to, and the one thing the product
-          is said to do. It used to carry three paragraphs read back off her
-          result page and a sentence calling Hormone Focus "the supplement in
-          the kit", which is a kit this page no longer sells. */}
-      <section className="kitSec kitMech">
+          is said to do, then the label.
+
+          THE BODY IS STILL BUILT FROM HER ANSWERS. The brief wrote this
+          paragraph out as "In perimenopause your hormones stop staying
+          steady ...", which is WHY_STAGE.B almost word for word and is
+          wrong for the two outcomes that are not perimenopause: C is after
+          her periods have stopped and E is early menopause. The approved
+          per-stage sentences say the same thing to each of them. */}
+      <section className="kitBand kitMech">
         <p className="kitEyebrow">{MECH_EYEBROW}</p>
         <h2 className="kitH2">{MECH_HEAD}</h2>
         <p className="kitBody">
@@ -236,41 +261,84 @@ export function R2() {
         </div>
       </section>
 
-      {/* --------------------------------------------- 5. how to take it ----
-          DOSAGE ONLY. This is where the three-step plan was, whose step two
-          told her to fix her own sleep and meals. On a page selling a
-          supplement that reads as the product conceding it is not the thing
-          that helps. */}
-      <section className="kitSec kitHow">
-        <h2 className="kitH2">{HOW_HEAD}</h2>
-        <p className="kitBody">{HOW_BODY}</p>
+      {/* ------------------------------------------------- 5. the plan ----
+          BACK, AND IT IS THE DOSAGE SECTION NOW. .kitHow held two sentences
+          of "how to take it" while the page sold a bottle on its own; step
+          one here is that same instruction, and steps two and three are the
+          guide, the recipes and the tracker she is now being sold with it.
+          HOW_HEAD and HOW_BODY are still exported and still gated. */}
+      <section className="kitSec kitPlan">
+        <p className="kitEyebrow">{PLAN_EYEBROW}</p>
+        <h2 className="kitH2">{PLAN_HEAD}</h2>
+        <ol className="kitSteps">
+          <li>
+            <b>{PLAN_STEP_1}</b>
+            <span>{PLAN_STEP_1_BODY}</span>
+          </li>
+          <li>
+            <b>{PLAN_STEP_2}</b>
+            <span>{PLAN_STEP_2_BODY}</span>
+          </li>
+          <li>
+            <b>{PLAN_STEP_3}</b>
+            <span>{PLAN_STEP_3_BODY}</span>
+          </li>
+        </ol>
+      </section>
+
+      {/* ONE WOMAN IN HER OWN WORDS, DIRECTLY ABOVE THE PRICE. David, 30
+          October. It is the same screenshot the proof zone carries further
+          down; here it is the last thing she reads before the cost. */}
+      <section className="kitSec kitPreOffer" data-proof="pre-offer">
+        <FacebookComment />
       </section>
 
       {/* ------------------------------------------------ 6. the offer ----
-          Moved up from section six. Same cards, same prices, same cart
-          links; the one-time bottle is off the page and the subscription is
-          the single alternative. */}
-      <section className="kitBand" ref={offer}>
+          Lower than it was, which is the brief's call: the page now names
+          the package, shows it, proves it and explains it before it asks.
+          Same card, same two options, SAME CART LINKS. */}
+      <section className="kitBand offer" ref={offer}>
         <KitOffer outcome={outcome} angle={angle.slug} />
       </section>
 
       {/* -------------------------------------------- 7. the guarantee ----
-          MOVED UP 16 OCTOBER, at David's request: it used to sit five
-          sections below, after the questions. The guarantee is the answer to
-          the price, so it belongs against the price. */}
+          Directly under the price, where it has been since 16 October. The
+          guarantee is the answer to the price. */}
       <section className="kitBand teal">
         <KitGuarantee />
       </section>
 
       {/* ------------------------------------------ 8. the full review wall ----
-          Every proof block that was in the old zone, kept whole and given
-          the id the teaser's Read-all button points at: the live Okendo
-          feed with its authored fallback, the nine women on camera, the
-          Facebook comment, the faces and the three named testimonials. */}
-      <section className="kitSec kitStrip" id="all-reviews" data-proof="wall">
+          REORDERED 30 October, David: the women on camera, the photographs
+          and the Facebook comment come FIRST, and the live Okendo wall sits
+          directly under them as the full set.
+
+          It was the other way round, which buried nine videos and twelve
+          faces below a list of text reviews she had to scroll past. The
+          things she can see now lead, and "every review" closes the zone.
+
+          THE READ-ALL ANCHOR MOVED DOWN WITH THE REVIEWS. It was on this
+          section, which was right while the wall opened it; after the
+          re-order that landed her on the videos, which is not what "read all
+          171 reviews" promises. It is on the reviews themselves now. */}
+      <section className="kitBand surface kitStrip" data-proof="wall">
         <p className="kitEyebrow">{PROOF_EYEBROW}</p>
         <h2 className="kitH2">{PROOF_HEAD}</h2>
 
+        <VideoWall />
+        <FacebookComment />
+
+        <Faces count={12} />
+        <div className="kitRevs" data-proof="lead">
+          {proof.lead.map((r) => <Quote key={r.name} review={r} />)}
+        </div>
+
+        {/* AND THEN EVERY REVIEW, read live from Okendo and carrying its
+            mark. Its own heading, so the block below reads as the full set
+            rather than as more of the same, and the id the Read-all link
+            points at: she asked for the reviews, so she lands on them. */}
+        <div id="all-reviews" className="okZone">
+        <h3 className="kitH3 okHead">{PROOF_MORE_HEAD}</h3>
         <OkendoWall
           fallback={(
             <>
@@ -281,13 +349,6 @@ export function R2() {
             </>
           )}
         />
-
-        <VideoWall />
-        <FacebookComment />
-
-        <Faces count={12} />
-        <div className="kitRevs" data-proof="lead">
-          {proof.lead.slice(1).map((r) => <Quote key={r.name} review={r} />)}
         </div>
         <p className="kitNote">{PROOF_NOTE}</p>
       </section>
@@ -306,22 +367,16 @@ export function R2() {
         </div>
       </section>
 
-      {/* ---------------------------- 10. one last review, and the button ---- */}
-      <section className="kitSec kitClose">
+      {/* --------------------------- 10. one last review, and the button ---- */}
+      <section className="kitBand close kitClose">
         <div data-proof="closing"><Quote review={proof.closing} long /></div>
-        <h2 className="kitH2">{CLOSE_HEAD}</h2>
+        <h2 className="kitH2">{KIT_CLOSE_HEAD}</h2>
         <a
           className="cta kitBtn" href={href} data-offer="single" data-close
           onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'quiz-kit-close')}
         >
           {CLOSE_CTA} &nbsp;&rarr;
         </a>
-        {/* NOT "free shipping" ANY MORE, and that is the point. It said so
-            while this button bought the kit, whose link carries
-            HF60FREESHIP. The bottle's link carries the 10% code instead,
-            Shopify takes one discount parameter, and no free-shipping
-            threshold is published on the store. The line now says what she
-            actually gets. */}
         <p className="kitNote">
           {money(SINGLE_AFTER_DISCOUNT)} · {SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee
         </p>
@@ -329,14 +384,6 @@ export function R2() {
 
       <p className="fine" ref={foot}>*{OFFER_DISCLAIMER}</p>
 
-      {/* PORTALLED TO <body> ON PURPOSE, and this is not a style choice.
-          The screen wrapper .rise keeps a transform after its entrance
-          animation: matrix(1,0,0,1,0,0), an identity, but not `none`. A
-          transformed ancestor becomes the containing block for its fixed
-          descendants, so position:fixed anchored to .rise instead of the
-          viewport and this bar rendered 8,694px down the page, present and
-          visible in the DOM and never once on screen. Out here it cannot
-          happen again whatever an ancestor does. */}
       {sticky && createPortal((
         <div className="kitSticky">
           {/* The day rate, not the ticket price. $74.99 beside a button is

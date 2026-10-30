@@ -217,12 +217,22 @@ export function stateKey(S: QuizState): Outcome {
 export type ScreenId =
   | 'q1' | 'q2' | 'q3' | 'q4' | 'q4b' | 'q5' | 'q6' | 'q7'
   | 'load' | 'gate'
-  | 'r1' | 'r2' | 'rDoc';
+  | 'r1' | 'cause' | 'plan' | 'meet' | 'r2' | 'rDoc';
 
+/* THREE SCREENS BETWEEN THE RESULT AND THE OFFER, 29 October 2026.
+ *
+ * She finishes the quiz PROBLEM-AWARE: she knows what her answers point to and
+ * nothing else. The offer asked her to buy from there, which is a long way to
+ * jump. `cause` tells her what is behind it, `plan` tells her what to do, and
+ * `meet` introduces the product as step one of that plan. Solution-aware, then
+ * product-aware, and only then the price.
+ *
+ * THEY ARE REVEAL STEPS, so the segmented bar keeps filling across all five
+ * rather than stopping at the result. */
 export const FLOW: ScreenId[] = [
   'q1', 'q2', 'q3', 'q4', 'q4b', 'q5', 'q6', 'q7',
   'load', 'gate',
-  'r1', 'r2', 'rDoc',
+  'r1', 'cause', 'plan', 'meet', 'r2', 'rDoc',
 ];
 
 /** The seven she is told about. */
@@ -239,11 +249,13 @@ export const QUESTION_NUMBER: Partial<Record<ScreenId, number>> = {
   q1: 1, q2: 2, q3: 3, q4: 4, q4b: 4, q5: 5, q6: 6, q7: 7,
 };
 
-/** The two result pages. */
-export const REVEAL: ScreenId[] = ['r1', 'r2'];
+/** The five result pages: her result, the three that earn the offer, the offer. */
+export const REVEAL: ScreenId[] = ['r1', 'cause', 'plan', 'meet', 'r2'];
 
 /** Everything between the cycle questions and rDoc. A doctor-route state sees none of it. */
-const AFTER_CYCLE: ScreenId[] = ['q5', 'q6', 'q7', 'load', 'gate', 'r1', 'r2'];
+const AFTER_CYCLE: ScreenId[] = [
+  'q5', 'q6', 'q7', 'load', 'gate', 'r1', 'cause', 'plan', 'meet', 'r2',
+];
 
 /**
  * Is docReason() settled yet? It needs her age and her cycle answer, and the
@@ -288,6 +300,10 @@ export function shouldSkip(S: QuizState, id: ScreenId): boolean {
   if (doctorExit(S) && AFTER_CYCLE.includes(id)) return true;
   if (id === 'rDoc') return stateKey(S) !== 'D';
   if (id === 'r2') return !seesOffer(S);
+  /* THE SAME RULE AS THE OFFER, because all three lead to it. A woman the
+     quiz sends to her doctor must not be walked through "here is what to do
+     about it" and a product introduction on the way to nothing. */
+  if (id === 'cause' || id === 'plan' || id === 'meet') return !seesOffer(S);
   /* THE EMAIL SCREEN, STEPPED OVER FOR A WOMAN ALREADY ON THE LIST. Last,
      so every refusal above it still wins: the doctor route still exits
      before the gate whether or not she arrived from an email. */

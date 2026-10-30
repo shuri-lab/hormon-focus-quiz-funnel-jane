@@ -171,18 +171,13 @@
   background: #e23b3b; border-radius: 3px; transform: translateY(-50%) rotate(-11deg);
 }
 
-.kitDeal {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  margin-top: 10px; padding: 10px 11px; border-radius: 14px; background: var(--wash);
-  text-align: left;
-}
-.kitDealCol { display: flex; flex-flow: wrap; align-items: center; gap: 4px 9px; min-width: 0; }
-.kitDealNow { flex: none; flex-direction: column; align-items: flex-end; gap: 1px; text-align: right; }
-.kitDealL {
-  font-size: 10.5px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase;
-  color: var(--ink-3); line-height: 1;
-}
-.kitDealWas { font-size: 17px; font-weight: 800; color: var(--ink-2); }
+/* THE OLD DEAL ROW IS GONE, 30 October 2026. It was .kitDeal as a flex row
+   with the price on the right, from the card that had two option rows, and
+   .kitDealCol, .kitDealL and .kitDealWas went out of use with it. It is
+   deleted rather than left in place because the rebuilt stack below reuses
+   the names .kitDeal and .kitDealNow: left here, its `display: flex` and
+   `text-align: left` survived into the new box, which laid the price, the
+   note and the button out in a row and pushed the button off the card. */
 .kitNow { font-size: 34px; font-weight: 800; letter-spacing: -.03em; color: var(--plum); line-height: 1; }
 .kitDay { font-size: 14px; font-weight: 800; color: var(--plum); }
 .kitShip {
@@ -201,6 +196,10 @@
 .kitOr span { font-size: 11.5px; font-weight: 800; letter-spacing: .18em; color: var(--plum-2); }
 
 .kitBottleHead { display: flex; align-items: center; gap: 14px; text-align: left; margin-bottom: 14px; }
+/* THE LEAD CARD SETS padding-top: 0 so a badge can sit flush at its top, and
+   the head inherited that: the kit's name was touching the border. It needs
+   the air the rest of the card has. */
+.kitLead .kitBottleHead { padding-top: 16px; }
 .kitBottleHead img { flex: 0 0 104px; width: 104px; height: 104px; object-fit: contain; }
 .kitBottleName { margin: 0; font-size: 17px; font-weight: 800; color: var(--ink); line-height: 1.2; }
 .kitBottleSupply { margin: 4px 0 0; font-size: 14.5px; font-weight: 600; color: var(--ink-2); line-height: 1.4; }
@@ -906,6 +905,11 @@
 @media (max-height: 720px) and (max-width: 360px) {
   .kitHeroProof .kitRev { display: none; }
   .kitHeroShot { max-height: 14vh; }
+  /* THE SAME TRADE AS THE 520 TIER, for the same measured reason. 320x568
+     is narrow enough for the forced headline to take three lines and tall
+     enough to miss that tier, and it sat at exactly 0px of slack: passing,
+     and one font change away from not. The kit's name is in the artwork
+     below and on the card; it is the line that can go. */
 }
 
 /* THE SMALLEST THING THIS RUNS ON: an old 320px phone inside an in-app
@@ -930,3 +934,647 @@
   margin: 0 0 18px; text-align: center;
   font-size: var(--t-sub); line-height: 1.5; color: var(--ink-2);
 }
+
+/* ========================================================================
+   THE 60-DAY KIT, ON THE QUIZ OFFER PAGE                 29 October 2026
+   ========================================================================
+
+   The page sells the package rather than the bottle on its own. Everything
+   below is additive: the classes the page already had are untouched, and the
+   kit's own pieces are new names so the bottle layout is still exactly where
+   it was for /offer, /live and /plan.
+   ------------------------------------------------------------------------ */
+
+/* -- the hero's two new lines ------------------------------------------- */
+
+/* -- the kit shot, which is 4:3 where the bottle was square --------------
+   It carries four products and its own printed title, so it needs more
+   pixels than a single bottle silhouette did to read as anything at all.
+   The caps on the short screens are deliberately the SAME as the bottle's:
+   an in-app browser hands this page 560-600px of height, the hero gained a
+   label and a price line, and the button above the fold is the thing that
+   must not give. Specificity carries these over the media queries above. */
+.kitHeroShot.isKit { max-width: 460px; max-height: 232px; }
+@media (max-height: 720px) { .kitHeroShot.isKit { max-height: 16vh; } }
+@media (max-height: 520px) { .kitHeroShot.isKit { max-height: 12vh; } }
+
+/* -- who JJ is, now a section of its own ---------------------------------
+   It opened the review teaser until the proof moved under the hero. */
+.kitWho { padding-top: 4px; padding-bottom: 4px; }
+.kitWho .kitTrustLead { margin: 0; }
+
+/* -- the plan's three steps ---------------------------------------------- */
+
+.kitSteps {
+  margin: 16px 0 0; padding: 0; list-style: none;
+  display: grid; gap: 15px; text-align: left; counter-reset: kitStep;
+}
+.kitSteps li {
+  counter-increment: kitStep;
+  display: grid; grid-template-columns: 30px 1fr; gap: 2px 11px;
+  align-items: baseline;
+}
+.kitSteps li::before {
+  content: counter(kitStep);
+  grid-row: span 2; align-self: start;
+  width: 26px; height: 26px; border-radius: 999px;
+  display: grid; place-items: center;
+  background: var(--plum); color: #fff;
+  font-size: 13px; font-weight: 800; line-height: 1;
+}
+.kitSteps b { font-size: var(--t-sub); line-height: 1.3; color: var(--ink); }
+.kitSteps span {
+  font-size: var(--t-small); line-height: 1.45; color: var(--ink-2);
+}
+
+/* -- the batch line ------------------------------------------------------
+   .buyBatch already sets the type; this is only its place in the card. */
+.kitBatch { margin-top: 9px; }
+
+/* -- paying for the hero's two new lines on a short screen ---------------
+   MEASURED, NOT GUESSED, at 320x480 with the longest headline forced:
+   the label costs 25px and the price line 35px, and the saving the short
+   tiers used to make no longer exists, because what they gave up was the
+   hero's one review and the hero does not have one any more. So 320x480
+   put the button 49px under the fold.
+
+   The LABEL is what gives way first. The kit's name is printed into the
+   artwork immediately below it and heads the offer card further down, so
+   it is the one line on this screen that is said three times. The price
+   line stays: it is the offer. */
+@media (max-height: 520px) {
+  .kitHeroEyebrow { margin-bottom: 3px; font-size: 11px; }
+  .kitHeroShot.isKit { max-height: 11vh; }
+}
+
+/* And at 320px as well as short, where the forced headline takes three
+   lines and is the biggest block on the screen, it shrinks here too rather
+   than only below 460px. */
+@media (max-height: 520px) and (max-width: 360px) {
+  .kitHeroH1 { font-size: clamp(21px, 6.2vw, 26px); }
+}
+
+/* ========================================================================
+   THE THREE PRE-OFFER SCREENS                            29 October 2026
+   ========================================================================
+
+   cause, plan and meet, between her result and the price. The eyebrow, the
+   title, the deck and the body all reuse .blabel / .rTitle / .rDeck /
+   .block from global.css, which is what the result page already uses, so
+   these screens read as part of the same sequence rather than as a new
+   place. Only the pieces those classes do not cover are below.
+
+   MOBILE FIRST, ONE COLUMN, inside the container's var(--col).
+   ------------------------------------------------------------------------ */
+
+/* -- the framed graphic on screen one ------------------------------------ */
+
+.nFig {
+  margin: 16px 0 0; padding: 12px 14px 11px;
+  border: 1px solid var(--wash-2); border-radius: var(--radius-lg);
+  background: var(--ground);
+}
+/* 150, NOT 260. David, 30 October: the pictures were taking more room than
+   the words. The glass is square, so 260px of width was 260px of height as
+   well, a third of a phone screen for one illustration. It is a diagram
+   beside a caption, not a hero. */
+.nFigImg {
+  display: block; width: 100%; max-width: 150px; height: auto;
+  margin: 0 auto; object-fit: contain;
+}
+/* The picture carries no words, so this is the whole point of the figure. */
+.nCap {
+  margin: 10px 0 0; text-align: center;
+  font-family: var(--serif); font-size: var(--t-small); line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* -- her own symptoms, as chips ------------------------------------------ */
+
+.nChips {
+  margin: 16px 0 0; padding: 0; list-style: none;
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+.nChip {
+  padding: 7px 13px; border-radius: 999px;
+  border: 1px solid var(--wash-2); background: var(--wash);
+  font-size: var(--t-small); font-weight: 600; color: var(--plum);
+}
+
+/* -- the three steps on screen two --------------------------------------- */
+
+.nSteps { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.nStep {
+  display: grid; align-items: center; gap: 2px 14px;
+  grid-template-columns: 26px 44px 1fr;
+  padding: 14px 16px; border-radius: var(--radius);
+  border: 1px solid var(--wash-2); background: var(--ground);
+}
+.nStepNum {
+  grid-row: span 2; align-self: center;
+  width: 24px; height: 24px; border-radius: 999px;
+  display: grid; place-items: center;
+  background: var(--plum); color: #fff;
+  font-size: 12.5px; font-weight: 800; line-height: 1;
+}
+.nStepIcon {
+  grid-row: span 2; align-self: center;
+  width: 44px; height: 44px; object-fit: contain;
+}
+.nStepWhat {
+  align-self: end; font-size: var(--t-sub); line-height: 1.28;
+  letter-spacing: -.01em; color: var(--ink);
+}
+.nStepTakes {
+  align-self: start; margin-top: 3px;
+  font-family: var(--serif); font-size: var(--t-small); line-height: 1.4;
+  color: var(--ink-2);
+}
+
+/* -- the note under them ------------------------------------------------- */
+
+.nNote {
+  margin: 16px 0 0; padding: 14px 16px; border-radius: var(--radius);
+  border: 1.5px dashed var(--lilac); background: var(--wash);
+  text-align: center;
+  font-family: var(--serif); font-size: var(--t-sub); line-height: 1.42;
+  color: var(--plum);
+}
+
+/* -- screen three: the bottle, the diagram, the ingredients -------------- */
+
+/* THE BOTTLE AND THE DIAGRAM TOGETHER, in one row, 30 October. Stacked they
+   were two large pictures and about 380px of height before she reached a
+   sentence; side by side they read as one illustration of the same idea and
+   cost a third of that. The diagram is 3:2, so it takes the wider column. */
+.nShots {
+  margin: 16px 0 0; display: grid; grid-template-columns: 90px 1fr;
+  align-items: center; gap: 12px;
+}
+.nBottle { display: block; width: 100%; height: auto; object-fit: contain; }
+.nHow {
+  display: block; width: 100%; max-width: 260px; height: auto;
+  margin: 0 auto; object-fit: contain;
+}
+/* The list the colon above it promised. */
+.nIngsHead { margin: 20px 0 9px; }
+
+.nIngs { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.nIng {
+  display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start;
+  padding: 13px 15px; border-radius: var(--radius);
+  border: 1px solid var(--wash-2); background: var(--ground);
+}
+.nDose {
+  padding: 4px 9px; border-radius: 999px;
+  background: var(--wash); border: 1px solid var(--wash-2);
+  font-size: 11.5px; font-weight: 800; letter-spacing: .01em;
+  color: var(--plum); white-space: nowrap;
+}
+.nIngName {
+  margin: 0; font-size: var(--t-sub); font-weight: 700; letter-spacing: -.01em;
+  color: var(--ink);
+}
+.nIngPlain {
+  margin: 3px 0 0; font-size: var(--t-small); font-weight: 600; line-height: 1.4;
+  color: var(--ink);
+}
+/* The label's own words, set quietly under the plain ones: present, and not
+   competing with the sentence she actually reads. */
+.nIngOfficial {
+  margin: 3px 0 0; font-family: var(--serif); font-style: italic;
+  font-size: var(--t-small); line-height: 1.4; color: var(--ink-3);
+}
+
+/* A little more room once there is any, at the one breakpoint the rest of
+   the quiz uses. */
+@media (min-width: 560px) {
+  .nFigImg { max-width: 180px; }
+  .nStep { grid-template-columns: 28px 56px 1fr; padding: 16px 18px; }
+  .nStepIcon { width: 56px; height: 56px; }
+}
+
+/* ========================================================================
+   THE PRICE BLOCK AND THE SECTION BANDS                  29 October 2026
+   ======================================================================== */
+
+/* -- the price, as a block ----------------------------------------------
+   Replaces the single line "$146.99 value ... today $45.00". Three facts,
+   stacked: what it is worth, what she pays, and what she keeps. */
+.kitPrice {
+  margin: 14px auto 0; max-width: 260px;
+  display: grid; justify-items: center; gap: 2px;
+}
+.kitPriceWas {
+  margin: 0; display: flex; gap: 7px; align-items: baseline;
+  font-size: var(--t-small); color: var(--ink-3);
+}
+.kitPriceWas s { color: var(--ink-3); }
+.kitPriceNow {
+  margin: 0; display: flex; gap: 8px; align-items: baseline;
+}
+.kitPriceNow span {
+  font-size: var(--t-small); font-weight: 700; color: var(--ink-2);
+}
+.kitPriceNow b {
+  font-size: clamp(30px, 8vw, 38px); font-weight: 800; letter-spacing: -.03em;
+  line-height: 1; color: var(--plum);
+}
+.kitPriceSave {
+  margin: 5px 0 0; padding: 4px 11px; border-radius: 999px;
+  background: var(--plum); color: #fff;
+  font-size: 12px; font-weight: 800; letter-spacing: .01em;
+}
+/* In the card it sits between the product and the breakdown, so it needs a
+   rule under it rather than the air the hero gives it. */
+.kitCard .kitPrice {
+  margin-top: 12px; padding-bottom: 12px; max-width: none;
+  border-bottom: 1px solid var(--line);
+}
+
+/* -- the bands ----------------------------------------------------------
+ *
+ * The page read as one long scroll with no edges. Alternating bands give it
+ * joints, which is how the landing page is built.
+ *
+ * HOW FAR THEY REACH, and why it is not 100vw. A band that spans the viewport
+ * needs `margin-inline: calc(50% - 50vw)`, and `vw` counts the scrollbar: on a
+ * desktop that puts the right edge about 8px past documentElement.clientWidth,
+ * which is horizontal overflow, which e2e/helpers.ts fails the build over. The
+ * alternative is overflow-x: hidden on the root, which breaks position: sticky
+ * and this page has a sticky action bar and a fixed buy bar.
+ *
+ * So the bands escape the GUTTER, as .kitBand already did. On a phone the
+ * container is the viewport minus its gutters, so that IS edge to edge, which
+ * is where three quarters of this traffic reads the page. On a desktop they
+ * are column width. Deliberate, and the trade is the overflow test.
+ */
+
+/* Spacing, when a band replaces a .kitSec rather than wrapping one. */
+.kitBand.kitStrip, .kitBand.kitMech, .kitBand.kitClose { margin-top: 0; }
+
+/* The quiet alternate: barely a tint, enough to break the scroll. */
+.kitBand.surface { background: var(--surface-2); }
+
+/* THE OFFER, which has to look like the thing the page was for. A stronger
+   lilac than the --wash band above it, with a line top and bottom. */
+.kitBand.offer {
+  background: linear-gradient(180deg, var(--wash) 0%, var(--wash-2) 100%);
+  border-top: 1px solid var(--lilac); border-bottom: 1px solid var(--lilac);
+}
+
+/* The closer, plum-tinted, so the last ask reads as a second ask and not as
+   more page. */
+.kitBand.close { background: var(--wash); border-top: 1px solid var(--wash-2); }
+
+/* Two bands in a row need no gap between them: the colour change is the
+   join. The guarantee sits directly under the offer this way. */
+.kitBand + .kitBand { margin-top: 0; }
+
+/* -- paying for the price block on a short screen ------------------------
+   MEASURED at the five viewports an in-app browser hands out. The block is
+   three stacked rows where the old line was one, which is about 66px, and
+   dropping the kit-name line gave back only 25 of them: 320x568 went 41px
+   under the fold and 320x480 went 17px under.
+
+   The block itself tightens first, because it is the offer and may not go.
+   Then, at 320px as well as short, the eyebrow and the headline give way,
+   which is the same trade those tiers already make. */
+@media (max-height: 720px) {
+  .kitHero .kitPrice { margin-top: 9px; gap: 0; }
+  .kitHero .kitPriceNow b { font-size: 29px; }
+  .kitHero .kitPriceSave { margin-top: 4px; padding: 3px 9px; font-size: 11px; }
+}
+
+@media (max-height: 720px) and (max-width: 360px) {
+  .kitHeroEyebrow { margin-bottom: 3px; font-size: 11px; }
+  .kitHeroH1 { font-size: clamp(21px, 6.2vw, 26px); }
+  .kitHeroShot.isKit { max-height: 12vh; }
+}
+
+@media (max-height: 520px) {
+  .kitHeroShot.isKit { max-height: 9vh; }
+  .kitHero .kitPriceWas { font-size: 12px; }
+  .kitHero .kitPriceNow b { font-size: 26px; }
+}
+
+/* ========================================================================
+   THE RESULT SCREEN, LIGHTER                             29 October 2026
+   ========================================================================
+
+   It carried the whole explanation while it was the last thing before the
+   price: six paragraphs of what this means, a separate "why your sleep
+   changed" section, a pattern line and a hook, about four hundred words.
+   The three nurture screens explain the cause now, so this page names her
+   result, reflects her answers, gives her one takeaway, one hook and one
+   reassurance, and hands over.
+
+   Bigger type and more air, deliberately: there is half as much to read, so
+   what is left can be read.
+   ------------------------------------------------------------------------ */
+
+/* -- the hero ------------------------------------------------------------ */
+
+.resReassure {
+  margin: 11px 0 0;
+  font-family: var(--serif); font-size: var(--t-sub); line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* -- what this means, one card ------------------------------------------- */
+
+.resMeans {
+  margin: 26px 0 0; padding: 20px 19px; border-radius: var(--radius-lg);
+  background: var(--wash); border: 1px solid var(--wash-2);
+}
+.resMeansLead {
+  margin: 0; font-size: var(--t-lead); font-weight: 600; line-height: 1.32;
+  letter-spacing: -.015em; color: var(--ink);
+}
+.resMeansSym {
+  margin: 11px 0 0;
+  font-family: var(--serif); font-size: var(--t-body); line-height: 1.5;
+  color: var(--ink-2);
+}
+.resMeansNote {
+  margin: 11px 0 0; font-size: var(--t-small); line-height: 1.45;
+  color: var(--ink-3);
+}
+/* NOT fine print. It is the one line on this page that could matter
+   medically, so it is set as loud as the card's own lead. */
+.resDoctor {
+  margin: 13px 0 0; padding: 11px 13px; border-radius: var(--radius);
+  background: #fff; border-left: 3px solid var(--plum);
+  font-size: var(--t-small); font-weight: 600; line-height: 1.45;
+  color: var(--ink);
+}
+
+/* -- the hook, as a dashed callout --------------------------------------- */
+
+.resHook {
+  margin: 22px 0 0; padding: 17px 18px; border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--lilac); background: transparent;
+}
+.resHookTitle {
+  margin: 0; display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--plum);
+}
+.resHookIcon { display: inline-flex; color: var(--plum); }
+.resHookBody {
+  margin: 9px 0 0;
+  font-family: var(--serif); font-size: var(--t-body); line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* -- she is not the only one --------------------------------------------- */
+
+.resStat {
+  margin: 26px 0 0; padding: 20px 19px; border-radius: var(--radius-lg);
+  background: var(--good-wash); text-align: center;
+}
+.resStat .blabel { color: var(--good); margin-bottom: 8px; }
+.resStatBig {
+  margin: 0; font-size: clamp(34px, 9.5vw, 46px); font-weight: 800;
+  letter-spacing: -.035em; line-height: 1; color: var(--good);
+}
+.resStatFact {
+  margin: 9px 0 0;
+  font-size: var(--t-small); line-height: 1.45; color: var(--ink-2);
+}
+.resStatLine {
+  margin: 10px 0 0;
+  font-family: var(--serif); font-size: var(--t-body); line-height: 1.48;
+  color: var(--ink);
+}
+.resStatSrc {
+  margin: 9px 0 0; font-size: 11px; line-height: 1.4; color: var(--ink-3);
+}
+
+/* -- the hand-off -------------------------------------------------------- */
+
+.resWant { margin: 26px 0 0; }
+.resWantLead {
+  margin: 0; font-size: var(--t-lead); font-weight: 600; line-height: 1.3;
+  letter-spacing: -.015em; color: var(--ink);
+}
+
+/* The caption under the big number, 30 October. Without it the card read
+   "You are not the only one" over "four years", which counts nothing. */
+.resStatBigLabel {
+  margin: 5px 0 0; font-size: var(--t-small); font-weight: 600;
+  line-height: 1.4; color: var(--good);
+}
+
+/* -- the emphasis, and the type on these three screens -------------------
+   Every paragraph was the same weight, so there was nothing for an eye to
+   land on and the screens read as walls. <strong> comes from the ** markers
+   in nurtureCopy.ts, so what is emphasised is the writer's call. */
+.nFig + .block strong,
+.block strong,
+.nCap strong,
+.nNote strong,
+.nStepTakes strong {
+  font-weight: 700; color: var(--ink);
+}
+.nNote strong { color: var(--plum); font-weight: 800; }
+.nCap strong { color: var(--ink); font-weight: 700; }
+
+/* The lead under the title on screen three, set above the body that follows
+   it so the two are not the same grey. */
+.rDeck strong { font-weight: 700; color: var(--ink); }
+
+/* ========================================================================
+   THE OFFER STACK, BUILT LIKE JANE'S LANDING PAGE        30 October 2026
+   ========================================================================
+
+   The shared ValueStack read as a receipt: a flat list of label and price
+   with nothing to look at. The block on hormonefocus.jjsmithonline.com reads
+   as an offer, and the difference is structure rather than decoration, so
+   this follows it line for line: ticked inclusions, the bonuses as cards
+   carrying their own artwork, a struck total, and then each way to buy in a
+   box of its own with its own button.
+
+   THE RED DIAGONAL on every value is the part that does the work. A price in
+   grey is a price; a price with a line through it is a price she is not
+   paying.
+   ------------------------------------------------------------------------ */
+
+.kitVs { margin-top: 16px; text-align: left; }
+.kitVsH {
+  margin: 0 0 4px; font-size: var(--t-sub); font-weight: 800;
+  letter-spacing: -.01em; color: var(--ink);
+}
+
+/* EVERY ROW IS A CARD, 30 October. The inclusions were flat rows separated
+   by dashed hairlines while the three bonuses under them were cards, so the
+   stack read as two different lists stuck together. They are the same object
+   now; what still tells them apart is the border, solid for what she is
+   buying and dashed lilac for what is being given to her. */
+.kitVsList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.kitVsList li {
+  display: flex; justify-content: space-between; gap: 12px;
+  align-items: center; padding: 10px 12px;
+  border: 1.5px solid var(--line); border-radius: 14px; background: #fff;
+  font-size: 15px; font-weight: 500;
+}
+.kitVsName { display: flex; gap: 10px; align-items: flex-start; line-height: 1.38; }
+.kitVsTick {
+  width: 21px; height: 21px; flex: 0 0 auto; border-radius: 999px;
+  background: var(--wash); color: var(--plum);
+  display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+
+/* The value, and the line through it. */
+.kitVsVal {
+  flex: 0 0 auto; position: relative; display: inline-block;
+  font-weight: 700; font-size: 15px; color: var(--ink-3);
+}
+.kitVsVal.struck::after {
+  content: ''; position: absolute; left: -6%; right: -6%; top: 50%;
+  height: 2px; background: #E23B3B; border-radius: 3px;
+  transform: translateY(-50%) rotate(-12deg);
+}
+
+/* -- the bonuses, which she can see ------------------------------------- */
+
+.kitVsBonuses { margin-top: 11px; display: flex; flex-direction: column; gap: 9px; }
+.kitVsBonus {
+  display: flex; align-items: center; gap: 11px; padding: 9px 12px;
+  border: 1.5px dashed var(--lilac); background: var(--wash);
+  border-radius: 14px;
+}
+.kitVsBonusImg {
+  flex: 0 0 auto; width: auto; height: 44px; object-fit: contain; display: block;
+}
+.kitVsBonusMain {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;
+  text-align: left;
+}
+.kitVsBonusTag {
+  align-self: flex-start; padding: 2px 8px; border-radius: 999px;
+  background: var(--plum); color: #fff;
+  font-size: 9.5px; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; line-height: 1.35;
+}
+.kitVsBonusLabel {
+  font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ink);
+}
+
+/* -- the total ----------------------------------------------------------- */
+
+.kitVsTotal {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 13px; padding: 12px 15px; border-radius: 12px;
+  background: var(--wash);
+  font-size: 15.5px; font-weight: 800; color: var(--ink);
+}
+.kitVsTotalV { position: relative; display: inline-block; font-size: 19px; color: var(--ink-2); }
+/* The total carries the same line as the rows it sums: this is the number
+   she is NOT paying, and the one under it is. */
+.kitVsTotalV.struck::after {
+  content: ''; position: absolute; left: -6%; right: -6%; top: 50%;
+  height: 2px; background: #E23B3B; border-radius: 3px;
+  transform: translateY(-50%) rotate(-12deg);
+}
+
+/* -- the deal she is being offered --------------------------------------- */
+
+.kitDeal {
+  position: relative; margin-top: 22px; padding: 26px 16px 18px;
+  border: 2px solid var(--plum); border-radius: 16px;
+  background: linear-gradient(165deg, #FFF, #F7ECFB);
+  text-align: center;
+}
+.kitDealBadge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--plum); color: #fff;
+  padding: 7px 18px; border-radius: 999px; white-space: nowrap;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 22px -10px rgba(91, 42, 128, .6);
+}
+.kitDealBadge s { color: #fff; opacity: .75; }
+.kitDealNow { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.kitDealNum {
+  font-size: clamp(46px, 13vw, 60px); font-weight: 800; line-height: 1;
+  letter-spacing: -.035em; color: var(--plum);
+}
+.kitDealNote {
+  margin: 7px 0 0; font-size: 13px; font-weight: 700; color: var(--ink-2);
+}
+.kitDeal .kitBtn, .kitDeal2 .kitBtn { margin-top: 13px; }
+.kitDealFine {
+  margin: 8px 0 0; font-size: 11.5px; font-weight: 600; color: var(--ink-3);
+}
+
+.kitOr {
+  display: flex; align-items: center; gap: 13px; margin: 15px 2px 0;
+  color: var(--ink-3);
+  font-size: 11.5px; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.kitOr::before, .kitOr::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
+
+.kitDeal2 {
+  margin-top: 14px; padding: 18px 16px 18px; text-align: center;
+  border: 1.5px solid var(--line-2); border-radius: 16px; background: #fff;
+}
+.kitDeal2Badge {
+  display: inline-block; margin-bottom: 10px; padding: 5px 14px;
+  border-radius: 999px; background: var(--wash); color: var(--plum);
+  font-size: 12px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.kitDeal2Now {
+  display: flex; align-items: baseline; justify-content: center;
+  flex-wrap: wrap; gap: 3px 9px;
+}
+.kitDeal2Now s { font-size: 21px; font-weight: 700; color: var(--ink-3); }
+.kitDeal2Num {
+  font-size: clamp(36px, 10vw, 44px); font-weight: 800; line-height: 1;
+  letter-spacing: -.025em; color: var(--plum);
+}
+.kitDeal2Per { font-size: 15px; font-weight: 800; color: var(--ink-2); }
+
+/* .kitBtn.ghost is gone, 30 October. The subscription's button was outlined
+   where the bottle's was filled, which read as the lesser of the two rather
+   than as the other one. Both are the same button now. */
+
+/* -- the bottle in the stack, and the shipping pill ---------------------- */
+
+/* Same box as the tick it replaces, so the rows stay aligned whether a row
+   has a picture or not. */
+.kitVsImg {
+  width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain;
+  margin: -4px 0 -4px -4px;
+}
+
+.kitDeal2Ship { margin: 0 0 8px; }
+
+/* -- the wall says who verified it --------------------------------------- */
+
+/* The score and the mark on two lines, centred, which is how .pfRating sets
+   the same two facts in the hero badge. */
+.okMeta { flex-direction: column; gap: 6px; }
+.okMetaScore {
+  display: inline-flex; align-items: center; flex-wrap: wrap;
+  justify-content: center; gap: 8px;
+}
+.okBy {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink-3);
+}
+.okBy img { height: 15px; width: auto; display: block; }
+
+/* The heading over the live wall, where the proof zone now ends. */
+.okHead { margin: 26px 0 12px; }
+
+/* The screenshot that sits directly above the offer. */
+.kitPreOffer { margin-top: 26px; }
+
+/* The Read-all link jumps here, so the heading needs room to clear the top
+   of the viewport rather than sitting flush against it. */
+.okZone { scroll-margin-top: 16px; }

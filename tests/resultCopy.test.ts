@@ -338,7 +338,8 @@ test('the new paragraphs are the strings Jane sent, to the character', () => {
     + 'This is why I built the Feel Like YOU Again Kit.',
   );
 
-  expect(KIT_TITLE).toBe('The 60-Day Feel Like YOU Again Kit');
+  /* Renamed 30 October: the kit's 60-Day wording came off its name. */
+  expect(KIT_TITLE).toBe('The Feel Like YOU Again Kit');
 
   /* Two paragraphs, in order, so the screen can put air between them. */
   expect(KIT_INTRO).toHaveLength(2);

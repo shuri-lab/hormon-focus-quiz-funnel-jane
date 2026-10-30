@@ -171,6 +171,9 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     if (questionStep) track.quizStep(here, questionStep.index, questionStep.total);
     if (here === 'load') track.quizComplete(stateKey(latest.current));
     if (here === 'r1') track.resultView(stateKey(latest.current));
+    if (here === 'cause' || here === 'plan' || here === 'meet') {
+      track.nurtureView(here, stateKey(latest.current));
+    }
     if (here === 'r2') track.offerView(stateKey(latest.current));
     if (here === 'rDoc') track.doctorRoute(docReason(latest.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps

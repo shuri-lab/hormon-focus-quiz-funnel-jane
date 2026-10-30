@@ -31,6 +31,7 @@ import * as plan from '../src/lib/planCopy';
 import * as kit from '../src/lib/kitCopy';
 import * as quiz from '../src/lib/content';
 import * as result from '../src/lib/resultCopy';
+import * as nurture from '../src/lib/nurtureCopy';
 /* The claim patterns and the export walker moved to tests/claimRules.ts on
    7 October 2026, unchanged, so the results tests can hold one string to the
    same gate. This file is still what reads every authored string. */
@@ -50,6 +51,9 @@ const AUTHORED: [string, string][] = [
   /* The results update, 6 October 2026: what this means, her first three
      things, and why JJ made the Kit. */
   ...strings(result, 'resultCopy.ts'),
+  /* The three pre-offer screens, 29 October 2026: what is behind her result,
+     what to do about it, and the product as step one of that. */
+  ...strings(nurture, 'nurtureCopy.ts'),
 ];
 
 /**
@@ -157,6 +161,55 @@ const SIGNED_OFF = new Set([
   "I'm not sure",
 ]);
 
+/* ------------------------------------------------------------- dashes -- */
+
+/**
+ * NO EM OR EN DASHES IN PROSE. David's instruction of 29 October 2026: a
+ * period or a comma does the same work and survives being read aloud, which
+ * matters for copy that gets narrated into an ad.
+ *
+ * WHAT IS NOT PROSE, and is exempt BY PATH rather than by value, the way the
+ * identifier exemptions above already work:
+ *
+ *  - content.ts's age ranges. "40-44" is read as a range and an en dash is
+ *    what a range is set with. It is a number, not a sentence.
+ *  - anything called `title`. Nine of them read "Hormone Focus \u2014 the 60-Day
+ *    Plan": a product and the offer it is being sold as, separated. That is a
+ *    name, not prose, and "use a period or a comma" does not parse for it.
+ *    THEY ARE FLAGGED RATHER THAN REWRITTEN: changing nine approved titles is
+ *    David's call, not a tidy-up, and the day he makes it this exemption is
+ *    the one line to delete.
+ */
+const DASH = /[\u2014\u2013]/;
+
+const DASH_EXEMPT = (where: string) =>
+  where.startsWith('content.ts.AGES')
+  || where.startsWith('content.ts.AGE')
+  || where.endsWith('.title');
+
+test('no authored string uses an em or en dash', () => {
+  const offenders: string[] = [];
+  for (const [where, value] of AUTHORED) {
+    if (!DASH.test(value) || DASH_EXEMPT(where)) continue;
+    offenders.push(`${where}: ${JSON.stringify(value)}`);
+  }
+  expect(
+    offenders,
+    'use a period or a comma. See the note above for what is exempt and why.',
+  ).toEqual([]);
+});
+
+test('the dash gate fires on prose and leaves a numeric range alone', () => {
+  /* The rule is worth nothing if it cannot tell the two apart, so both are
+     stated here rather than trusted. */
+  expect(DASH.test('a sentence \u2014 with an em dash')).toBe(true);
+  expect(DASH.test('a sentence, with a comma')).toBe(false);
+  expect(DASH_EXEMPT('content.ts.AGES.1.1'), 'an age range is exempt').toBe(true);
+  expect(DASH_EXEMPT('angles.ts.0.offer.title'), 'a title is exempt').toBe(true);
+  expect(DASH_EXEMPT('kitCopy.ts.KIT_FAQ.0.1'), 'a FAQ answer is not').toBe(false);
+  expect(DASH_EXEMPT('nurtureCopy.ts.CAUSE_BODY_2'), 'body copy is not').toBe(false);
+});
+
 test('no authored string makes a claim the brand may not make', () => {
   for (const [where, raw] of AUTHORED) {
     if (SIGNED_OFF.has(raw)) continue;
@@ -246,8 +299,15 @@ test('the customer never reads the word we use among ourselves', () => {
 });
 
 test('the Plan is named the same way everywhere she sees it', () => {
-  /* JJ's own name for it, as it reads on her page. */
-  expect(offer.PLAN_NAME).toBe('The 60-Day Feel Like YOU Again Kit');
+  /* RENAMED 30 October 2026, David: the kit lost its 60-Day wording and is
+     "The Feel Like YOU Again Kit".
+
+     PLAN_SHORT KEPT ITS SIXTY DAYS, and the two now differ on purpose. It
+     names the TWO-bottle pack on /offer, /live and /plan, which is sixty
+     days of supply and is a different thing from the one-bottle kit the quiz
+     sells. Both are asserted here so a later decision to align them is a
+     decision and not a drift. */
+  expect(offer.PLAN_NAME).toBe('The Feel Like YOU Again Kit');
   expect(offer.PLAN_SHORT).toBe('The 60-Day Kit');
   expect(offer.optionFor('protocol').title).toContain(offer.PLAN_SHORT);
   expect(offer.optionFor('single').title).toBe('1 bottle \u00b7 30 days');

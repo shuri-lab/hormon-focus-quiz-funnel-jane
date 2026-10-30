@@ -3,7 +3,8 @@ import { SHOP_BASE } from '../lib/logic';
 import { shopUrl, track } from '../lib/analytics';
 import {
   DEFAULT_OFFER, NEXT_BATCH, SHOW_BATCH_LINE, SHOW_DAILY_PRICE, valueStackFor,
-  batchCount, dailyPrice, money, optionFor, optionsFor, type OfferKind,
+  batchCount, dailyPrice, money, optionFor, optionsFor,
+  type OfferKind, type OfferOption, type StackItem,
 } from '../lib/offer';
 import {
   GUARANTEE_HEADLINE, GUARANTEE_LINK_TEXT, GUARANTEE_SUB_PRE,
@@ -81,21 +82,91 @@ export function Guarantee() {
  * above it, so a caller that does not say which row is selected is a caller
  * about to sell two bottles to somebody buying one.
  */
-export function ValueStack({ kind }: { kind: OfferKind }) {
+export function ValueStack({ kind, items, heading }: {
+  kind?: OfferKind;
+  /**
+   * The rows, where the caller has its own set.
+   *
+   * ADDED FOR THE KIT, 29 October 2026. The quiz page sells a package whose
+   * rows are not any of the three `kind`s, and the alternative was a second
+   * copy of this markup on that page. `kind` is still how every other surface
+   * asks, and one of the two is required.
+   */
+  items?: StackItem[];
+  /** Overrides STACK_HEADING, or omit the heading entirely with ''. */
+  heading?: string;
+}) {
+  const rows = items ?? valueStackFor(kind ?? DEFAULT_OFFER);
+  const head = heading ?? STACK_HEADING;
+
   return (
     <div className="stack" data-af="stack">
-      <p className="stackH">{STACK_HEADING}</p>
+      {head && <p className="stackH">{head}</p>}
       <ul>
-        {valueStackFor(kind).map((item) => (
+        {rows.map((item) => (
           <li key={item.what}>
             <span className="stackWhat">
               {item.bonus && <span className="stackBonus">Bonus</span>}
               {item.what}
             </span>
-            <span className="stackWorth">{item.worth}</span>
+            {/* A free bonus shows BOTH: what it is worth, struck, and that
+                she is not paying it. A number with nothing marking it free
+                reads as something she is being charged for. */}
+            <span className="stackWorth">
+              {item.free ? <><s>{item.worth}</s> free</> : item.worth}
+            </span>
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/**
+ * THE PRICE ROWS, on their own, so a second surface can use them.
+ *
+ * Split out of BuyOptions below on 29 October 2026 at David's instruction that
+ * the quiz offer page stop carrying its own copy of this markup. BuyOptions
+ * passes exactly what it passed before, so /offer, /live and /plan render the
+ * same DOM they always did; the kit page passes its own options and its own
+ * hrefs. Nothing about the rows themselves changed except the struck-through
+ * `was`, which only appears on a row that has one.
+ */
+export function BuyRows({ options, chosen, onChoose, name, label }: {
+  options: OfferOption[];
+  chosen: OfferKind;
+  onChoose: (kind: OfferKind) => void;
+  /** Distinguishes one block's radio group from another's. */
+  name: string;
+  label: string;
+}) {
+  return (
+    <div className="buyRows" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.kind}
+          type="button"
+          role="radio"
+          id={`${name}-${o.kind}`}
+          aria-checked={o.kind === chosen}
+          className={`buyRow${o.kind === chosen ? ' on' : ''}`}
+          onClick={() => onChoose(o.kind)}
+        >
+          <span className="buyDot" aria-hidden="true" />
+          <span className="buyWhat">
+            <b>
+              {o.title}
+              {o.badge && <span className="buyBadge">{o.badge}</span>}
+            </b>
+            <small>{o.detail}</small>
+          </span>
+          <span className="buyPrice">
+            {money(o.price)}
+            {o.was !== undefined && <small className="buyWas"><s>{money(o.was)}</s></small>}
+            <small>{o.priceNote}</small>
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -124,32 +195,10 @@ export function BuyOptions({ chosen, onChoose, outcome, angle, name, live = fals
           rows, the price and the button. The lines under it answer the doubt
           the button creates and are measured separately. */}
       <div className="buyCta" data-af="cta">
-      <div className="buyRows" role="radiogroup" aria-label="Choose how much to start with">
-        {optionsFor(live).map((o) => (
-          <button
-            key={o.kind}
-            type="button"
-            role="radio"
-            id={`${name}-${o.kind}`}
-            aria-checked={o.kind === chosen}
-            className={`buyRow${o.kind === chosen ? ' on' : ''}`}
-            onClick={() => onChoose(o.kind)}
-          >
-            <span className="buyDot" aria-hidden="true" />
-            <span className="buyWhat">
-              <b>
-                {o.title}
-                {o.badge && <span className="buyBadge">{o.badge}</span>}
-              </b>
-              <small>{o.detail}</small>
-            </span>
-            <span className="buyPrice">
-              {money(o.price)}
-              <small>{o.priceNote}</small>
-            </span>
-          </button>
-        ))}
-      </div>
+      <BuyRows
+        options={optionsFor(live)} chosen={chosen} onChoose={onChoose}
+        name={name} label="Choose how much to start with"
+      />
 
       {/* Only under the Plan, because the Plan is what sixty days divides. */}
       {SHOW_DAILY_PRICE && chosen === 'protocol' && (

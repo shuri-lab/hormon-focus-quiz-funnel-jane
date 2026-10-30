@@ -344,6 +344,20 @@ export const track = {
     ph('hf_result_viewed', { quiz_segment: outcome });
   },
 
+  /**
+   * One of the three screens between her result and the price.
+   *
+   * ONE EVENT WITH THE SCREEN ON IT, not three event names. The question
+   * these exist to answer is where she stops, which is a funnel over one
+   * event rather than three insights that have to be read together. The
+   * screen id is a step name, never anything about her body.
+   */
+  nurtureView(screen: 'cause' | 'plan' | 'meet', outcome: string) {
+    push('nurture_view', { screen, outcome });
+    meta('NurtureView', { screen });
+    ph('hf_nurture_viewed', { screen, quiz_segment: outcome });
+  },
+
   offerView(outcome: string) {
     push('view_offer', { outcome });
     meta('ViewContent', { content_name: 'offer', content_category: outcome }, true);

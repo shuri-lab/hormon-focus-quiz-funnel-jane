@@ -12,11 +12,15 @@ import { Q1, Q2, Q3, Q4, Q4b, Q5, Q6, Q7 } from './screens/questions';
 import { Load, Gate } from './screens/gate';
 import { R1, RDoc } from './screens/reveal';
 import { R2 } from './screens/offer';
+import { RCause, RPlan, RMeet } from './screens/nurture';
 
 const SCREENS: Record<ScreenId, () => React.JSX.Element> = {
   q1: Q1, q2: Q2, q3: Q3, q4: Q4, q4b: Q4b, q5: Q5, q6: Q6, q7: Q7,
   load: Load, gate: Gate,
-  r1: R1, r2: R2, rDoc: RDoc,
+  r1: R1,
+  /* The three that earn the offer. See nurtureCopy.ts. */
+  cause: RCause, plan: RPlan, meet: RMeet,
+  r2: R2, rDoc: RDoc,
 };
 
 function Stage() {

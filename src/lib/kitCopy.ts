@@ -16,7 +16,11 @@
  * tests/copy.test.ts holds this file to the same gate as offerCopy.ts: no
  * contractions, no claim the brand may not make.
  */
-import { dailyPrice } from './offer';
+import {
+  BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, PLAN_NAME,
+  batchCount, dailyPrice,
+} from './offer';
+import { MG_HEADLINE } from './offerCopy';
 import type { SymptomId } from './logic';
 
 /* ------------------------------------------------------- the offer block -- */
@@ -27,7 +31,7 @@ export const kitHeadPrice = (): string => `${dailyPrice()} a day`;
 export const KIT_HEAD_SUB = 'Less than a coffee. Two capsules a day.';
 
 export const KIT_BADGE = 'BESTSELLER';
-export const KIT_CTA = 'Get the 60-Day Kit';
+export const KIT_CTA = KIT_BUY_CTA;
 export const KIT_TOTAL_LABEL = 'Total value';
 export const KIT_TODAY_LABEL = 'Today';
 export const FREE_SHIPPING = 'FREE SHIPPING';
@@ -77,7 +81,12 @@ export const WHY_BODY: string[] = [
 
 /* PLACEHOLDER. The claim line is the one already approved on the offer pages. */
 export const HF_EYEBROW = 'Hormone Focus';
-export const HF_HEAD = 'Three ingredients. Every milligram on the label.';
+/* BACK TO THE APPROVED LINE, 29 October. It read "Just 3 ingredients.
+   Nothing hidden." for a day, which David called out as not meaning anything:
+   "nothing hidden" is a claim about the label, and the label already has an
+   approved sentence about itself. MG_HEADLINE is that sentence, and it is the
+   one the offer pages have always used. */
+export const HF_HEAD = MG_HEADLINE;
 export const HF_BODY =
   'Hormone Focus is the supplement in the kit. Two capsules a day with a meal. It supports hormone balance for women in perimenopause and menopause.*';
 
@@ -113,7 +122,7 @@ export const KIT_FAQ_HEAD = 'Before you start';
 export const KIT_FAQ: [string, string][] = [
   ['What are the benefits of Hormone Focus?',
     'It is formulated to support healthy hormone levels in women whose estrogen '
-    + 'and progesterone are no longer in the balance they used to be — the stage '
+    + 'and progesterone are no longer in the balance they used to be, the stage '
     + 'behind PMS and perimenopause. Customers report easier cycles, steadier '
     + 'moods and better sleep. Individual results vary.'],
 
@@ -153,7 +162,7 @@ export const KIT_FAQ: [string, string][] = [
 
 /* The button is the brief's. The heading is a PLACEHOLDER. */
 export const CLOSE_HEAD = 'Your first bottle can be on its way today.';
-export const CLOSE_CTA = 'Get Hormone Focus';
+export const CLOSE_CTA = KIT_CTA;
 
 /* ============================================================ THE REBUILD ==
  *
@@ -273,7 +282,7 @@ export const PRESS_EYEBROW = 'As seen in';
  * thirty, so a button reading START MY 60 DAYS promised a length the
  * purchase does not have. !! PENDING JJ SIGN-OFF !!
  */
-export const HERO_CTA = 'Get Hormone Focus';
+export const HERO_CTA = KIT_CTA;
 
 /**
  * Directly under the button, where it does the most good.
@@ -285,7 +294,7 @@ export const HERO_CTA = 'Get Hormone Focus';
  * on the store. Leaving the words there would have promised something the
  * checkout does not give her.
  */
-export const HERO_RISK = '60-day money-back guarantee · 10% off your first bottle · Ships today';
+export const HERO_RISK = '60-day money-back guarantee \u00b7 Ships today';
 
 /* ------------------------------------------------------------ the offer -- */
 
@@ -330,7 +339,7 @@ export const SINGLE_ONCE = 'One-time purchase. No subscription.';
  * store. Shipping is calculated at checkout and the page does not pretend
  * otherwise.
  */
-export const SINGLE_DISCOUNT_NOTE = '10% off applied at checkout';
+export const SINGLE_DISCOUNT_NOTE = KIT_DISCOUNT_NOTE;
 
 /** Over the struck price on the lead card, where the kit said "Total value". */
 export const SINGLE_WAS_LABEL = 'Usually';
@@ -355,8 +364,13 @@ export const SUB_ALT_NAME = 'Hormone Focus subscription';
  * fact, and the following is attributed to her approach and not to a result
  * anybody got.
  */
+/* THE BRIEF'S OPENER, THE APPROVED CLAIM. It asked for "millions of women
+   have followed her to get themselves back", which turns a count of
+   followers into an outcome millions of women got. That is the distinction
+   the note above exists for, so the first sentence is the brief's and the
+   second is the one already cleared. */
 export const TRUST_LEAD =
-  'You may not know JJ Smith yet. She is a New York Times bestselling author, '
+  'New to JJ Smith? She is a New York Times bestselling author, '
   + 'and millions of women have followed her approach.';
 
 /* -------------------------------------------------------- the mechanism -- */
@@ -371,7 +385,7 @@ export const TRUST_LEAD =
  * that was not already cleared.
  */
 export const MECH_EYEBROW = 'Why it works';
-export const MECH_HEAD = 'This is not about willpower. It is about your hormones.';
+export const MECH_HEAD = 'It is not willpower. It is your hormones.';
 
 /* ------------------------------------------------------------- the plan -- */
 
@@ -385,10 +399,15 @@ export const MECH_HEAD = 'This is not about willpower. It is about your hormones
  */
 export const PLAN_EYEBROW = 'On the plan';
 export const PLAN_HEAD = 'Three simple things, every day.';
-export const PLAN_STEP_1 = 'Take two capsules a day.';
-export const PLAN_STEP_1_BODY = 'With a meal and a glass of water. That is the whole dose.';
-export const PLAN_STEP_2 = 'Follow the food and sleep cues in the plan.';
+export const PLAN_STEP_1 = 'Take two capsules a day, with a meal.';
+export const PLAN_STEP_1_BODY = 'With a glass of water. That is the whole dose.';
+export const PLAN_STEP_2 = 'Follow the food and sleep cues in your plan.';
+export const PLAN_STEP_2_BODY = 'Your guide and your recipes are where they are written down.';
 export const PLAN_STEP_3 = 'Mark the tracker.';
+/* "so you can see it working" was the brief's wording and is a result the
+   brand would be promising in its own voice. Writing it down is the thing
+   she does; what she then sees is hers to judge. */
+export const PLAN_STEP_3_BODY = 'A minute a day, so you have it written down.';
 
 /* ----------------------------------------------------------- the sticky -- */
 
@@ -401,7 +420,7 @@ export const PLAN_STEP_3 = 'Mark the tracker.';
  * lines and makes the bar taller than the button it exists to serve. The day
  * rate is the half that does the work, so the day rate is what stays.
  */
-export const STICKY_CTA = 'Get Hormone Focus';
+export const STICKY_CTA = KIT_CTA;
 
 /* ================================ THE SINGLE-BOTTLE PAGE, 22 October 2026 ==
  *
@@ -463,8 +482,101 @@ export const HOW_BODY =
 
 /* ------------------------------------------------------- the offer card -- */
 
-export const OFFER_CARD_HEAD = '30-Day Supply';
-export const OFFER_CARD_SUB = 'One bottle of Hormone Focus, 60 capsules, two a day.';
+export const OFFER_CARD_HEAD = PLAN_NAME;
+export const OFFER_CARD_SUB =
+  'One bottle of Hormone Focus, 60 capsules, two a day, and three digital guides.';
 
 /** Under the two options, where the risk comes off. */
-export const OFFER_ONCE_NOTE = '10% off applied at checkout';
+export const OFFER_ONCE_NOTE = KIT_DISCOUNT_NOTE;
+
+
+/* ------------------------------------------- the kit, on the quiz page -- */
+
+/* THE PAGE SELLS THE PACKAGE, 29 OCTOBER 2026, David's brief.
+ *
+ * The bottle alone led this page for a week. It now leads as the kit: the
+ * same bottle, the same cart link and the same price, named and priced
+ * alongside the three digital pieces that come with it.
+ *
+ * WHAT IS STILL THE BOTTLE. Every button goes to SINGLE_VARIANT_ID, because
+ * the kit has no Shopify variant yet. Nothing in this file can change that,
+ * and nothing in it should pretend otherwise.
+ */
+
+/** The kit's name over the hero, from offer.ts so one file owns it. */
+export const KIT_HERO_LABEL = PLAN_NAME;
+
+export const KIT_HERO_HEAD = 'Not just a bottle. The Feel Like YOU Again Kit.';
+export const KIT_HERO_SUB =
+  'The supplement, the recipes, the plan, and a tracker. '
+  + 'Everything you need to start.';
+
+/* THE PRICE BLOCK, 29 October, replacing a sentence.
+ *
+ * It read "$146.99 value \u2014 today $45.00", which David called vague, and it
+ * carried the em dash the house style has now ruled out. The same three facts
+ * are a struck-through value, a large price and a badge saying what she keeps,
+ * which is how the offer pages have always shown a price.
+ *
+ * The numbers are still derived rather than typed. The kit artwork has "$45
+ * VALUE $146.99" printed into it, where no test can reach, so the least the
+ * HTML can do is move when the constants do. */
+export const KIT_SAVE_PREFIX = 'You save';
+
+/* -- the value stack ----------------------------------------------------- */
+
+export const KIT_STACK_HEAD = 'Everything in your Kit.';
+/** The card's own small heading, over the rows. */
+export const KIT_INCLUDED_HEAD = 'Everything included:';
+/** Over the price in the main deal box. */
+export const KIT_WAS_LABEL = 'Was';
+export const KIT_NOW_LABEL = 'Now';
+/** Under each price. */
+export const KIT_ONCE_NOTE = 'One time, no subscription';
+/* FREE SHIPPING CAME OUT OF THIS LINE, 30 October, and went back into the
+   green pill it had before the rebuild: it is the subscription's one real
+   advantage over the bottle and it was reading as ordinary small print. */
+export const KIT_SUB_NOTE = 'Pause or cancel anytime';
+export const KIT_SUB_PER = '/month';
+/** Beside a struck-through price on each bonus row. */
+export const KIT_FREE_LABEL = 'free';
+export const KIT_TODAY_LINE = 'today';
+
+/* -- the subscription, under the one-time row ---------------------------- */
+
+export const SUB_OR = 'OR';
+export const SUB_BEST_VALUE = 'Best value';
+
+/* -- honest urgency ------------------------------------------------------ */
+
+/**
+ * The batch line, said once, with no timer.
+ *
+ * NOT SHOW_BATCH_LINE, which is the global switch and is off at David's
+ * request. Flipping it would turn this on for /offer, /offer/:slug, /live
+ * and /plan as well, which this brief does not ask for. It is rendered
+ * locally instead, and says "kits" where offerCopy's batchLine says
+ * "bottles", because that is what this page is selling.
+ */
+export const kitBatchLine = (): string =>
+  `This batch: ${batchCount()} kits on the shelf. `
+  + `The next batch lands in ${NEXT_BATCH}.`;
+
+/** Guards the line against a count that would read as a going-out-of-stock. */
+export const KIT_BATCH_SHOWN = BATCH_ON_SHELF > 0;
+
+/* -- the ingredients, and the closer ------------------------------------- */
+
+export const KIT_CLOSE_HEAD = 'Your kit can be on its way today.';
+
+/**
+ * The kit shot's alt text.
+ *
+ * The artwork has its name, its tagline and its price printed into it, so a
+ * screen reader gets none of that from the file. It is named piece by piece
+ * here instead, which is also what a woman on a slow connection reads while
+ * it loads.
+ */
+export const KIT_SHOT_ALT =
+  'The Feel Like YOU Again Kit: one bottle of Hormone Focus, '
+  + 'The 60-Day Hormone Fix, Hormone Healthy Recipes and the Daily Symptom Tracker';

@@ -238,26 +238,67 @@ export function cycleShort(S: QuizState): string {
    line about what she is going through. No product here: that comes on the
    next page. Every figure is from the source named under it, checked
    3 October 2026. */
-export interface StageFact { fact: string; line: string; source: string }
+export interface StageFact {
+  fact: string;
+  line: string;
+  source: string;
+  /**
+   * The number to set large on the result page's reassurance card.
+   *
+   * BESIDE THE SENTENCE IT COMES FROM, not in a second table keyed by
+   * outcome, so the two cannot drift: a test asserts that this string
+   * actually appears in `fact`. Omit it where the fact has no single number
+   * worth pulling, and the card shows the sentence alone.
+   */
+  big?: string;
+  /**
+   * WHAT THE BIG NUMBER IS, directly under it.
+   *
+   * ADDED 30 October 2026. The card read "You are not the only one" over a
+   * large "four years", which is not a number of women and did not parse.
+   * Every `big` needs the half-sentence that says what it counts.
+   */
+  bigLabel?: string;
+  /**
+   * The card's own kicker, because one line does not fit all four.
+   *
+   * "You are not the only one" is true of a count of women (A and E) and
+   * false of a duration or an average age (B and C). It is data for the same
+   * reason `big` is: it belongs to the fact, not to the component.
+   */
+  kicker: string;
+}
 
 export const STAGE_FACT: Record<Exclude<Outcome, 'D'>, StageFact> = {
   A: {
     fact: 'More than 9 in 10 women get some symptoms around their period, and they can get stronger in the late 30s and 40s.',
+    big: '9 in 10',
+    bigLabel: 'of women get symptoms around their period',
+    kicker: 'You are not the only one',
     line: 'What you are feeling is common, and what you do every day can change how it feels.',
     source: 'US Office on Women’s Health',
   },
   B: {
     fact: 'Perimenopause usually starts in the mid-40s and lasts about four years. For some women it lasts up to eight.',
+    big: 'four years',
+    bigLabel: 'is how long perimenopause usually lasts',
+    kicker: 'What to expect',
     line: 'What you are feeling has a name, it is common, and there is a lot you can do during these years.',
     source: 'Cleveland Clinic',
   },
   C: {
     fact: 'The average age of menopause in the US is 52.',
+    big: '52',
+    bigLabel: 'is the average age of menopause in the US',
+    kicker: 'What is typical',
     line: 'Your body is still adjusting to lower hormone levels, and what you do every day still makes a difference.',
     source: 'US Office on Women’s Health',
   },
   E: {
     fact: 'About 1 in 20 women naturally go through menopause early, between 40 and 45.',
+    big: '1 in 20',
+    bigLabel: 'of women reach menopause before 45',
+    kicker: 'You are not the only one',
     line: 'You are not alone in this, and your body still responds to the care you give it.',
     source: 'US Office on Women’s Health',
   },
@@ -298,7 +339,7 @@ export const NEXT_STEPS: string[] = [
 /* The question she is already asking. */
 export const NEXT_HOW = 'The hard part is the how. What do you eat? How do you track it? How do you keep going for 60 days?';
 export const NEXT_BRIDGE =
-  'That is exactly why I created the 60-Day Feel Like YOU Again Kit. It gives you the how, all in one place:';
+  'That is exactly why I created the Feel Like YOU Again Kit. It gives you the how, all in one place:';
 
 /** Each piece of the kit, and which part of the 60 days it answers. */
 export const NEXT_HOW_PIECES: [string, string][] = [

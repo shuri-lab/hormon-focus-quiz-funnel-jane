@@ -12,7 +12,8 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
 import {
   PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, SUBSCRIBE_SELLING_PLAN_ID,
-  ONE_MONTH_PRICE, PROTOCOL_PRICE, SUBSCRIBE_PRICE, SUBSCRIBE_SAVING,
+  KIT_TOTAL_VALUE, ONE_MONTH_PRICE, PROTOCOL_PRICE,
+  QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SUBSCRIBE_PRICE, SUBSCRIBE_SAVING,
   SUBSCRIBE_VARIANT_ID,
   cartPath, offerCards, optionFor, optionsFor, perDay, valueStackFor,
 } from '../src/lib/offer';
@@ -525,4 +526,58 @@ test('the code rides on the quiz link and on no other', async () => {
      This is why no copy on that page promises free shipping. */
   expect((withCode.match(/discount=/g) || []).length).toBe(1);
   expect(withCode).not.toContain('HF60FREESHIP');
+});
+
+/* ------------------------------------- the quiz page's 60-Day Kit ------ */
+
+test('the kit value stack adds up to the number the page leads with', () => {
+  /* $146.99 is printed in the hero, in the card and into the kit artwork
+     itself, which is the one place no test can reach. Computing it from the
+     rows is what keeps the two HTML copies honest when a price moves; this
+     asserts the sum so that a deliberate change still has to be deliberate. */
+  expect(QUIZ_KIT_VALUE_TOTAL).toBe('$146.99');
+
+  const dollars = (s: string) => Number(s.replace(/[^0-9.]/g, ''));
+  const sum = QUIZ_KIT_ROWS
+    .filter((r) => r.worth.startsWith('$'))
+    .reduce((t, r) => t + dollars(r.worth), 0);
+  expect(`$${sum.toFixed(2)}`, 'the rows do not sum to the total').toBe(QUIZ_KIT_VALUE_TOTAL);
+});
+
+test('the kit is one bottle, where JJ\'s own page sells two', () => {
+  /* KIT_VALUE above is her two-bottle stack at $196.99. This page sells one
+     bottle with the same three bonuses, so reading both off one array would
+     put a two-bottle value over a one-bottle order. */
+  expect(QUIZ_KIT_ROWS[0].what).toBe('Hormone Focus, 30-day supply');
+  expect(QUIZ_KIT_ROWS[0].worth).toBe('$49.99');
+  for (const row of QUIZ_KIT_ROWS) {
+    expect(row.what, 'the quiz kit must not promise two bottles').not.toMatch(/two bottles/i);
+  }
+  expect(KIT_TOTAL_VALUE, "JJ's two-bottle stack is untouched").toBe('$196.99');
+});
+
+test('the three bonuses are named, priced and free', () => {
+  const bonuses = QUIZ_KIT_ROWS.filter((r) => r.bonus);
+  expect(bonuses.map((b) => b.what)).toEqual([
+    'The 60-Day Hormone Fix',
+    'Hormone Healthy Recipes',
+    'The Daily Symptom Tracker',
+  ]);
+  /* Priced, because an unnamed or unpriced inclusion is worth nothing in a
+     value stack, and free, because that is the argument. */
+  for (const b of bonuses) {
+    expect(b.free, `${b.what} is not marked free`).toBe(true);
+    expect(b.worth, `${b.what} has no price`).toMatch(/^\$\d/);
+  }
+  /* And the guarantee closes it, as it does on every other stack. */
+  expect(QUIZ_KIT_ROWS.at(-1)!.what).toBe('The 60-Day Happiness Guarantee');
+});
+
+test('every button on the kit page still buys the single bottle', () => {
+  /* THE GAP, ASSERTED. The kit has no Shopify variant, so the page sells a
+     package and the cart adds one bottle. When that changes, this is the
+     test that says what has to change with it. */
+  expect(cartPath('single')).toContain(SINGLE_VARIANT_ID);
+  expect(cartPath('single'), 'the kit variant must not be wired up yet')
+    .not.toContain(PROTOCOL_VARIANT_ID ?? 'no-kit-variant');
 });

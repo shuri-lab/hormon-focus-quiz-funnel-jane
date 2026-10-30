@@ -52,6 +52,65 @@ export function meansFor(outcome: Outcome): string[] {
   return MEANS.A;
 }
 
+/* -------------------------------------------- the hero's reassurance ---- */
+
+/**
+ * One line under her result, before anything explains anything.
+ *
+ * STAGE_LINE said this at length further down the old page and is still
+ * exported; this is the short form, in the one place she is most likely to
+ * read it, which is directly under the sentence naming her stage.
+ *
+ * DRAFT FOR JANE.
+ */
+export const RESULT_REASSURE = 'A normal stage, and there is a lot you can do.';
+
+/** The kicker over her result. The name is hers when she gave one. */
+export const resultKicker = (name: string): string =>
+  (name ? `${name}, here is your result` : 'Here is your result');
+
+/* ------------------------------------ what it means, in one line --------- */
+
+/**
+ * ONE LINE WHERE THERE WERE SIX PARAGRAPHS, 29 October 2026.
+ *
+ * MEANS above is still exported and still gated; it simply stops rendering on
+ * the result page, because `cause`, `plan` and `meet` now carry the
+ * explanation and the result page's job is to name her result and hand over.
+ *
+ * E READS C, exactly as meansFor() has always done: early menopause is
+ * menopause arriving sooner, and the sentence about running on less estrogen
+ * is true of both. Use meansShortFor() rather than indexing this directly.
+ *
+ * DRAFT FOR JANE, all three.
+ */
+export const MEANS_SHORT: Record<'A' | 'B' | 'C', string> = {
+  A: 'Your hormones rise and fall less evenly than they used to.',
+  B: 'Your hormones are not as steady as they used to be.',
+  C: 'After your periods stopped, your body runs on less estrogen.',
+};
+
+export function meansShortFor(outcome: Outcome): string {
+  if (outcome === 'B') return MEANS_SHORT.B;
+  if (outcome === 'C' || outcome === 'E') return MEANS_SHORT.C;
+  return MEANS_SHORT.A;
+}
+
+/**
+ * The clause that ties her symptoms together, after CLOSE[main].
+ *
+ * "NOT SEVERAL", WHERE THE BRIEF WROTE "not three". The brief guarded this on
+ * `main`, which is set for everyone, so a woman who ticked ONE symptom was
+ * told "it is one thing, not three" about the one thing she named. She can
+ * tick anywhere from one to four, so no number is right for all of them, and
+ * reveal.tsx now renders this only when she named more than one.
+ *
+ * DRAFT FOR JANE, and the word is hers to set. It is also the one line on the
+ * card that makes a claim about her: that the things she ticked share a
+ * cause. That is the argument the whole funnel rests on.
+ */
+export const UNIFY = ' It is one thing, not several.';
+
 /* ---------------------------------------- the closing line, by main ------ */
 
 export const CLOSE: Record<SymptomId, string> = {
@@ -94,9 +153,15 @@ export const EARLY_DOCTOR_LINE =
  */
 export const MISS_TITLE = 'The part most women miss';
 
+/* REWRITTEN 29 October 2026, and it now POINTS FORWARD. The result page used
+   to carry the whole explanation because it was the last thing before the
+   price; three screens explain the cause now, so this line stops explaining
+   and starts handing over. missLine() below is no longer rendered with it:
+   the second line used to be a claim about what she had already tried, and
+   the hook reads shorter without it. Still exported, still gated. */
 export const MISS_LEAD =
-  "This isn't something you can push through by trying harder. What changed "
-  + 'is on the inside, in how your body handles its hormones.';
+  'This is not about effort. What changed is on the inside, in how your body '
+  + 'handles its hormones. That is exactly what I want to show you next.';
 
 /** She ticked eating differently, exercising more, or both. */
 export const MISS_TRIED =
@@ -133,10 +198,12 @@ export const MISS_NOTHING =
  * longer cashes.
  */
 export const WANT_HANDOFF =
-  "There's a simple place to start. Let me show you where I'd start.";
+  'Now let me show you what is actually going on, and the simple plan to '
+  + 'feel like you again.';
 
 export const WANT_HANDOFF_UNDERSTAND =
-  "Now that you can see what it is, here is where I'd start.";
+  'You wanted to understand what is happening. Let me show you, and then the '
+  + 'simple plan.';
 
 /* ------------------------------------------ the pattern line, by how often */
 
@@ -361,7 +428,7 @@ export const BRIDGE =
   + 'but doing them consistently when life gets busy is where it gets harder. '
   + 'This is why I built the Feel Like YOU Again Kit.';
 
-export const KIT_TITLE = 'The 60-Day Feel Like YOU Again Kit';
+export const KIT_TITLE = 'The Feel Like YOU Again Kit';
 
 /** Two paragraphs, so the screen can breathe between them. */
 export const KIT_INTRO: string[] = [

@@ -330,3 +330,53 @@ test('the pattern, what she tried and what she wants never change her result', (
     expect(stateKey({ ...S, main: 'sleep' }), label(S)).toBe(base);
   }
 });
+
+/* ----------------------------------- the three screens before the price -- */
+
+test('every result that is shown the offer walks the three screens first', () => {
+  /* ADDED WITH THEM, 29 October 2026. She finished the quiz problem-aware and
+     the next thing she saw was a price. `cause`, `plan` and `meet` are that
+     gap, so they belong to exactly the states that reach the offer, in that
+     order, every time. */
+  for (const [age, cycle, twelve] of [
+    ['40-44', 'unpredictable', 'no'],
+    ['45-49', 'stopped', 'yes'],
+    ['55-59', 'skipping', 'no'],
+    ['40-44', 'stopped', 'yes'],
+  ] as [Age, Cycle, Twelve][]) {
+    const S = make({ age, cycle, twelve });
+    const seen = path(S);
+    const label = `${stateKey(S)} ${age}/${cycle}/${twelve}`;
+
+    expect(seesOffer(S), label).toBe(true);
+    for (const id of ['cause', 'plan', 'meet'] as ScreenId[]) {
+      expect(seen, `${label} never reaches ${id}`).toContain(id);
+      expect(shouldSkip(S, id), `${label} skips ${id}`).toBe(false);
+    }
+    /* In order, and between her result and the price: she is told what is
+       behind it, then what to do, then what does the first part. */
+    const order = (['r1', 'cause', 'plan', 'meet', 'r2'] as ScreenId[])
+      .map((id) => seen.indexOf(id));
+    const ascending = order.slice().sort((a, b) => a - b);
+    expect(order, `${label} walks them out of order`).toEqual(ascending);
+  }
+});
+
+test('the doctor route sees none of them, the same way it sees no offer', () => {
+  /* A woman being sent to her doctor must not be walked through "here is what
+     to do about it" and a product introduction on the way to nothing. The
+     three screens lead to the offer, so they follow the offer's rule exactly.
+     Both D cases are checked, because they arrive by different answers. */
+  for (const S of [
+    make({ age: 'under-40', cycle: 'stopped', twelve: 'yes' }),
+    make({ age: '60-plus', cycle: 'unpredictable' }),
+  ]) {
+    expect(stateKey(S)).toBe('D');
+    const seen = path(S);
+    for (const id of ['cause', 'plan', 'meet', 'r2', 'r1', 'gate'] as ScreenId[]) {
+      expect(shouldSkip(S, id), `the doctor route is shown ${id}`).toBe(true);
+      expect(seen, `the doctor route reaches ${id}`).not.toContain(id);
+    }
+    expect(seen.at(-1), 'the doctor route ends at rDoc').toBe('rDoc');
+  }
+});
