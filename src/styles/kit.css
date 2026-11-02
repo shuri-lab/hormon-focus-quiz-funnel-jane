@@ -1497,8 +1497,10 @@
   text-transform: uppercase;
   box-shadow: 0 10px 22px -10px rgba(91, 42, 128, .6);
 }
-.kitDealBadge s { color: #fff; opacity: .75; }
-.kitDealNow { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.kitDealNow {
+  display: flex; align-items: baseline; justify-content: center;
+  flex-wrap: wrap; gap: 2px 10px;
+}
 .kitDealNum {
   font-size: clamp(46px, 13vw, 60px); font-weight: 800; line-height: 1;
   letter-spacing: -.035em; color: var(--plum);
@@ -1535,7 +1537,24 @@
   display: flex; align-items: baseline; justify-content: center;
   flex-wrap: wrap; gap: 3px 9px;
 }
-.kitDeal2Now s { font-size: 21px; font-weight: 700; color: var(--ink-3); }
+/* -- the price she is not paying, on both boxes -------------------------
+   It lived in the main box's badge at 12.5px on a purple fill, which made
+   the smaller of the two boxes the only place the old price could be read.
+   Both now set it beside the price, with the same red diagonal the value
+   stack uses, which is the thing that reads as "not this". */
+.kitWas {
+  position: relative; display: inline-block;
+  font-size: 24px; font-weight: 700; color: var(--ink-3);
+  text-decoration: none;
+}
+.kitWas::after {
+  content: ''; position: absolute; left: -7%; right: -7%; top: 50%;
+  height: 2.5px; background: #E23B3B; border-radius: 3px;
+  transform: translateY(-50%) rotate(-11deg);
+}
+/* The subscription's number is smaller, so its old price follows it down. */
+.kitDeal2Now .kitWas { font-size: 21px; }
+.kitDeal2Now .kitWas::after { height: 2px; }
 .kitDeal2Num {
   font-size: clamp(36px, 10vw, 44px); font-weight: 800; line-height: 1;
   letter-spacing: -.025em; color: var(--plum);

@@ -16,9 +16,9 @@ import {
 import {
   BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_ONE_LABEL, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
   BOTTLE_WHATYOUGET, FREE_SHIPPING, HF_NAME,
-  KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD, KIT_NOW_LABEL,
+  KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD,
   KIT_ONCE_NOTE, KIT_SAVE_PREFIX, KIT_SHOT_ALT, KIT_STACK_HEAD, KIT_SUB_NOTE,
-  KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL, KIT_WAS_LABEL,
+  KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
   SUB_PILL, TRUST_ITEMS, bottleBatchLine, kitBatchLine,
@@ -291,10 +291,17 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
         {/* THE DEAL. The badge sits on the border, as on her page, so the
             crossed-out price and the one she pays read as one movement. */}
         <div className="kitDeal">
+          {/* THE BADGE NAMES THE SAVING, not the old price. David, 2 November:
+              the struck $49.99 was legible only inside this pill, at 12.5px
+              on a purple fill, which is the smallest type on the card for one
+              of the two numbers that matter most. It is in the price row
+              below now, at the size the subscription box sets it, and the
+              badge says what she keeps instead. */}
           <span className="kitDealBadge">
-            {KIT_WAS_LABEL} <s>{money(ONE_MONTH_PRICE)}</s> &middot; {KIT_NOW_LABEL}
+            {isKit ? `${KIT_SAVE_PREFIX} ${QUIZ_KIT_SAVING}` : BOTTLE_SAVE}
           </span>
           <div className="kitDealNow">
+            <s className="kitWas">{money(ONE_MONTH_PRICE)}</s>
             <span className="kitDealNum">{money(SINGLE_AFTER_DISCOUNT)}</span>
           </div>
           <p className="kitDealNote">
@@ -314,7 +321,7 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
         <div className="kitDeal2">
           <span className="kitDeal2Badge">{SUB_BEST_VALUE} &middot; {SUB_PILL}</span>
           <div className="kitDeal2Now">
-            <s>{money(ONE_MONTH_PRICE)}</s>
+            <s className="kitWas">{money(ONE_MONTH_PRICE)}</s>
             <span className="kitDeal2Num">{money(SUBSCRIBE_PRICE)}</span>
             <span className="kitDeal2Per">{KIT_SUB_PER}</span>
           </div>

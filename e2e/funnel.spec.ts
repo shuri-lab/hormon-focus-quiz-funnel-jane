@@ -436,7 +436,16 @@ test.describe('the quiz', () => {
        THE DEAL SHE IS BEING OFFERED. */
     const deal = lead.locator('.kitDeal');
     await expect(deal.locator('.kitDealNum')).toHaveText('$45.00');
-    await expect(deal.locator('.kitDealBadge')).toContainText('$49.99');
+    /* THE OLD PRICE IS IN THE PRICE ROW, 2 November, not in the badge. It
+       was legible only inside a 12.5px pill on a purple fill, which made it
+       the smallest type on the card for one of the two numbers that decide
+       the sale. Both boxes set it the same way now, so this asserts the
+       pairing rather than the pill. */
+    await expect(deal.locator('.kitWas')).toHaveText('$49.99');
+    await expect(deal.locator('.kitDealBadge'), 'the badge names the saving')
+      .toHaveText('Save 10%');
+    await expect(deal.locator('.kitDealBadge'), 'and not the old price')
+      .not.toContainText('$49.99');
     await expect(deal).toContainText('$1.50 a day');
     await expect(deal).toContainText('10% off applied at checkout');
     await expect(deal.locator('a.kitBtn')).toContainText('Get Hormone Focus');
@@ -447,7 +456,7 @@ test.describe('the quiz', () => {
        never also carry JJTEN: Shopify takes one discount parameter. */
     const deal2 = lead.locator('.kitDeal2');
     await expect(deal2.locator('.kitDeal2Num')).toHaveText('$39.99');
-    await expect(deal2.locator('.kitDeal2Now s')).toHaveText('$49.99');
+    await expect(deal2.locator('.kitWas')).toHaveText('$49.99');
     await expect(deal2).toContainText(/best value/i);
     await expect(deal2).toContainText(/20% off/i);
     await expect(deal2).toContainText(/pause or cancel anytime/i);
@@ -1631,3 +1640,35 @@ test.describe('the nurture artwork, reused on the offer page', () => {
       }
     });
 });
+
+test('both deal boxes strike the old price the same way, and legibly',
+  async ({ page }) => {
+    /* The struck price lived in the main box's badge at 12.5px on a purple
+       fill, so the smaller of the two boxes was the only place it could be
+       read. They match now. Asserted as RENDERED SIZE rather than as a class,
+       because "it is there" was true before and was not the problem. */
+    for (const slug of ['kit', 'offer-kit']) {
+      await page.goto(`/quiz/${slug}`);
+      const was = await page.locator('#kit-offer .kitWas').evaluateAll(
+        (els) => els.map((e) => ({
+          text: e.textContent,
+          px: Math.round(parseFloat(getComputedStyle(e).fontSize)),
+          /* The red diagonal is a pseudo-element, so its presence is the
+             honest check that the strike is the deliberate one. */
+          ruled: getComputedStyle(e, '::after').content !== 'none',
+        })),
+      );
+      expect(was.length, `${slug}: both boxes show what she is not paying`).toBe(2);
+      for (const w of was) {
+        expect(w.text, `${slug}: the old price`).toBe('$49.99');
+        expect(w.px, `${slug}: ${w.px}px is too small to read`).toBeGreaterThanOrEqual(20);
+        expect(w.ruled, `${slug}: no rule through the old price`).toBe(true);
+      }
+      /* And it sits beside the price it is struck against, not above it. */
+      const sameLine = await page.evaluate(() => {
+        const row = document.querySelector('.kitDealNow')!;
+        return row.querySelector('.kitWas') !== null && row.querySelector('.kitDealNum') !== null;
+      });
+      expect(sameLine, `${slug}: the old price is not in the price row`).toBe(true);
+    }
+  });
