@@ -580,3 +580,64 @@ export const KIT_CLOSE_HEAD = 'Your kit can be on its way today.';
 export const KIT_SHOT_ALT =
   'The Feel Like YOU Again Kit: one bottle of Hormone Focus, '
   + 'The 60-Day Hormone Fix, Hormone Healthy Recipes and the Daily Symptom Tracker';
+
+/* ------------------------------------- the one-bottle offer, variant B -- */
+
+/* THE MAIN FLOW SELLS ONE BOTTLE, 2 November 2026.
+ *
+ * The kit page is preserved at /quiz/offer-kit and is what this will be A/B'd
+ * against the day the kit has a Shopify variant and somebody to fulfil its
+ * three guides. Until then the walk ends on the thing the cart can actually
+ * deliver: one bottle.
+ *
+ * NO VALUE STACK HERE, and that is the point of the variant. There are no
+ * bonuses in this offer, so there is nothing to total; what she gets is one
+ * line, and the price is the bottle's own.
+ *
+ * DRAFT FOR JANE AND FOR COMPLIANCE, all four.
+ */
+
+export const BOTTLE_HERO_HEAD = 'Hormone Focus, your daily support';
+
+/* The brief wrote this with an em dash. House style has had none since
+   29 October, so the clause is a comma. */
+export const BOTTLE_HERO_SUB =
+  'Two capsules a day to help your body clear the extra estrogen, the first '
+  + 'step to feeling like you again.';
+
+/** In place of the kit's value stack: what is in the box, in one line. */
+export const BOTTLE_WHATYOUGET = 'One bottle of Hormone Focus. 60 capsules, two a day.';
+
+/**
+ * Over the three steps, on the bottle page only.
+ *
+ * It is what keeps steps two and three honest. On the kit page the guide and
+ * the recipes are things she is handed; here they are things she does, so the
+ * section has to say which of the two it means.
+ */
+export const BOTTLE_PLAN_LEAD =
+  'Your bottle is step one. Here is the rest of the plan to do alongside it.';
+
+/** The saving on the bottle, stated rather than summed from a value stack. */
+export const BOTTLE_SAVE = 'Save 10%';
+
+/** The product's own name, over the bottle in the card head. */
+export const HF_NAME = 'Hormone Focus';
+/** The label over the struck price, where the kit's reads "Total value". */
+export const BOTTLE_ONE_LABEL = 'One bottle';
+export const BOTTLE_SHOT_ALT = 'A bottle of Hormone Focus';
+
+/**
+ * THE BOTTLE'S OWN BUTTON, and its own batch line.
+ *
+ * "Get my Kit" over an offer that is one bottle is the same mistake as the
+ * kit's NAME over it: the page would be selling something it does not
+ * include. This is the label the page carried before the kit took it over on
+ * 29 October, so it is not new copy.
+ */
+export const BOTTLE_CTA = 'Get Hormone Focus';
+
+/** As kitBatchLine, counting what this page actually sells. */
+export const bottleBatchLine = (): string =>
+  `This batch: ${batchCount()} bottles on the shelf. `
+  + `The next batch lands in ${NEXT_BATCH}.`;

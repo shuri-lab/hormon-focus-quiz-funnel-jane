@@ -100,13 +100,15 @@
 /* ---------------------------------------------------------- kit page --- */
 
 /* A band runs edge to edge of the reading column's gutters. */
+/* ROOMIER, 2 November, David: 30/28 was not enough air for the bands to read
+   as separate sections, so they ran together as one long scroll. */
 .kitBand {
-  margin: 26px calc(var(--gutter) * -1) 0; padding: 30px var(--gutter) 28px;
+  margin: 30px calc(var(--gutter) * -1) 0; padding: 44px var(--gutter) 42px;
   background: var(--wash);
 }
 .kitBand.teal { background: #276f6c; color: #fff; }
 
-.kitSec { margin-top: 34px; }
+.kitSec { margin-top: 42px; }
 .kitEyebrow {
   margin: 0 0 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .18em;
   text-transform: uppercase; color: var(--plum-2); text-align: center;
@@ -1211,7 +1213,8 @@
  */
 
 /* Spacing, when a band replaces a .kitSec rather than wrapping one. */
-.kitBand.kitStrip, .kitBand.kitMech, .kitBand.kitClose { margin-top: 0; }
+.kitBand.kitStrip, .kitBand.kitMech, .kitBand.kitClose,
+.kitBand.kitPlan, .kitBand.kitMgSec { margin-top: 0; }
 
 /* The quiet alternate: barely a tint, enough to break the scroll. */
 .kitBand.surface { background: var(--surface-2); }
@@ -1578,3 +1581,75 @@
 /* The Read-all link jumps here, so the heading needs room to clear the top
    of the viewport rather than sitting flush against it. */
 .okZone { scroll-margin-top: 16px; }
+
+/* -- the bottle hero on a short screen ----------------------------------
+   MEASURED at 320x480 with the longest headline forced: the button sat 12px
+   under the fold, and 390x560 had 11px of slack, which is one font change
+   from none.
+
+   WHY IT NEEDED ITS OWN PASS. The caps on .kitHeroShot were set for a hero
+   that had no price block under the picture; the kit variant got its own
+   trimming on 29 October through .isKit, and the bottle kept the old ones.
+   A square shot is also taller than the kit's 4:3 at the same cap. */
+@media (max-height: 720px) {
+  .kitHeroShot:not(.isKit) { max-height: 14vh; }
+}
+@media (max-height: 520px) {
+  .kitHeroShot:not(.isKit) { max-height: 9vh; }
+}
+
+/* -- the nurture artwork, reused on the offer page ----------------------
+   The same three step icons and the same diagram she met on `plan` and
+   `meet` two screens earlier. Sized to this page's furniture, not theirs. */
+
+.kitSteps li {
+  grid-template-columns: 30px 44px 1fr;
+  gap: 2px 11px;
+}
+.kitStepIcon {
+  grid-row: span 2; align-self: center;
+  width: 44px; height: 44px; object-fit: contain;
+}
+
+/* The diagram under "it is your hormones", which is the picture of that
+   sentence. Capped well under the band's width: it is an aside here, where
+   on the `meet` screen it was the subject. */
+.kitMechHow {
+  display: block; width: 100%; max-width: 300px; height: auto;
+  margin: 16px auto 0; object-fit: contain;
+}
+
+@media (min-width: 560px) {
+  .kitSteps li { grid-template-columns: 30px 56px 1fr; }
+  .kitStepIcon { width: 56px; height: 56px; }
+}
+
+/* -- the white band -----------------------------------------------------
+   "It is not willpower. It is your hormones." sits on white so the diagram
+   under it, which is drawn on white, is part of the page rather than a box
+   on a tint. It also gives the two lilac bands either side of it, the plan
+   above and the label below, something to be. */
+.kitBand.white { background: var(--surface); }
+
+/* The diagram needs no frame of its own on white. */
+.kitBand.white .kitMechHow { margin-top: 20px; }
+
+/* Two bands of the same colour must never touch, or the join disappears and
+   they read as one very long section. */
+.kitBand + .kitBand { margin-top: 0; }
+.kitBand.white + .kitBand, .kitBand + .kitBand.white { margin-top: 0; }
+
+/* The ingredients, now a section of their own rather than the back half of
+   "why it works". */
+.kitMgSec .kitH3 { margin-top: 2px; }
+
+/* -- the artwork blends into its band -----------------------------------
+   These were generated on a near-white background, not on transparency, so
+   on any tint they show as a faint rectangle: a picture in a box rather than
+   a picture on the page. Multiply makes a white pixel take the colour under
+   it and leaves the drawing alone, so the same file sits correctly on the
+   white band and on the lilac one without needing two exports. */
+.kitMechHow, .kitStepIcon { mix-blend-mode: multiply; }
+
+/* The nurture screens' own copies, for the same reason. */
+.nFigImg, .nStepIcon, .nHow { mix-blend-mode: multiply; }

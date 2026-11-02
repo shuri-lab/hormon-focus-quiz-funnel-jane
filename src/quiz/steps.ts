@@ -31,6 +31,8 @@ export const STEP_SLUG: Record<ScreenId, string> = {
   plan: 'your-plan',
   meet: 'meet-hormone-focus',
   r2: 'kit',
+  /* The kit offer, off the flow and at its own address. See ScreenId. */
+  offerKit: 'offer-kit',
   rDoc: 'speak-to-your-doctor',
 };
 

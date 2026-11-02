@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { SHOT_KIT_BOTTLE } from '../../lib/offer';
+import { SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_STEPS } from '../../lib/offer';
 import { TILES, mainConcern, otherConcerns } from '../../lib/logic';
 import type { SymptomId } from '../../lib/logic';
 import {
@@ -44,15 +44,9 @@ function Rich({ children }: { children: string }): ReactNode {
  * slow connection gets it, and none of it has to be re-exported to fix a typo.
  */
 
-/* Beside the copy rather than in it: a file path is read by a browser and
-   never by her, so it has no business in a module the claim gate walks. */
+/* The step icons and the diagram moved to offer.ts on 2 November, so the
+   offer page can show the same pictures she met here. */
 const IMG_ESTROGEN = '/img/nurture-estrogen.webp';
-const IMG_HOW = '/img/nurture-how-it-works.webp';
-const IMG_STEPS = [
-  '/img/nurture-step-1-clear.webp',
-  '/img/nurture-step-2-eat.webp',
-  '/img/nurture-step-3-track.webp',
-];
 
 /* ------------------------------------------------------------- cause ---- */
 
@@ -118,7 +112,7 @@ export function RPlan() {
           <li key={what} className="nStep">
             <span className="nStepNum" aria-hidden="true">{i + 1}</span>
             <img
-              className="nStepIcon" src={IMG_STEPS[i]} alt={PLAN_STEP_ALTS[i]}
+              className="nStepIcon" src={SHOT_STEPS[i]} alt={PLAN_STEP_ALTS[i]}
               width={192} height={192} decoding="async"
             />
             <b className="nStepWhat">{what}</b>
@@ -167,7 +161,7 @@ export function RMeet() {
           width={800} height={800} decoding="async"
         />
         <img
-          className="nHow" src={IMG_HOW} alt={MEET_HOW_ALT}
+          className="nHow" src={SHOT_HOW_IT_WORKS} alt={MEET_HOW_ALT}
           width={768} height={512} decoding="async"
         />
       </div>

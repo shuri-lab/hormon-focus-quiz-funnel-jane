@@ -81,7 +81,10 @@ describe('the funnel speaks the names the dashboard listens for', () => {
 
     expect(propsOf('hf_quiz_completed').quiz_segment).toBe('menopause');
     expect(propsOf('hf_result_viewed').quiz_segment).toBe('menopause');
-    expect(propsOf('hf_offer_viewed').offer_variant).toBe('menopause');
+    /* offer_variant is the OFFER since 2 November, not the outcome: it used
+       to duplicate quiz_segment, and the A/B needs the name for its job. */
+    expect(propsOf('hf_offer_viewed').quiz_segment).toBe('menopause');
+    expect(propsOf('hf_offer_viewed').offer_variant).toBe('bottle');
   });
 });
 

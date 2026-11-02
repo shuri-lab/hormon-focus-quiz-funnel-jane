@@ -174,7 +174,9 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     if (here === 'cause' || here === 'plan' || here === 'meet') {
       track.nurtureView(here, stateKey(latest.current));
     }
-    if (here === 'r2') track.offerView(stateKey(latest.current));
+    /* BOTH OFFER ADDRESSES REPORT, so the A/B has two sides to compare. */
+    if (here === 'r2') track.offerView(stateKey(latest.current), 'bottle');
+    if (here === 'offerKit') track.offerView(stateKey(latest.current), 'kit');
     if (here === 'rDoc') track.doctorRoute(docReason(latest.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here]);

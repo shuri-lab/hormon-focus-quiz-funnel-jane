@@ -260,29 +260,37 @@ test.describe('the quiz', () => {
        own symptom read back ("Sleep through the night again."). She is
        still read back twice on this page: the eyebrow below is her stage,
        and "why it works" opens on the symptom she named. */
-    /* THREE ELEMENTS, 29 October: the kit's name folded into the headline,
-       where it had a plum line of its own between the eyebrow and the H1. */
-    await expect(heading(page)).toHaveText('Not just a bottle. The Feel Like YOU Again Kit.');
+    /* THE MAIN WALK ENDS ON ONE BOTTLE, 2 November. The kit page is
+       preserved at /quiz/offer-kit and is what this will be A/B'd against
+       once the kit has a Shopify variant and its guides are fulfilled; until
+       then the walk ends on the thing the cart can actually deliver. */
+    await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
     await expect(page.locator('.kitHeroSub'))
-      .toHaveText('The supplement, the recipes, the plan, and a tracker. '
-        + 'Everything you need to start.');
+      .toHaveText('Two capsules a day to help your body clear the extra estrogen, '
+        + 'the first step to feeling like you again.');
+    await expect(page.locator('.kitHeroShot'))
+      .toHaveAttribute('src', /kit-one-bottle/);
     await expect(page.locator('.kitHeroEyebrow')).toHaveText('Your result · Perimenopause');
     await expect(page.locator('.kitHeroLabel'), 'the kit-name line is folded into the H1')
       .toHaveCount(0);
 
-    /* THE PRICE IS A BLOCK, not a sentence. It read "$146.99 value — today
-       $45.00", which was vague and carried an em dash the house style has
-       since ruled out. The saving is asserted because it is the one number
-       on the page that is arithmetic rather than a constant. */
+    /* THE PRICE IS THE BOTTLE'S OWN. The kit variant totals a value stack,
+       $146.99 down to $45; there are no bonuses in this offer, so the only
+       honest version is one bottle struck from $49.99 to what she pays. */
     const price = page.locator('.kitHero .kitPrice');
-    await expect(price).toContainText('Total value');
-    await expect(price.locator('s')).toHaveText('$146.99');
+    await expect(price).toContainText('One bottle');
+    await expect(price.locator('s')).toHaveText('$49.99');
     await expect(price.locator('.kitPriceNow b')).toHaveText('$45.00');
-    await expect(price.locator('.kitPriceSave')).toHaveText('You save $101.99');
+    await expect(price.locator('.kitPriceSave')).toHaveText('Save 10%');
+    await expect(price, 'no kit value on the bottle page').not.toContainText('$146.99');
 
     /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
        rebuild: a button, the risk taken off it, and two forms of proof. */
-    await expect(page.locator('.kitHeroCta')).toHaveText(/Get my Kit/);
+    /* THE BOTTLE'S OWN LABEL. "Get my Kit" over an offer that is one bottle
+       would be selling something the page does not include, which is the same
+       mistake as the kit's name over it. This is what the button read before
+       the kit took it over on 29 October. */
+    await expect(page.locator('.kitHeroCta')).toHaveText(/Get Hormone Focus/);
     /* NO FREE-SHIPPING PROMISE, anywhere above the fold. It said so while the
        kit led this page and its link carried HF60FREESHIP; the bottle's link
        carries the 10% code instead and Shopify takes one of them. */
@@ -317,12 +325,15 @@ test.describe('the quiz', () => {
     for (const gone of ['Why 60 days', 'the supplement in the kit', 'One simple plan']) {
       expect(pageText, `"${gone}" still on the page`).not.toContain(gone);
     }
-    /* And the kit's own name IS here now, which is the reversal in one line. */
-    /* RENAMED 30 October: the 60-Day wording came off the kit's name. What
-       keeps its sixty days is the guarantee, which is a refund window, and
-       The 60-Day Hormone Fix, which is the ebook's own title. */
-    expect(pageText).toContain('The Feel Like YOU Again Kit');
-    expect(pageText, 'the old name is gone').not.toContain('60-Day Feel Like YOU Again');
+    /* THE KIT IS NOT ON THIS PAGE, 2 November. The main walk sells one
+       bottle; the kit lives at /quiz/offer-kit with its three guides and its
+       value stack, and the test below walks that address instead. Asserted
+       as absent, because the thing that would go wrong is the kit's name
+       appearing over an offer that does not include it. */
+    expect(pageText, 'the kit is not what this page sells')
+      .not.toContain('The Feel Like YOU Again Kit');
+    expect(pageText, 'and the old name is gone everywhere')
+      .not.toContain('60-Day Feel Like YOU Again');
 
     /* Her symptom still keys the page, in the two places that are left. */
     await expect(page.locator('.kitMech .kitBody').first())
@@ -428,7 +439,7 @@ test.describe('the quiz', () => {
     await expect(deal.locator('.kitDealBadge')).toContainText('$49.99');
     await expect(deal).toContainText('$1.50 a day');
     await expect(deal).toContainText('10% off applied at checkout');
-    await expect(deal.locator('a.kitBtn')).toContainText('Get my Kit');
+    await expect(deal.locator('a.kitBtn')).toContainText('Get Hormone Focus');
     await expect(deal.locator('a.kitBtn'))
       .toHaveAttribute('href', /cart\/41200079175791:1.*discount=JJTEN/);
 
@@ -458,17 +469,15 @@ test.describe('the quiz', () => {
       .not.toContainText(/free shipping/i);
     await expect(deal2, 'the subscription does').toContainText(/free shipping/i);
 
-    /* THE VALUE STACK, REBUILT 30 October in the shape of Jane's own: the
-       inclusions ticked, the three bonuses as cards carrying their artwork,
-       and a struck total. The red diagonal on every value is the point of
-       the block, so the markers are asserted rather than the styling. */
-    const vs = lead.locator('.kitVs');
-    await expect(vs.locator('.kitVsList li'), 'the bottle and the guarantee').toHaveCount(2);
-    await expect(vs.locator('.kitVsBonus'), 'the three bonuses').toHaveCount(3);
-    await expect(vs.locator('.kitVsBonus img'), 'each bonus shows what it is').toHaveCount(3);
-    await expect(vs.locator('.kitVsTotalV')).toHaveText('$146.99');
-    /* Every price in the stack is struck: it is what she is NOT paying. */
-    await expect(vs.locator('.kitVsVal.struck, .kitVsTotalV.struck')).toHaveCount(5);
+    /* NO VALUE STACK ON THE BOTTLE, which is the point of the variant.
+       There are no bonuses in this offer, so there is nothing to total, and
+       a stack here would be a value claim with nothing behind it. What she
+       gets is one line. The kit's stack is asserted on its own page. */
+    await expect(lead.locator('.kitVs'), 'the kit stack is not on the bottle page')
+      .toHaveCount(0);
+    await expect(lead.locator('.kitBottleSupply'))
+      .toHaveText('One bottle of Hormone Focus. 60 capsules, two a day.');
+    await expect(lead, 'and no kit value anywhere on the card').not.toContainText('$146.99');
 
     /* The old radio group is gone, and so is the second card before it. */
     await expect(page.locator('.kitQuiet'), 'the second card').toHaveCount(0);
@@ -521,7 +530,7 @@ test.describe('the quiz', () => {
     await expect(page.locator('.kitFaq details')).toHaveCount(6);
     /* The closer buys what the page leads with, which is the bottle now, so
        it carries the 10% code rather than the kit's free-shipping one. */
-    await expect(page.locator('a[data-close]')).toHaveText(/Get my Kit/);
+    await expect(page.locator('a[data-close]')).toHaveText(/Get Hormone Focus/);
     await expect(page.locator('a[data-close]'))
       .toHaveAttribute('href', /41200079175791:1.*discount=JJTEN/);
     /* And its note says the price she is charged, with no free shipping on
@@ -591,7 +600,7 @@ test.describe('the quiz', () => {
        she came for. 'Start with these 3 for hot flashes' until 16 October. */
     /* The kit's headline, as on every other entry to this page since
        29 October. It was her own symptom until then. */
-    await expect(heading(page)).toHaveText('Not just a bottle. The Feel Like YOU Again Kit.');
+    await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitDealNum')).toHaveText('$45.00');
     /* Same four whatever she answered — see the note on the lead review above. */
@@ -702,10 +711,13 @@ test.describe('the addresses', () => {
     ['whats-happening', 'The real problem is too much estrogen.'],
     ['your-plan', 'Three simple things. That is the whole plan.'],
     ['meet-hormone-focus', 'Meet Hormone Focus.'],
-    /* The hero headline, with no answers behind it. It was
-       'Start with these 3' until the 16 October rebuild and her own symptom
-       until the kit took the hero on 29 October. */
-    ['kit', 'Not just a bottle. The Feel Like YOU Again Kit.'],
+    /* The main offer, which sells ONE BOTTTLE since 2 November: it is what
+       Shopify can deliver today. It was 'Start with these 3' until the
+       16 October rebuild, her own symptom until 29 October, and the kit
+       until the A/B was set up. */
+    ['kit', 'Hormone Focus, your daily support'],
+    /* And the kit, preserved whole at its own address, off the flow. */
+    ['offer-kit', 'Not just a bottle. The Feel Like YOU Again Kit.'],
     ['speak-to-your-doctor', 'Talk to your healthcare professional'],
   ] as const;
 
@@ -875,8 +887,11 @@ test.describe('the kit page', () => {
           ['the customer photos', '[data-proof="rail"]'],
           ['the review teaser', '.kitTeaser'],
           ['who JJ is', '.kitWho'],
-          ['why it works', '.kitMech'],
+          /* THE PLAN LEADS, 2 November. She arrives from the `plan` screen,
+             so the page picks that thread up before explaining the
+             mechanism again. */
           ['the plan', '.kitPlan'],
+          ['why it works', '.kitMech'],
           ['the offer', '#kit-offer'],
           ['guarantee', '.kitPromise'],
           ['the review wall', '#all-reviews'],
@@ -954,12 +969,17 @@ test.describe('the kit page', () => {
       }
     });
 
-  test('the page sells the kit and still checks out as the bottle',
+  test('the kit page sells the kit and still checks out as the bottle',
     async ({ page }) => {
-      /* THE GAP THIS PAGE SHIPS WITH, 29 October, and it is deliberate.
-         The page is the 60-Day Kit: the name, the three bonuses, a $146.99
-         value stack. The kit has no Shopify variant yet, so every button
-         still buys the single bottle, 41200079175791.
+      /* THE KIT PAGE, AT ITS OWN ADDRESS SINCE 2 November. It is off the
+         flow: the walk ends on the one-bottle offer, and this is preserved
+         whole, ready to A/B the day the kit has a Shopify variant and
+         somebody to fulfil its guides.
+
+         THE GAP IT SHIPS WITH, and it is deliberate. The page is the kit:
+         the name, the three bonuses, a $146.99 value stack. The kit has no
+         Shopify variant yet, so every button still buys the single bottle,
+         41200079175791. Which is exactly why it is not in the flow.
 
          ASSERTED RATHER THAN ONLY WRITTEN DOWN, because the day the kit
          does get a variant this test is the thing that says which links
@@ -970,7 +990,7 @@ test.describe('the kit page', () => {
          THE BONUSES ARE A FULFILMENT PROMISE THE CART DOES NOT KEEP. That
          is a question for the store, not for this file; what this file can
          do is make sure nobody thinks it is already solved. */
-      await page.goto('/quiz/kit');
+      await page.goto('/quiz/offer-kit');
       /* SCOPED, because the price block is deliberately in two places since
          29 October: once under the hero and once in the card. */
       await expect(page.locator('#kit-offer').getByText('Total value'), "the kit's value stack")
@@ -1184,10 +1204,10 @@ test.describe('the kit page', () => {
       expect(await n('.kitPlan'), 'the plan section').toBe(1);
       expect(await n('.kitSteps li'), 'its three steps').toBe(3);
       /* The value stack, which the bottle-only page did not have. */
-      /* The stack is the kit's own block since 30 October, not the shared
-         ValueStack: two ticked inclusions and three bonus cards. */
-      expect(await n('#kit-offer .kitVsList li'), 'the ticked inclusions').toBe(2);
-      expect(await n('#kit-offer .kitVsBonus'), 'the bonus cards').toBe(3);
+      /* The value stack moved to the kit's own page on 2 November: the main
+         offer sells one bottle and has nothing to total. Its rows are
+         asserted in the kit page's own test. */
+      expect(await n('#kit-offer .kitVs'), 'no kit stack on the bottle offer').toBe(0);
       expect(await n('.kitMg > div'), 'the three ingredients').toBe(3);
       expect(await n('a[href*="shop.jjsmithonline.com"]'), 'the buy links').toBe(3);
 
@@ -1454,4 +1474,160 @@ test.describe('the pre-offer screens', () => {
     await expect(page.locator('a[href*="shop.jjsmithonline.com"]'), 'no buy link')
       .toHaveCount(0);
   });
+});
+
+/* ------------------------------------------- the offer A/B, 2 November -- */
+
+test.describe('the two offers', () => {
+  test('the walk ends on the bottle, and the kit waits at its own address',
+    async ({ page }) => {
+      /* THE SPLIT. /quiz/kit is the main offer and sells ONE BOTTLE, which is
+         what Shopify can deliver today. /quiz/offer-kit is the kit page kept
+         whole for the A/B, and it is off the flow because its buttons buy a
+         single bottle while the page promises three guides nobody is
+         fulfilling yet. */
+      await page.goto('/quiz/meet-hormone-focus');
+      await page.locator('.actionBar .cta').click();
+      await expect(page, 'the walk must end on the main offer').toHaveURL(/\/quiz\/kit$/);
+      await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
+
+      /* And forward from the kit page is nowhere: it is not in the sequence,
+         so there is no Continue to press. */
+      await page.goto('/quiz/offer-kit');
+      await expect(heading(page)).toHaveText('Not just a bottle. The Feel Like YOU Again Kit.');
+      await expect(page.locator('.segbar i.on'), 'the kit page is not a step in the walk')
+        .toHaveCount(0);
+    });
+
+  test('both offers send her to the same two carts', async ({ page }) => {
+    /* NOTHING ABOUT WHERE THE BUTTONS GO CHANGED when the page split. Both
+       variants buy the single bottle with JJTEN or the subscription without
+       it; the kit's own variant does not exist yet, and the day it does,
+       this is the test that says which links have to move. */
+    for (const slug of ['kit', 'offer-kit']) {
+      await page.goto(`/quiz/${slug}`);
+      const links = await page.locator('#kit-offer a[href*="shop.jjsmithonline.com"]')
+        .evaluateAll((as) => as.map((a) => ({
+          offer: (a as HTMLAnchorElement).dataset.offer,
+          href: (a as HTMLAnchorElement).href,
+        })));
+
+      expect(links.map((l) => l.offer), `${slug}: the two deal boxes`)
+        .toEqual(['single', 'subscribe']);
+      expect(links[0].href, `${slug}: the bottle carries the code`)
+        .toMatch(/cart\/41200079175791:1.*discount=JJTEN/);
+      expect(links[1].href, `${slug}: the subscription carries its plan`)
+        .toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
+      expect(links[1].href, `${slug}: JJTEN must not ride the subscription`)
+        .not.toContain('JJTEN');
+      await expect(page.locator(`a[href*="54330638663791"]`), `${slug}: the two-bottle variant`)
+        .toHaveCount(0);
+    }
+  });
+
+  test('each offer reports which one it is, so the A/B can be read later',
+    async ({ page }) => {
+      /* offer_variant used to carry the quiz outcome, which quiz_segment on
+         the same event already carried. It names the offer now, which is the
+         one property the A/B cannot be read without. */
+      for (const [slug, variant] of [['kit', 'bottle'], ['offer-kit', 'kit']]) {
+        await page.goto(`/quiz/${slug}`);
+        await page.waitForTimeout(400);
+        const sent = await page.evaluate(() => (window as unknown as {
+          dataLayer?: { event?: string; offer_variant?: string }[];
+        }).dataLayer?.filter((e) => e.event === 'view_offer') ?? []);
+        expect(sent.length, `${slug}: view_offer did not fire`).toBe(1);
+        expect(sent[0].offer_variant, `${slug} reported the wrong variant`).toBe(variant);
+      }
+    });
+
+  test('the bottle offer promises nothing the cart does not ship', async ({ page }) => {
+    /* THE REASON THE SPLIT EXISTS. The kit page prices three guides at $97 of
+       its $146.99 and Shopify ships one bottle. The main offer must not carry
+       any of that: no value total, no bonus rows, no guide names. */
+    await page.goto('/quiz/kit');
+    const card = page.locator('#kit-offer');
+    await expect(card.locator('.kitVs'), 'the value stack').toHaveCount(0);
+    await expect(card.locator('.kitVsBonus'), 'the bonus cards').toHaveCount(0);
+    for (const promise of ['$146.99', 'Total value', 'The 60-Day Hormone Fix',
+      'Hormone Healthy Recipes', 'The Daily Symptom Tracker']) {
+      await expect(card, `"${promise}" is on the bottle offer`).not.toContainText(promise);
+    }
+    /* What it does say is what is in the box. */
+    await expect(card).toContainText('One bottle of Hormone Focus. 60 capsules, two a day.');
+    /* And the plan reads as things she does, not things she is handed. */
+    await expect(page.locator('.kitPlanLead'))
+      .toHaveText('Your bottle is step one. Here is the rest of the plan to do alongside it.');
+
+    /* EVERY BUTTON AND EVERY LINE NAMES THE BOTTLE, not the kit. The batch
+       line counts bottles here and kits on the kit page. */
+    for (const sel of ['.kitHeroCta', '#kit-offer .kitDeal a.kitBtn', 'a[data-close]']) {
+      await expect(page.locator(sel).first(), `${sel} offers the kit`)
+        .not.toContainText(/Kit/);
+    }
+    await expect(page.locator('.kitBatch')).toContainText('bottles on the shelf');
+  });
+});
+
+test.describe('the nurture artwork, reused on the offer page', () => {
+  test('both offers show the same pictures she met two screens earlier',
+    async ({ page }) => {
+      /* DAVID, 2 November: use those assets on the offer page too. It is the
+         right call twice over. She has already seen them on `plan` and
+         `meet`, so they read as the same plan rather than as new
+         information, and they are in her cache, so showing them again costs
+         nothing.
+
+         Asserted on BOTH variants, because the sections carrying them are
+         shared markup and a variant that lost them would be a silent
+         regression on one page only. */
+      for (const slug of ['kit', 'offer-kit']) {
+        await page.goto(`/quiz/${slug}`);
+        await page.evaluate(async () => {
+          const h = document.body.scrollHeight;
+          for (let y = 0; y < h; y += 400) {
+            window.scrollTo(0, y);
+            await new Promise((r) => { setTimeout(r, 60); });
+          }
+        });
+        await page.waitForTimeout(1200);
+
+        /* The three step icons, in order, on the plan. */
+        const icons = await page.locator('.kitStepIcon').evaluateAll(
+          (els) => els.map((e) => ({
+            file: (e as HTMLImageElement).currentSrc.split('/').pop() ?? '',
+            loaded: (e as HTMLImageElement).naturalWidth > 0,
+            alt: (e as HTMLImageElement).alt,
+          })),
+        );
+        expect(icons.map((i) => i.file), `${slug}: the three step icons`).toEqual([
+          'nurture-step-1-clear.webp',
+          'nurture-step-2-eat.webp',
+          'nurture-step-3-track.webp',
+        ]);
+        for (const i of icons) {
+          expect(i.loaded, `${slug}: ${i.file} did not load`).toBe(true);
+          expect(i.alt.length, `${slug}: ${i.file} has no alt text`).toBeGreaterThan(3);
+        }
+
+        /* And the diagram from `meet`, under "it is your hormones". */
+        const how = page.locator('.kitMechHow');
+        await expect(how, `${slug}: the diagram`).toHaveAttribute('src', /nurture-how-it-works/);
+        expect(
+          await how.evaluate((e) => (e as HTMLImageElement).naturalWidth > 0),
+          `${slug}: the diagram did not load`,
+        ).toBe(true);
+
+        /* The plan comes before the mechanism it illustrates. */
+        const order = await page.evaluate(() => {
+          const at = (sel: string) => {
+            const el = document.querySelector(sel);
+            return el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;
+          };
+          return { plan: at('.kitPlan'), mech: at('.kitMech') };
+        });
+        expect(order.plan, `${slug}: the plan is missing`).toBeGreaterThan(0);
+        expect(order.plan, `${slug}: the plan no longer leads`).toBeLessThan(order.mech);
+      }
+    });
 });

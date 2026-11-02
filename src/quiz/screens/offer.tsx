@@ -27,6 +27,7 @@ import { INGREDIENTS } from '../../lib/offerCopy';
    one of the plan being the dose. CLOSE_HEAD said "Your first bottle"; the
    kit's closer replaces it. All six are still exported and still gated. */
 import {
+  BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_HERO_SUB, BOTTLE_PLAN_LEAD, BOTTLE_SHOT_ALT,
   CLOSE_CTA, HERO_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
   KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD, KIT_HERO_HEAD,
   KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD,
@@ -36,8 +37,13 @@ import {
   TRUST_LEAD,
   WHY_OPENER, WHY_PRODUCT, WHY_STAGE,
 } from '../../lib/kitCopy';
-import { KitGuarantee, KitOffer, KitPrice, kitHref } from '../../components/KitOffer';
-import { SHOT_KIT_HERO } from '../../lib/offer';
+import {
+  BottlePrice, KitGuarantee, KitOffer, KitPrice, kitHref,
+} from '../../components/KitOffer';
+import {
+  SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_KIT_HERO, SHOT_STEPS,
+} from '../../lib/offer';
+import { MEET_HOW_ALT, PLAN_STEP_ALTS } from '../../lib/nurtureCopy';
 import { track } from '../../lib/analytics';
 import { useHydrated } from '../../lib/useHydrated';
 
@@ -87,7 +93,27 @@ type Stage = keyof typeof HERO_EYEBROW;
 const stageOf = (outcome: string): Stage =>
   (outcome in HERO_EYEBROW ? outcome as Stage : 'A');
 
-export function R2() {
+/**
+ * THE OFFER PAGE, IN TWO VARIANTS. 2 November 2026.
+ *
+ *   'bottle'  the main walk's ending, at /quiz/kit. One bottle, which is what
+ *             Shopify can actually deliver today.
+ *   'kit'     today's kit page, preserved whole at /quiz/offer-kit, ready to
+ *             A/B the day the kit has its own variant and its guides are
+ *             fulfilled.
+ *
+ * ONLY THREE THINGS SWITCH: the hero, the hero's price block, and the offer
+ * card. Everything else on this page, the rails, the proof, why it works, the
+ * plan, the guarantee, the wall, the questions, the closer and the sticky
+ * bar, is the same markup for both, which is the whole reason this is one
+ * component and not two pages.
+ */
+export function R2({ variant = 'kit', screen = 'r2' }: {
+  variant?: 'bottle' | 'kit';
+  /** Which address rendered it, so <Screen> keys its focus reset correctly. */
+  screen?: 'r2' | 'offerKit';
+} = {}) {
+  const isKit = variant === 'kit';
   const { S, angle } = useQuiz();
   const outcome = stateKey(S);
   const main = mainConcern(S);
@@ -148,7 +174,7 @@ export function R2() {
   });
 
   return (
-    <Screen id="r2">
+    <Screen id={screen}>
       {/* ------------------------------------------------- 1. the hero ----
           THE KIT, NOT THE BOTTLE, from 29 October. Her stage, the package by
           name, what is in it, the picture of all four pieces, the rating,
@@ -164,18 +190,31 @@ export function R2() {
             the eyebrow and the headline, which made four stacked lines before
             she reached the picture. The name is in the headline now. */}
         <p className="kitHeroEyebrow">{HERO_EYEBROW[stageOf(outcome)]}</p>
-        <ScreenTitle className="kitHeroH1">{KIT_HERO_HEAD}</ScreenTitle>
-        <p className="kitHeroSub">{KIT_HERO_SUB}</p>
+        <ScreenTitle className="kitHeroH1">
+          {isKit ? KIT_HERO_HEAD : BOTTLE_HERO_HEAD}
+        </ScreenTitle>
+        <p className="kitHeroSub">{isKit ? KIT_HERO_SUB : BOTTLE_HERO_SUB}</p>
 
         {/* 4:3, WHERE THE BOTTLE WAS SQUARE, and it carries its own name,
             tagline and price in the artwork. Everything printed into it is
             also on the page as text, which is what a screen reader, a slow
             connection and a 320px phone each need. */}
-        <img
-          className="kitHeroShot isKit" src={SHOT_KIT_HERO}
-          alt={KIT_SHOT_ALT}
-          width={768} height={576} decoding="async" fetchPriority="high"
-        />
+        {/* THE COMPOSITE OR THE BOTTLE. The kit shot is 4:3 and carries four
+            products; the bottle is square and carries one, so it keeps the
+            square sizing the hero was built around before the kit. */}
+        {isKit
+          ? (
+            <img
+              className="kitHeroShot isKit" src={SHOT_KIT_HERO} alt={KIT_SHOT_ALT}
+              width={768} height={576} decoding="async" fetchPriority="high"
+            />
+          )
+          : (
+            <img
+              className="kitHeroShot" src={SHOT_KIT_BOTTLE} alt={BOTTLE_SHOT_ALT}
+              width={800} height={800} decoding="async" fetchPriority="high"
+            />
+          )}
 
         {/* THE RATING ALONE. The hero's one woman in her own words moved to
             the proof block directly below, where the other three already
@@ -186,10 +225,10 @@ export function R2() {
           <RatingBadge />
         </div>
 
-        <KitPrice />
+        {isKit ? <KitPrice /> : <BottlePrice />}
 
         <button type="button" className="cta kitBtn kitHeroCta" onClick={toOffer}>
-          {HERO_CTA} &nbsp;&rarr;
+          {isKit ? HERO_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </button>
         <p className="kitHeroRisk">{HERO_RISK}</p>
       </section>
@@ -230,6 +269,46 @@ export function R2() {
         </section>
       )}
 
+      {/* --------------------------------------------- 4. the plan ----
+          MOVED ABOVE "why it works", 2 November, David. She arrives from the
+          `plan` screen, which told her there are three simple things; this
+          is the page picking that thread up first and explaining the
+          mechanism second, rather than making her read the mechanism again
+          before it says what to do.
+
+          AND IT CARRIES THE SAME THREE PICTURES she met two screens ago. She
+          has seen them, so they read as the same plan rather than as new
+          information, and they are already in her cache.
+
+          IT IS ALSO THE DOSAGE SECTION. .kitHow held two sentences of "how to
+          take it" while the page sold a bottle alone; step one here is that
+          same instruction. HOW_HEAD and HOW_BODY are still exported and
+          still gated. */}
+      <section className="kitBand kitPlan">
+        <p className="kitEyebrow">{PLAN_EYEBROW}</p>
+        <h2 className="kitH2">{PLAN_HEAD}</h2>
+        {/* ON THE BOTTLE PAGE ONLY. Steps two and three are the guide and the
+            recipes on the kit page, which she is handed; here they are things
+            she does herself, and the section has to say which it means. */}
+        {!isKit && <p className="kitBody kitPlanLead">{BOTTLE_PLAN_LEAD}</p>}
+        <ol className="kitSteps">
+          {([
+            [PLAN_STEP_1, PLAN_STEP_1_BODY],
+            [PLAN_STEP_2, PLAN_STEP_2_BODY],
+            [PLAN_STEP_3, PLAN_STEP_3_BODY],
+          ] as const).map(([what, body], i) => (
+            <li key={what}>
+              <img
+                className="kitStepIcon" src={SHOT_STEPS[i]} alt={PLAN_STEP_ALTS[i]}
+                width={192} height={192} loading="lazy" decoding="async"
+              />
+              <b>{what}</b>
+              <span>{body}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       {/* ------------------------------------------- 4. why it works ----
           Her symptom, the stage it belongs to, and the one thing the product
           is said to do, then the label.
@@ -240,7 +319,11 @@ export function R2() {
           wrong for the two outcomes that are not perimenopause: C is after
           her periods have stopped and E is early menopause. The approved
           per-stage sentences say the same thing to each of them. */}
-      <section className="kitBand kitMech">
+      {/* WHITE, 2 November. The diagram under it is drawn on white, so on a
+          lilac band it sat in a visible box of its own; on white it is part
+          of the page. It also gives the lilac either side of it something to
+          be: the plan above and the label below. */}
+      <section className="kitBand white kitMech">
         <p className="kitEyebrow">{MECH_EYEBROW}</p>
         <h2 className="kitH2">{MECH_HEAD}</h2>
         <p className="kitBody">
@@ -249,7 +332,23 @@ export function R2() {
         </p>
         <p className="kitBody">{WHY_PRODUCT}</p>
 
-        <p className="kitEyebrow kitMgEyebrow">{HF_EYEBROW}</p>
+        {/* THE SAME DIAGRAM AS THE `meet` SCREEN: clustered estrogen broken
+            up and shown out. It is the picture of the sentence above it, and
+            she met it two screens ago. */}
+        <img
+          className="kitMechHow" src={SHOT_HOW_IT_WORKS} alt={MEET_HOW_ALT}
+          width={768} height={512} loading="lazy" decoding="async"
+        />
+
+      </section>
+
+      {/* ------------------------------------------- 6. what is in it ----
+          ITS OWN SECTION SINCE 2 November, where it was the back half of
+          "why it works". Two headings in one band read as one long block;
+          split, the label gets its own band and the mechanism above it gets
+          the white. */}
+      <section className="kitBand kitMgSec">
+        <p className="kitEyebrow">{HF_EYEBROW}</p>
         <h3 className="kitH3">{HF_HEAD}</h3>
         <div className="kitMg">
           {INGREDIENTS.map(([dose, name, what]) => (
@@ -259,31 +358,6 @@ export function R2() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ------------------------------------------------- 5. the plan ----
-          BACK, AND IT IS THE DOSAGE SECTION NOW. .kitHow held two sentences
-          of "how to take it" while the page sold a bottle on its own; step
-          one here is that same instruction, and steps two and three are the
-          guide, the recipes and the tracker she is now being sold with it.
-          HOW_HEAD and HOW_BODY are still exported and still gated. */}
-      <section className="kitSec kitPlan">
-        <p className="kitEyebrow">{PLAN_EYEBROW}</p>
-        <h2 className="kitH2">{PLAN_HEAD}</h2>
-        <ol className="kitSteps">
-          <li>
-            <b>{PLAN_STEP_1}</b>
-            <span>{PLAN_STEP_1_BODY}</span>
-          </li>
-          <li>
-            <b>{PLAN_STEP_2}</b>
-            <span>{PLAN_STEP_2_BODY}</span>
-          </li>
-          <li>
-            <b>{PLAN_STEP_3}</b>
-            <span>{PLAN_STEP_3_BODY}</span>
-          </li>
-        </ol>
       </section>
 
       {/* ONE WOMAN IN HER OWN WORDS, DIRECTLY ABOVE THE PRICE. David, 30
@@ -298,7 +372,7 @@ export function R2() {
           the package, shows it, proves it and explains it before it asks.
           Same card, same two options, SAME CART LINKS. */}
       <section className="kitBand offer" ref={offer}>
-        <KitOffer outcome={outcome} angle={angle.slug} />
+        <KitOffer outcome={outcome} angle={angle.slug} variant={variant} />
       </section>
 
       {/* -------------------------------------------- 7. the guarantee ----
@@ -375,7 +449,7 @@ export function R2() {
           className="cta kitBtn" href={href} data-offer="single" data-close
           onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'quiz-kit-close')}
         >
-          {CLOSE_CTA} &nbsp;&rarr;
+          {isKit ? CLOSE_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </a>
         <p className="kitNote">
           {money(SINGLE_AFTER_DISCOUNT)} · {SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee
@@ -397,7 +471,7 @@ export function R2() {
               decide for her from a bar she half-read. The buy events still
               come from the cards themselves, so nothing double-counts. */}
           <button type="button" className="cta kitBtn" data-sticky onClick={toOffer}>
-            {STICKY_CTA}
+            {isKit ? STICKY_CTA : BOTTLE_CTA}
           </button>
         </div>
       ), document.body)}

@@ -358,10 +358,22 @@ export const track = {
     ph('hf_nurture_viewed', { screen, quiz_segment: outcome });
   },
 
-  offerView(outcome: string) {
-    push('view_offer', { outcome });
+  /**
+   * The offer page opened, and WHICH offer it was.
+   *
+   * offer_variant NOW MEANS THE OFFER, 2 November 2026. It carried the quiz
+   * outcome, which quiz_segment on the same event already carried: the two
+   * were the same string under two names, so nothing is lost by giving this
+   * one the job its name describes. The A/B needs exactly this property.
+   *
+   * WORTH KNOWING WHEN READING THE DASHBOARD: rows before this date have
+   * 'perimenopause', 'menopause' and the rest in offer_variant. Filter on
+   * 'bottle' or 'kit' rather than on "not null".
+   */
+  offerView(outcome: string, variant: 'bottle' | 'kit' = 'bottle') {
+    push('view_offer', { outcome, offer_variant: variant });
     meta('ViewContent', { content_name: 'offer', content_category: outcome }, true);
-    ph('hf_offer_viewed', { offer_variant: outcome, quiz_segment: outcome });
+    ph('hf_offer_viewed', { offer_variant: variant, quiz_segment: outcome });
   },
 
   /** The Starter Guide page, by archetype. Her own plan, before any email. */

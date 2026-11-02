@@ -217,7 +217,20 @@ export function stateKey(S: QuizState): Outcome {
 export type ScreenId =
   | 'q1' | 'q2' | 'q3' | 'q4' | 'q4b' | 'q5' | 'q6' | 'q7'
   | 'load' | 'gate'
-  | 'r1' | 'cause' | 'plan' | 'meet' | 'r2' | 'rDoc';
+  | 'r1' | 'cause' | 'plan' | 'meet' | 'r2' | 'rDoc'
+  /**
+   * THE KIT OFFER, KEPT OUT OF THE FLOW. 2 November 2026.
+   *
+   * The main walk ends on r2, which sells one bottle. The kit page is the
+   * same screen at variant='kit' and lives at its own address so it is ready
+   * to A/B the day the kit has a Shopify variant of its own and somebody to
+   * fulfil its three guides.
+   *
+   * DELIBERATELY ABSENT from FLOW, REVEAL and AFTER_CYCLE: it is reachable
+   * by its URL and is never walked to, never counted in the progress bar,
+   * and never reached by next() or back().
+   */
+  | 'offerKit';
 
 /* THREE SCREENS BETWEEN THE RESULT AND THE OFFER, 29 October 2026.
  *
@@ -313,6 +326,10 @@ export function shouldSkip(S: QuizState, id: ScreenId): boolean {
 
 /** The next screen after `from`, skipping whatever this state skips. */
 export function nextId(S: QuizState, from: ScreenId): ScreenId | undefined {
+  /* A SCREEN THAT IS NOT IN THE FLOW HAS NO NEXT. Without this, indexOf
+     returns -1, the +1 below makes it 0, and "forward" from an off-flow
+     address is the first question of the quiz. */
+  if (!FLOW.includes(from)) return undefined;
   let i = FLOW.indexOf(from) + 1;
   while (i < FLOW.length && shouldSkip(S, FLOW[i])) i++;
   return FLOW[i];
@@ -320,6 +337,7 @@ export function nextId(S: QuizState, from: ScreenId): ScreenId | undefined {
 
 /** The previous screen before `from`, skipping whatever this state skips. */
 export function prevId(S: QuizState, from: ScreenId): ScreenId | undefined {
+  if (!FLOW.includes(from)) return undefined;
   let i = FLOW.indexOf(from) - 1;
   while (i > 0 && shouldSkip(S, FLOW[i])) i--;
   return i >= 0 ? FLOW[i] : undefined;

@@ -237,6 +237,21 @@ export const QUIZ_KIT_SAVING = money(QUIZ_KIT_VALUE_NUM - SINGLE_AFTER_DISCOUNT)
 /** The kit shot for the quiz page's hero: the bottle and all three pieces. */
 export const SHOT_KIT_HERO = '/img/kit-60-day-hero.webp';
 
+/* THE NURTURE SCREENS' ARTWORK, SHARED WITH THE OFFER PAGE. 2 November.
+ *
+ * These were local paths inside nurture.tsx. David asked for the same
+ * pictures on the offer page, which is the right call twice over: she has
+ * already seen them two screens earlier, so they carry a thread rather than
+ * decorating, and they are in her cache, so they cost nothing to show again.
+ *
+ * Here rather than in kitCopy.ts because a file path is read by a browser and
+ * never by her, so it has no business in a module the claim gate walks. */
+export const SHOT_STEP_CLEAR = '/img/nurture-step-1-clear.webp';
+export const SHOT_STEP_EAT = '/img/nurture-step-2-eat.webp';
+export const SHOT_STEP_TRACK = '/img/nurture-step-3-track.webp';
+export const SHOT_HOW_IT_WORKS = '/img/nurture-how-it-works.webp';
+export const SHOT_STEPS: string[] = [SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK];
+
 /* The two strings the kit's own rows need. They live here rather than in
    kitCopy.ts because kitCopy imports from this file; kitCopy re-exports them
    under the names the page already uses, so there is one source and no cycle.

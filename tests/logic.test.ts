@@ -12,7 +12,8 @@ import { test, expect } from 'vitest';
 
 import {
   createState, stateKey, periScore, path, shouldSkip, mainConcern, otherConcerns, masked,
-  docReason, seesOffer, OFFER_OUTCOMES, QUESTION_NUMBER, QUESTION_TOTAL,
+  docReason, seesOffer, nextId, prevId, FLOW, REVEAL,
+  OFFER_OUTCOMES, QUESTION_NUMBER, QUESTION_TOTAL,
   type QuizState, type Age, type Cycle, type Twelve, type ScreenId, type Outcome,
 } from '../src/lib/logic';
 
@@ -379,4 +380,44 @@ test('the doctor route sees none of them, the same way it sees no offer', () => 
     }
     expect(seen.at(-1), 'the doctor route ends at rDoc').toBe('rDoc');
   }
+});
+
+/* ------------------------------------------- the offer A/B, 2 November -- */
+
+test('the kit offer is reachable only by its address, never by walking', () => {
+  /* THE WHOLE POINT OF 'offerKit'. The main walk ends on r2, which sells one
+     bottle, because that is what Shopify can deliver today. The kit page is
+     preserved at its own address ready for the A/B, and it must never be
+     walked into: its buttons buy a single bottle while the page promises
+     three guides nobody is fulfilling yet.
+
+     So it is in no sequence. Asserted against every state that sees an
+     offer, not just one, because a screen slipped into FLOW would otherwise
+     only show up for whichever outcome somebody happened to test. */
+  expect(FLOW, 'offerKit must not be in the flow').not.toContain('offerKit');
+  expect(REVEAL, 'offerKit must not be counted by the progress bar')
+    .not.toContain('offerKit');
+
+  for (const [age, cycle, twelve] of [
+    ['40-44', 'unpredictable', 'no'],
+    ['45-49', 'stopped', 'yes'],
+    ['55-59', 'skipping', 'no'],
+    ['under-40', 'stopped', 'yes'],
+  ] as [Age, Cycle, Twelve][]) {
+    const S = make({ age, cycle, twelve });
+    const label = `${stateKey(S)} ${age}/${cycle}`;
+    expect(path(S), `${label} walks into the kit page`).not.toContain('offerKit');
+  }
+});
+
+test('forward and back from an off-flow screen go nowhere, not to question one', () => {
+  /* nextId used to read indexOf('offerKit') as -1, add one, and return
+     FLOW[0]: "forward" from the kit page was the first question of the quiz.
+     It is reachable by URL, so somebody would have found that. */
+  const S = make({ age: '40-44', cycle: 'unpredictable' });
+  expect(nextId(S, 'offerKit'), 'forward from the kit page').toBeUndefined();
+  expect(prevId(S, 'offerKit'), 'back from the kit page').toBeUndefined();
+  /* And the screens that ARE in the flow still move. */
+  expect(nextId(S, 'meet')).toBe('r2');
+  expect(prevId(S, 'r2')).toBe('meet');
 });

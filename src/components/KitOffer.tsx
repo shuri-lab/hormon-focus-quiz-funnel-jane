@@ -4,8 +4,9 @@ import { useMemo } from 'react';
 import { shopUrl, track } from '../lib/analytics';
 import {
   KIT_BUY_CTA, MONEY_BACK_BADGE, ONE_MONTH_PRICE, QUIZ_KIT_ROWS,
-  QUIZ_KIT_SAVING, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_HERO, SINGLE_AFTER_DISCOUNT,
-  SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money, singleDailyPrice,
+  QUIZ_KIT_SAVING, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE, SHOT_KIT_HERO,
+  SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money,
+  singleDailyPrice,
 } from '../lib/offer';
 /* FREE_SHIPPING, ONCE_LABEL, ONCE_CADENCE, SUB_LABEL, SUB_CADENCE, SUB_NOTE,
    SUB_PILL, SUB_OR, SUB_BEST_VALUE, OFFER_ONCE_NOTE and KIT_FREE_LABEL are no
@@ -13,12 +14,14 @@ import {
    rows became the shared BuyRows, and "free" is now ValueStack's own word.
    All of them are still exported and still gated. */
 import {
-  FREE_SHIPPING, KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD, KIT_NOW_LABEL,
+  BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_ONE_LABEL, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
+  BOTTLE_WHATYOUGET, FREE_SHIPPING, HF_NAME,
+  KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD, KIT_NOW_LABEL,
   KIT_ONCE_NOTE, KIT_SAVE_PREFIX, KIT_SHOT_ALT, KIT_STACK_HEAD, KIT_SUB_NOTE,
   KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL, KIT_WAS_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
-  SUB_PILL, TRUST_ITEMS, kitBatchLine,
+  SUB_PILL, TRUST_ITEMS, bottleBatchLine, kitBatchLine,
 } from '../lib/kitCopy';
 
 /* THE OFFER, AS IT IS ON JJ'S OWN PAGE.
@@ -84,6 +87,13 @@ interface Props {
   /** For begin_checkout. Never put in the cart link. */
   outcome: string;
   angle: string;
+  /**
+   * WHICH OFFER THIS IS. 'kit' is the page preserved at /quiz/offer-kit, with
+   * the three guides and the $146.99 value stack. 'bottle' is what the main
+   * walk ends on: the same two deal boxes, the same cart links, and one line
+   * saying what is in the box instead of a stack with nothing in it.
+   */
+  variant?: 'bottle' | 'kit';
 }
 
 /**
@@ -126,6 +136,28 @@ export function KitPrice() {
         <span>{KIT_TODAY_LABEL}</span> <b>{money(SINGLE_AFTER_DISCOUNT)}</b>
       </p>
       <p className="kitPriceSave">{KIT_SAVE_PREFIX} {QUIZ_KIT_SAVING}</p>
+    </div>
+  );
+}
+
+/**
+ * THE BOTTLE'S PRICE, for the variant that sells one.
+ *
+ * THE SAME THREE FACTS AND NONE OF THE KIT'S. KitPrice above totals a value
+ * stack: $146.99 of things, $45 today, $101.99 kept. There are no bonuses in
+ * this offer, so the only honest version is the bottle's own price struck
+ * down to what she pays and the saving that actually is.
+ */
+export function BottlePrice() {
+  return (
+    <div className="kitPrice">
+      <p className="kitPriceWas">
+        <span>{BOTTLE_ONE_LABEL}</span> <s>{money(ONE_MONTH_PRICE)}</s>
+      </p>
+      <p className="kitPriceNow">
+        <span>{KIT_TODAY_LABEL}</span> <b>{money(SINGLE_AFTER_DISCOUNT)}</b>
+      </p>
+      <p className="kitPriceSave">{BOTTLE_SAVE}</p>
     </div>
   );
 }
@@ -201,7 +233,8 @@ function KitStack() {
   );
 }
 
-export function KitOffer({ outcome, angle }: Props) {
+export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
+  const isKit = variant === 'kit';
   /* TWO DEAL BOXES, EACH WITH ITS OWN BUTTON, where this was a radio group
      with one shared button. David's call of 30 October: the radio rows did
      not read as an offer, and Jane's own page puts each option in a box she
@@ -232,20 +265,28 @@ export function KitOffer({ outcome, angle }: Props) {
     <div className="kitOffer" id="kit-offer">
       <div className="kitIntro">
         <p className="kitEyebrow">{KIT_EYEBROW}</p>
-        <h2 className="kitH2">{KIT_STACK_HEAD}</h2>
+        <h2 className="kitH2">{isKit ? KIT_STACK_HEAD : BOTTLE_HERO_HEAD}</h2>
       </div>
 
       <div className="kitCard kitLead">
         <div className="kitBottleHead">
-          <img src={SHOT_KIT_HERO} alt={KIT_SHOT_ALT} width={768} height={576}
-            decoding="async" />
+          {isKit
+            ? <img src={SHOT_KIT_HERO} alt={KIT_SHOT_ALT} width={768} height={576}
+                decoding="async" />
+            : <img src={SHOT_KIT_BOTTLE} alt={BOTTLE_SHOT_ALT} width={800} height={800}
+                decoding="async" />}
           <div>
-            <p className="kitBottleName">{OFFER_CARD_HEAD}</p>
-            <p className="kitBottleSupply">{OFFER_CARD_SUB}</p>
+            <p className="kitBottleName">{isKit ? OFFER_CARD_HEAD : HF_NAME}</p>
+            <p className="kitBottleSupply">
+              {isKit ? OFFER_CARD_SUB : BOTTLE_WHATYOUGET}
+            </p>
           </div>
         </div>
 
-        <KitStack />
+        {/* THE STACK IS THE KIT'S. There is nothing to total on the bottle:
+            one line above says what is in the box, and inventing a stack for
+            it would be a value claim with no bonuses behind it. */}
+        {isKit && <KitStack />}
 
         {/* THE DEAL. The badge sits on the border, as on her page, so the
             crossed-out price and the one she pays read as one movement. */}
@@ -263,7 +304,7 @@ export function KitOffer({ outcome, angle }: Props) {
             className="cta kitBtn" href={once} data-offer="single"
             onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'kit-main')}
           >
-            {KIT_BUY_CTA} <Arrow />
+            {isKit ? KIT_BUY_CTA : BOTTLE_CTA} <Arrow />
           </a>
           <p className="kitDealFine">{OFFER_ONCE_NOTE}</p>
         </div>
@@ -298,7 +339,11 @@ export function KitOffer({ outcome, angle }: Props) {
         {/* TRUE, SAID ONCE, NO TIMER. Rendered here rather than through
             SHOW_BATCH_LINE, which is the global switch and is off for the
             offer pages at David's request. */}
-        {KIT_BATCH_SHOWN && <p className="buyBatch kitBatch">{kitBatchLine()}</p>}
+        {KIT_BATCH_SHOWN && (
+          <p className="buyBatch kitBatch">
+            {isKit ? kitBatchLine() : bottleBatchLine()}
+          </p>
+        )}
 
         <div className="kitTrust">
           {TRUST_ITEMS.map((t, i) => (
