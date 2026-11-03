@@ -28,15 +28,50 @@
 
 import type { SymptomId } from './logic';
 
+/* ----------------------------------------------- the two stages -------- */
+
+/**
+ * WHICH MECHANISM IS TRUE FOR HER. 3 November 2026.
+ *
+ *   'clear'      A and B. She still makes plenty of estrogen and the problem
+ *                is that it is not clearing, so the screens say "help your
+ *                body clear the extra estrogen".
+ *   'breakdown'  C and E. Her periods have stopped and she runs on LESS
+ *                estrogen, so "too much estrogen" is simply not her
+ *                situation. The screens say "support how your body breaks
+ *                down the estrogen it still makes" instead.
+ *
+ * AND THE BREAKDOWN GROUP IS PROMISED NOTHING. Her copy names no symptom and
+ * offers no settling: she cannot turn the clock back, and the honest line is
+ * that her body can be supported in handling what it still makes. That is
+ * the whole reason for the split; everything else on the three screens is one
+ * string shared by both.
+ *
+ * D never reaches these screens, so it has no group: the doctor route is
+ * walked past all three. Anything unrecognised reads as 'clear', which is the
+ * wording that was there before the split.
+ */
+export type StageGroup = 'clear' | 'breakdown';
+
+export const stageGroup = (outcome: string): StageGroup =>
+  (outcome === 'C' || outcome === 'E' ? 'breakdown' : 'clear');
+
 /* ------------------------------------------------- 1. what is going on -- */
 
 export const CAUSE_EYEBROW = 'What is really going on';
-export const CAUSE_HEAD = 'The real problem is too much estrogen.';
+export const CAUSE_HEAD: Record<StageGroup, string> = {
+  clear: 'The real problem is estrogen that is not clearing.',
+  breakdown: 'Your body is not breaking estrogen down like it used to.',
+};
 export const CAUSE_DECK = 'It is not you. And it is not willpower.';
 
 /** Under the graphic. The picture is text free, so the caption carries it. */
-export const CAUSE_IMG_CAP =
-  'After 40, your body **cannot clear estrogen fast enough**. So it builds up.';
+export const CAUSE_IMG_CAP: Record<StageGroup, string> = {
+  clear: 'After 40, your body **cannot clear estrogen out** the way it used to.',
+  breakdown:
+    'Your body still makes estrogen, mostly in body fat. It just **does not '
+    + 'break it down** the way it once did.',
+};
 
 /**
  * HER SYMPTOMS, IN THIS SENTENCE, one phrase each.
@@ -87,6 +122,23 @@ export const CAUSE_BODY_2 =
   '**Help your body clear it**, and you give all of it a reason to settle.';
 
 /**
+ * The breakdown group's body, which is the whole of it.
+ *
+ * ONE PARAGRAPH, AND IT PROMISES NOTHING. The clear group reads her own
+ * symptoms back and then the line about them settling. Neither is honest
+ * here: her estrogen is low, not high, and nothing about that is going to
+ * settle. So she gets the true version, which is that the clock does not go
+ * back and her body can still be supported in handling what it makes.
+ *
+ * The emphasis is marked the way every other line on these screens marks it,
+ * rather than the paragraph being wrapped in <strong>: the writer decides
+ * which phrase carries, and the gate reads it either way.
+ */
+export const CAUSE_BODY_BREAKDOWN =
+  'You cannot turn the clock back. But you can **support how your body '
+  + 'handles the estrogen it still makes**, and give it a hand.';
+
+/**
  * THE FALLBACK ONLY. The chips are HER symptoms, read off her answers in
  * nurture.tsx, since 30 October: showing a woman who ticked hot flashes a row
  * reading "stubborn weight, broken sleep, mood swings" is the page telling
@@ -103,8 +155,14 @@ export const PLAN_EYEBROW = 'Where to start';
 export const PLAN_HEAD = 'Three simple things. That is the whole plan.';
 
 /** [what she does, what it takes]. The icons beside them carry no words. */
+export const PLAN_STEP_1: Record<StageGroup, string> = {
+  clear: 'Help your body clear the extra estrogen.',
+  breakdown: 'Support how your body breaks estrogen down.',
+};
+
+/** Step one's subline, and steps two and three, shared by both groups. */
 export const PLAN_STEPS: [string, string][] = [
-  ['Help your body clear the extra estrogen.',
+  ['',
     'Once a day. **The piece most women are missing.**'],
   ['Eat in a way that works with your hormones.',
     '**Simple swaps**, not a diet.'],
@@ -119,8 +177,11 @@ export const PLAN_STEPS: [string, string][] = [
  * a change: it is how long the plan runs, not how long a result takes. Note
  * that "chance" is not "change", which is the word the rule looks for.
  */
+/* "A couple of months" rather than "60 days", 3 November: the sixty days
+   belonged to the kit's guide, and the kit is not what the main flow sells.
+   It also puts no number on a change, which is what the clock rule is for. */
 export const PLAN_NOTE =
-  'Do these for **60 days**, and give your body a real chance.';
+  'Give it **a couple of months** and give your body a real chance.';
 
 export const PLAN_BODY =
   'You do not have to figure this out alone. **Step one is the piece your body '
@@ -132,9 +193,14 @@ export const PLAN_CTA = 'SHOW ME STEP ONE';
 
 export const MEET_EYEBROW = 'The missing piece';
 export const MEET_HEAD = 'Meet Hormone Focus.';
-export const MEET_LEAD =
-  'A daily supplement with **one job**: helping your body clear out the extra '
-  + 'estrogen.';
+export const MEET_LEAD: Record<StageGroup, string> = {
+  clear:
+    'A daily supplement with **one job**: helping your body clear out the '
+    + 'extra estrogen.',
+  breakdown:
+    'A daily supplement with **one job**: supporting how your body breaks '
+    + 'estrogen down.',
+};
 export const MEET_BODY =
   'That is the part **your body cannot do fast enough on its own anymore**. '
   + 'Hormone Focus gives it a hand, with three ingredients that each do one '
@@ -171,7 +237,10 @@ export const MEET_CTA = 'SHOW ME MY PLAN';
 /* ----------------------------------------------------------- the alts --- */
 
 /** What each picture shows, for a screen reader and a slow connection. */
-export const CAUSE_IMG_ALT = 'A glass overflowing, with drops running down the side';
+export const CAUSE_IMG_ALT: Record<StageGroup, string> = {
+  clear: 'A glass overflowing, with drops running down the side',
+  breakdown: 'A glass about one third full, draining slowly from the bottom',
+};
 export const PLAN_STEP_ALTS: string[] = [
   'A capsule',
   'A plate of vegetables, salad and grilled chicken',

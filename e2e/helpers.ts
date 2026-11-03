@@ -91,9 +91,25 @@ export const pressSecondary = (page: Page) => () => page.locator('.actionBar .ct
  * through, so a screen that silently stops rendering fails here rather than
  * surfacing as a confusing timeout on the offer page.
  */
-export async function throughNurture(page: Page) {
+/**
+ * The `cause` screen's headline, which depends on her stage.
+ *
+ * SPLIT 3 November 2026. A and B still make plenty of estrogen and read about
+ * it not clearing; C and E run on less and read about it not being broken
+ * down. Walks say which they are, so a walk that silently started reading the
+ * wrong one fails here rather than passing on a half-match.
+ */
+export const CAUSE_HEADS = {
+  clear: 'The real problem is estrogen that is not clearing.',
+  breakdown: 'Your body is not breaking estrogen down like it used to.',
+} as const;
+
+export async function throughNurture(
+  page: Page,
+  group: keyof typeof CAUSE_HEADS = 'clear',
+) {
   for (const h of [
-    'The real problem is too much estrogen.',
+    CAUSE_HEADS[group],
     'Three simple things. That is the whole plan.',
     'Meet Hormone Focus.',
   ]) {

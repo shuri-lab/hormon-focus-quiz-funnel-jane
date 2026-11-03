@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react';
 import { useQuiz } from '../context';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
-import { SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_STEPS } from '../../lib/offer';
-import { TILES, mainConcern, otherConcerns } from '../../lib/logic';
+import {
+  SHOT_CAUSE, SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_STEPS,
+} from '../../lib/offer';
+import { TILES, mainConcern, otherConcerns, stateKey } from '../../lib/logic';
 import type { SymptomId } from '../../lib/logic';
 import {
   CAUSE_BODY_2, CAUSE_CHIPS, CAUSE_CTA, CAUSE_DECK, CAUSE_EYEBROW,
   CAUSE_HEAD, CAUSE_IMG_ALT, CAUSE_IMG_CAP, MEET_BODY, MEET_BOTTLE_ALT,
   MEET_CLOSE, MEET_CTA, MEET_EYEBROW, MEET_HEAD, MEET_HOW_ALT, MEET_INGS,
-  MEET_INGS_HEAD, MEET_LEAD, PLAN_BODY, PLAN_CTA, PLAN_EYEBROW, PLAN_HEAD,
-  causeBody,
-  PLAN_NOTE, PLAN_STEPS, PLAN_STEP_ALTS,
+  CAUSE_BODY_BREAKDOWN, MEET_INGS_HEAD, MEET_LEAD, PLAN_BODY, PLAN_CTA,
+  PLAN_EYEBROW, PLAN_HEAD, PLAN_NOTE, PLAN_STEPS, PLAN_STEP_1, PLAN_STEP_ALTS,
+  causeBody, stageGroup,
 } from '../../lib/nurtureCopy';
 
 const LABEL = Object.fromEntries(TILES) as Record<SymptomId, string>;
@@ -44,9 +46,9 @@ function Rich({ children }: { children: string }): ReactNode {
  * slow connection gets it, and none of it has to be re-exported to fix a typo.
  */
 
-/* The step icons and the diagram moved to offer.ts on 2 November, so the
-   offer page can show the same pictures she met here. */
-const IMG_ESTROGEN = '/img/nurture-estrogen.webp';
+/* Every path moved to offer.ts: the step icons and the diagram on 2 November
+   so the offer page could show them too, and the cause graphic on 3 November
+   when it became one of two. */
 
 /* ------------------------------------------------------------- cause ---- */
 
@@ -62,24 +64,42 @@ export function RCause() {
   const picked = main ? [main, ...otherConcerns(S)] : [];
   const chips = picked.length ? picked.map((id) => LABEL[id]) : CAUSE_CHIPS;
 
+  /* WHICH MECHANISM IS TRUE FOR HER. See stageGroup in nurtureCopy.ts. */
+  const g = stageGroup(stateKey(S));
+
   return (
     <Screen id="cause">
       <p className="blabel">{CAUSE_EYEBROW}</p>
-      <ScreenTitle className="rTitle">{CAUSE_HEAD}</ScreenTitle>
+      <ScreenTitle className="rTitle">{CAUSE_HEAD[g]}</ScreenTitle>
       <p className="rDeck">{CAUSE_DECK}</p>
 
       <figure className="nFig">
         <img
-          className="nFigImg" src={IMG_ESTROGEN} alt={CAUSE_IMG_ALT}
+          className="nFigImg" src={SHOT_CAUSE[g]} alt={CAUSE_IMG_ALT[g]}
           width={640} height={640} decoding="async"
         />
-        <figcaption className="nCap"><Rich>{CAUSE_IMG_CAP}</Rich></figcaption>
+        <figcaption className="nCap"><Rich>{CAUSE_IMG_CAP[g]}</Rich></figcaption>
       </figure>
 
+      {/* THE BREAKDOWN GROUP IS PROMISED NOTHING. Reading her symptoms back
+          and then saying they have "a reason to settle" is the clear group's
+          argument, and it is not true of a woman whose estrogen is low
+          rather than high. Hers is one honest paragraph instead.
+
+          THE CHIPS STAY FOR BOTH, and that is deliberate. They are her own
+          words, not a promise: naming what she told us is the same thing her
+          result page already does for C and E. Taking them off would leave
+          this group with no acknowledgement of her answers anywhere on the
+          screen, which is a worse page, not a safer one. */}
       <div className="block">
-        {/* HER SYMPTOMS, named. See causeBody() in nurtureCopy.ts. */}
-        <p><Rich>{causeBody(picked)}</Rich></p>
-        <p><Rich>{CAUSE_BODY_2}</Rich></p>
+        {g === 'clear'
+          ? (
+            <>
+              <p><Rich>{causeBody(picked)}</Rich></p>
+              <p><Rich>{CAUSE_BODY_2}</Rich></p>
+            </>
+          )
+          : <p><Rich>{CAUSE_BODY_BREAKDOWN}</Rich></p>}
       </div>
 
       {/* Her own words back: what SHE tapped, four screens ago. */}
@@ -100,7 +120,8 @@ export function RCause() {
 
 /** What to do about it. Three things, one of which is the product. */
 export function RPlan() {
-  const { next } = useQuiz();
+  const { S, next } = useQuiz();
+  const g = stageGroup(stateKey(S));
 
   return (
     <Screen id="plan">
@@ -108,14 +129,15 @@ export function RPlan() {
       <ScreenTitle className="rTitle">{PLAN_HEAD}</ScreenTitle>
 
       <ol className="nSteps">
+        {/* Step one is hers; two and three are the same for everybody. */}
         {PLAN_STEPS.map(([what, takes], i) => (
-          <li key={what} className="nStep">
+          <li key={takes} className="nStep">
             <span className="nStepNum" aria-hidden="true">{i + 1}</span>
             <img
               className="nStepIcon" src={SHOT_STEPS[i]} alt={PLAN_STEP_ALTS[i]}
               width={192} height={192} decoding="async"
             />
-            <b className="nStepWhat">{what}</b>
+            <b className="nStepWhat">{i === 0 ? PLAN_STEP_1[g] : what}</b>
             <span className="nStepTakes"><Rich>{takes}</Rich></span>
           </li>
         ))}
@@ -140,13 +162,14 @@ export function RPlan() {
 
 /** The product, as step one of the plan she has just read. */
 export function RMeet() {
-  const { next } = useQuiz();
+  const { S, next } = useQuiz();
+  const g = stageGroup(stateKey(S));
 
   return (
     <Screen id="meet">
       <p className="blabel">{MEET_EYEBROW}</p>
       <ScreenTitle className="rTitle">{MEET_HEAD}</ScreenTitle>
-      <p className="rDeck"><Rich>{MEET_LEAD}</Rich></p>
+      <p className="rDeck"><Rich>{MEET_LEAD[g]}</Rich></p>
 
       {/* THE DIAGRAM MOVED ABOVE THE PARAGRAPH, 30 October. It used to sit
           between MEET_BODY and the ingredient rows, which put a wide pale

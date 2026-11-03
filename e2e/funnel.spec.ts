@@ -603,7 +603,9 @@ test.describe('the quiz', () => {
     /* Her wish is softened on the way back, so it cannot read as a promise. */
     await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
-    await throughNurture(page);
+    /* SHE IS MENOPAUSE, so the cause screen reads about her body not breaking
+       estrogen down, never about her having too much of it. */
+    await throughNurture(page, 'breakdown');
 
     /* She ticked hot flashes and nothing else, so the hero names the one
        she came for. 'Start with these 3 for hot flashes' until 16 October. */
@@ -717,7 +719,9 @@ test.describe('the addresses', () => {
     ['your-result', 'Your Hormone Check is ready'],
     ['result', ''],
     /* The three that earn the offer, 29 October 2026. */
-    ['whats-happening', 'The real problem is too much estrogen.'],
+    /* The default state is outcome A, so the address opens the 'clear'
+       wording. The stage split is asserted per outcome further down. */
+    ['whats-happening', 'The real problem is estrogen that is not clearing.'],
     ['your-plan', 'Three simple things. That is the whole plan.'],
     ['meet-hormone-focus', 'Meet Hormone Focus.'],
     /* The main offer, which sells ONE BOTTTLE since 2 November: it is what
@@ -1672,3 +1676,111 @@ test('both deal boxes strike the old price the same way, and legibly',
       expect(sameLine, `${slug}: the old price is not in the price row`).toBe(true);
     }
   });
+
+/* ------------------------------ the stage-aware nurture copy, 3 November -- */
+
+test.describe('the mechanism is the one that is true for her', () => {
+  /** Seeds a state directly: these are address-reachable screens. */
+  const walk = async (page: import('@playwright/test').Page, S: Record<string, unknown>) => {
+    await page.goto('/quiz');
+    await page.evaluate(
+      (st) => sessionStorage.setItem('hf_quiz_state_v3', JSON.stringify(st)),
+      { pattern: 'most', tried: ['food'], name: 'Dana', ...S },
+    );
+  };
+
+  test('perimenopause is told about clearing, and sees the overflowing glass',
+    async ({ page }) => {
+      await walk(page, { sym: ['sleep', 'mood'], main: 'sleep', age: '40-44', cycle: 'unpredictable', want: 'sleep' });
+
+      await page.goto('/quiz/whats-happening');
+      await expect(heading(page)).toHaveText('The real problem is estrogen that is not clearing.');
+      await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen\.webp/);
+      await expect(page.locator('.nCap')).toContainText('cannot clear estrogen out');
+      /* Her own symptoms, and the line about them settling. */
+      await expect(page.locator('.block p').first()).toContainText('the nights you lie awake');
+      await expect(page.locator('.block')).toContainText('a reason to settle');
+
+      await page.goto('/quiz/your-plan');
+      await expect(page.locator('.nStep').first())
+        .toContainText('Help your body clear the extra estrogen.');
+
+      await page.goto('/quiz/meet-hormone-focus');
+      await expect(page.locator('.rDeck')).toContainText('clear out the extra estrogen');
+    });
+
+  test('menopause is told about breaking it down, and is promised nothing',
+    async ({ page }) => {
+      /* SHE RUNS ON LESS ESTROGEN. Before 3 November every woman read "the
+         real problem is too much estrogen", which is the opposite of her
+         situation, over a picture of an overflowing glass. */
+      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes', want: 'understand' });
+
+      await page.goto('/quiz/whats-happening');
+      await expect(heading(page))
+        .toHaveText('Your body is not breaking estrogen down like it used to.');
+      await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen-low\.webp/);
+      await expect(page.locator('.nCap')).toContainText('does not break it down');
+
+      /* One honest paragraph, and no promise in it. */
+      const body = page.locator('.block');
+      await expect(body).toContainText('You cannot turn the clock back');
+      await expect(body, 'she is not told her symptoms will settle')
+        .not.toContainText('reason to settle');
+      await expect(body, 'and never that she has extra estrogen')
+        .not.toContainText(/extra estrogen|too much estrogen/);
+      /* Her answers are still acknowledged: the chips are her words, not a
+         promise, and her result page names them too. */
+      await expect(page.locator('.nChip')).toHaveCount(1);
+
+      await page.goto('/quiz/your-plan');
+      await expect(page.locator('.nStep').first())
+        .toContainText('Support how your body breaks estrogen down.');
+
+      await page.goto('/quiz/meet-hormone-focus');
+      await expect(page.locator('.rDeck')).toContainText('breaks estrogen down');
+      await expect(page.locator('.rDeck')).not.toContainText('clear out');
+    });
+
+  test('early menopause reads the same as menopause', async ({ page }) => {
+    /* E is menopause arriving sooner, so the mechanism is the same one. It is
+       asserted separately because it reaches that state by different answers
+       and has its own outcome key. */
+    await walk(page, { sym: ['mood'], main: 'mood', age: '40-44', cycle: 'stopped', twelve: 'yes', want: 'mood' });
+    await page.goto('/quiz/whats-happening');
+    await expect(heading(page))
+      .toHaveText('Your body is not breaking estrogen down like it used to.');
+    await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen-low\.webp/);
+  });
+
+  test('the result screen and the cause screen agree about her estrogen',
+    async ({ page }) => {
+      /* The hand-off promises "what I want to show you next", so the two
+         screens either side of it must not contradict each other about the
+         direction her hormones went. */
+      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes', want: 'understand' });
+
+      await page.goto('/quiz/result');
+      await expect(page.locator('.resMeansLead'))
+        .toHaveText('After your periods stopped, your body runs on less estrogen.');
+      const result = await page.locator('.rise').innerText();
+      expect(result, 'the result screen must never say she has too much')
+        .not.toMatch(/too much estrogen|extra estrogen/i);
+
+      await page.locator('.actionBar .cta').click();
+      await expect(page).toHaveURL(/whats-happening$/);
+      const cause = await page.locator('.rise').innerText();
+      expect(cause, 'and nor may the screen it hands into')
+        .not.toMatch(/too much estrogen|extra estrogen/i);
+    });
+
+  test('the doctor route still never sees any of the three', async ({ page }) => {
+    await startQuiz(page);
+    await page.locator('.tile').first().click();
+    await answerAndWait(page, pressPrimary(page), /How old are you/);
+    await answerAndWait(page, pickOption(page, 0), /happening with your cycle/);
+    await answerAndWait(page, pickOption(page, 3), /at least 12 months/);
+    await answerAndWait(page, pickOption(page, 0), /Talk to your healthcare professional/);
+    await expect(page.locator('.actionBar .cta'), 'a way forward from rDoc').toHaveCount(0);
+  });
+});

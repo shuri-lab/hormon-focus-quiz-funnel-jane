@@ -1108,10 +1108,18 @@
 /* THE BOTTLE AND THE DIAGRAM TOGETHER, in one row, 30 October. Stacked they
    were two large pictures and about 380px of height before she reached a
    sentence; side by side they read as one illustration of the same idea and
-   cost a third of that. The diagram is 3:2, so it takes the wider column. */
+   cost a third of that. The diagram is 3:2, so it takes the wider column.
+
+   ON WHITE, 3 November, David. The bottle is a product photograph on a pure
+   white background, and the page is lavender: it read as a white rectangle
+   sitting in the page, next to a diagram that blends into it. Putting the
+   row on white gives both of them the background they were drawn on, and it
+   matches the framed graphic on the `cause` screen. */
 .nShots {
   margin: 16px 0 0; display: grid; grid-template-columns: 90px 1fr;
   align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: var(--radius-lg);
+  background: var(--surface); border: 1px solid var(--wash-2);
 }
 .nBottle { display: block; width: 100%; height: auto; object-fit: contain; }
 .nHow {

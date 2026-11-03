@@ -252,6 +252,22 @@ export const SHOT_STEP_TRACK = '/img/nurture-step-3-track.webp';
 export const SHOT_HOW_IT_WORKS = '/img/nurture-how-it-works.webp';
 export const SHOT_STEPS: string[] = [SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK];
 
+/**
+ * The `cause` screen's graphic, by which mechanism is true for her.
+ *
+ * An overflowing glass for the women who still make plenty of estrogen, and
+ * one a third full and draining for the women who do not. Showing the
+ * overflow to a woman whose periods stopped years ago is a picture of
+ * somebody else's problem.
+ *
+ * Keyed by StageGroup but typed loosely here so offer.ts does not have to
+ * import from nurtureCopy.ts, which imports from this file.
+ */
+export const SHOT_CAUSE: Record<string, string> = {
+  clear: '/img/nurture-estrogen.webp',
+  breakdown: '/img/nurture-estrogen-low.webp',
+};
+
 /* The two strings the kit's own rows need. They live here rather than in
    kitCopy.ts because kitCopy imports from this file; kitCopy re-exports them
    under the names the page already uses, so there is one source and no cycle.

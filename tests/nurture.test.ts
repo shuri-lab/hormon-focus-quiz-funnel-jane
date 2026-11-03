@@ -14,8 +14,10 @@ import { test, expect } from 'vitest';
 import { TILES } from '../src/lib/logic';
 import type { SymptomId } from '../src/lib/logic';
 import {
-  CAUSE_BODY_1_DEFAULT, CAUSE_SYMPTOM, causeBody,
+  CAUSE_BODY_1_DEFAULT, CAUSE_BODY_BREAKDOWN, CAUSE_HEAD, CAUSE_IMG_ALT,
+  CAUSE_IMG_CAP, CAUSE_SYMPTOM, MEET_LEAD, PLAN_STEP_1, causeBody, stageGroup,
 } from '../src/lib/nurtureCopy';
+import { SHOT_CAUSE } from '../src/lib/offer';
 import { claimHits } from './claimRules';
 
 const ALL = TILES.map(([id]) => id);
@@ -84,4 +86,81 @@ test('the markers are balanced, everywhere she can land', () => {
     const n = causeBody(ids as SymptomId[]).split('**').length - 1;
     expect(n % 2, `odd number of markers for [${ids.join(', ')}]`).toBe(0);
   }
+});
+
+/* ------------------------------------------ the two stages, 3 November -- */
+
+test('the stage group is the one thing that decides which mechanism she reads', () => {
+  /* C and E run on LESS estrogen. Telling a woman whose periods stopped years
+     ago that her problem is "too much estrogen" is a page describing somebody
+     else, so the mechanism splits on exactly those two outcomes. */
+  expect(stageGroup('A')).toBe('clear');
+  expect(stageGroup('B')).toBe('clear');
+  expect(stageGroup('C')).toBe('breakdown');
+  expect(stageGroup('E')).toBe('breakdown');
+  /* D never reaches these screens, and anything unrecognised reads as the
+     wording that was there before the split. */
+  expect(stageGroup('D')).toBe('clear');
+  expect(stageGroup('')).toBe('clear');
+});
+
+test('neither group is told the other group\'s mechanism', () => {
+  /* The whole point: "clearing" belongs to the women who still make plenty,
+     "breaking down" to the women who do not, and never the other way. */
+  const clear = [CAUSE_HEAD.clear, CAUSE_IMG_CAP.clear, PLAN_STEP_1.clear, MEET_LEAD.clear]
+    .join(' ').toLowerCase();
+  const breakdown = [
+    CAUSE_HEAD.breakdown, CAUSE_IMG_CAP.breakdown, PLAN_STEP_1.breakdown,
+    MEET_LEAD.breakdown, CAUSE_BODY_BREAKDOWN,
+  ].join(' ').toLowerCase();
+
+  expect(clear, 'the clear group is told about clearing').toContain('clear');
+  expect(breakdown, 'the breakdown group is told about breaking down')
+    .toContain('break');
+  expect(breakdown, 'the breakdown group must never be told it has extra estrogen')
+    .not.toMatch(/too much estrogen|extra estrogen|clear the extra/);
+});
+
+test('the breakdown group is promised nothing', () => {
+  /* She cannot turn the clock back, and no line of hers may suggest a symptom
+     will settle. The clear group's second paragraph says exactly that, which
+     is why she does not get it. */
+  const hers = [
+    CAUSE_HEAD.breakdown, CAUSE_IMG_CAP.breakdown, CAUSE_BODY_BREAKDOWN,
+    PLAN_STEP_1.breakdown, MEET_LEAD.breakdown,
+  ];
+  for (const line of hers) {
+    expect(claimHits(line), line).toEqual([]);
+    expect(line, `"${line}" names a symptom`)
+      .not.toMatch(/belly|weight|sleep|hot flash|sweat|mood|bloat|energy/i);
+    expect(line, `"${line}" promises a change`)
+      .not.toMatch(/settle|budge|better|improve|fix/i);
+  }
+});
+
+test('every stage-split line has both halves', () => {
+  /* A missing half would render "undefined" in a headline, which is the kind
+     of thing that ships on a Friday. */
+  for (const [name, rec] of [
+    ['CAUSE_HEAD', CAUSE_HEAD], ['CAUSE_IMG_CAP', CAUSE_IMG_CAP],
+    ['CAUSE_IMG_ALT', CAUSE_IMG_ALT], ['PLAN_STEP_1', PLAN_STEP_1],
+    ['MEET_LEAD', MEET_LEAD],
+  ] as [string, Record<string, string>][]) {
+    for (const g of ['clear', 'breakdown']) {
+      expect(rec[g], `${name}.${g} is missing`).toBeTruthy();
+    }
+    expect(Object.keys(rec).sort(), `${name} has an extra key`)
+      .toEqual(['breakdown', 'clear']);
+  }
+});
+
+test('each group gets the picture of its own mechanism', () => {
+  /* An overflowing glass shown to a woman whose estrogen is low is a picture
+     of the opposite of her problem. */
+  expect(SHOT_CAUSE.clear).toBe('/img/nurture-estrogen.webp');
+  expect(SHOT_CAUSE.breakdown).toBe('/img/nurture-estrogen-low.webp');
+  expect(SHOT_CAUSE.clear).not.toBe(SHOT_CAUSE.breakdown);
+  /* And the alt text describes the picture it is attached to. */
+  expect(CAUSE_IMG_ALT.clear).toMatch(/overflow/i);
+  expect(CAUSE_IMG_ALT.breakdown).toMatch(/third|drain/i);
 });
