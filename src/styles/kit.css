@@ -1557,12 +1557,12 @@
 }
 .kitWas::after {
   content: ''; position: absolute; left: -7%; right: -7%; top: 50%;
-  height: 2.5px; background: #E23B3B; border-radius: 3px;
+  height: 1.5px; background: #E23B3B; border-radius: 3px;
   transform: translateY(-50%) rotate(-11deg);
 }
 /* The subscription's number is smaller, so its old price follows it down. */
 .kitDeal2Now .kitWas { font-size: 21px; }
-.kitDeal2Now .kitWas::after { height: 2px; }
+.kitDeal2Now .kitWas::after { height: 1.5px; }
 .kitDeal2Num {
   font-size: clamp(36px, 10vw, 44px); font-weight: 800; line-height: 1;
   letter-spacing: -.025em; color: var(--plum);
@@ -1733,8 +1733,12 @@
 /* THE OLD PRICE, RULED LIKE THE VALUE STACK'S. Same red diagonal, scaled up:
    a line through a price is what reads as "not this", and a 13px grey
    strikethrough reads as nothing at all. */
+/* THINNER, 5 November. At 3px over a 30px numeral the rule sat across the
+   waist of the digits and you could not tell $49.99 from $40.99, which is
+   the one thing this number is on the page to say. 1.5px reads as a line
+   through a price without eating the price. */
 .kitWas.isBig { font-size: 30px; font-weight: 700; color: var(--ink-2); }
-.kitWas.isBig::after { height: 3px; }
+.kitWas.isBig::after { height: 1.5px; }
 
 /* What she keeps, in money rather than in percent. */
 .kitPrice.isWelcome .kitPriceSave {

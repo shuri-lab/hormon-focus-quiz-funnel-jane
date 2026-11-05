@@ -18,8 +18,8 @@
  */
 import {
   BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, ONE_MONTH_PRICE,
-  PLAN_NAME, SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_PERCENT, batchCount,
-  dailyPrice, money,
+  PLAN_NAME, SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_PERCENT, SUBSCRIBE_PRICE,
+  batchCount, dailyPrice, money,
 } from './offer';
 import { MG_HEADLINE } from './offerCopy';
 import type { SymptomId } from './logic';
@@ -546,7 +546,29 @@ export const KIT_TODAY_LINE = 'today';
 /* -- the subscription, under the one-time row ---------------------------- */
 
 export const SUB_OR = 'OR';
-export const SUB_BEST_VALUE = 'Best value';
+/**
+ * WHAT THE SUBSCRIPTION IS WORTH NOW, 5 November 2026.
+ *
+ * IT IS NOT "BEST VALUE" ANY MORE, and saying so would be false. The welcome
+ * offer takes the first bottle to $37.50; the subscription is $39.99. For
+ * the order she is looking at, the one-time purchase is the cheaper of the
+ * two by $2.49, and a badge claiming otherwise is a badge she can disprove
+ * with the two numbers either side of it.
+ *
+ * WHAT IS TRUE IS THE PRICE SHE KEEPS. The welcome discount is a first-order
+ * discount, so her second bottle bought one at a time is $49.99. On the
+ * subscription every bottle is $39.99, for as long as she stays: $10.00 off
+ * each one after the first, and a price that does not move.
+ *
+ * So the badge names the lock, not a comparison, and the note under it says
+ * what the lock is worth. DRAFT FOR JANE.
+ */
+export const SUB_BEST_VALUE = `Lock in ${money(SUBSCRIBE_PRICE)}`;
+
+/** Under the subscription price: what the lock is actually worth to her. */
+export const subLockLine = (): string =>
+  `Every bottle stays ${money(SUBSCRIBE_PRICE)}. That is `
+  + `${money(ONE_MONTH_PRICE - SUBSCRIBE_PRICE)} off every bottle after your first.`;
 
 /* -- honest urgency ------------------------------------------------------ */
 

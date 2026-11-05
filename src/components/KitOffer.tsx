@@ -21,8 +21,8 @@ import {
   KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
-  SUB_PILL, TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
-  bottleBatchLine,
+  TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
+  bottleBatchLine, subLockLine,
   kitBatchLine, welcomeSaving,
 } from '../lib/kitCopy';
 
@@ -346,7 +346,11 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
         <div className="kitOr"><span>or</span></div>
 
         <div className="kitDeal2">
-          <span className="kitDeal2Badge">{SUB_BEST_VALUE} &middot; {SUB_PILL}</span>
+          {/* NOT "BEST VALUE". The welcome offer puts the first bottle at
+              $37.50 and this is $39.99, so for the order she is looking at
+              the one-time purchase is cheaper. What is true is the price she
+              keeps: see SUB_BEST_VALUE in kitCopy.ts. */}
+          <span className="kitDeal2Badge">{SUB_BEST_VALUE}</span>
           <div className="kitDeal2Now">
             <s className="kitWas">{money(ONE_MONTH_PRICE)}</s>
             <span className="kitDeal2Num">{money(SUBSCRIBE_PRICE)}</span>
@@ -358,6 +362,7 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
           <p className="kitDeal2Ship">
             <span className="kitShip"><Truck /> {FREE_SHIPPING}</span>
           </p>
+          <p className="kitDealNote kitSubLock">{subLockLine()}</p>
           <p className="kitDealNote">{KIT_SUB_NOTE}</p>
           {/* THE SAME BUTTON AS THE ONE ABOVE, 30 October. It was outlined,
               which read as the lesser of the two rather than as the other

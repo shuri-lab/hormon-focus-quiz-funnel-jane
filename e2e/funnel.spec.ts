@@ -461,8 +461,16 @@ test.describe('the quiz', () => {
     const deal2 = lead.locator('.kitDeal2');
     await expect(deal2.locator('.kitDeal2Num')).toHaveText('$39.99');
     await expect(deal2.locator('.kitWas')).toHaveText('$49.99');
-    await expect(deal2).toContainText(/best value/i);
-    await expect(deal2).toContainText(/20% off/i);
+    /* NOT "BEST VALUE", 5 November. The welcome offer puts the first bottle
+       at $37.50 and this is $39.99, so for the order she is looking at the
+       one-time purchase is the cheaper of the two. A badge claiming
+       otherwise is one she can disprove with the two numbers either side of
+       it. What is true is the price she keeps. */
+    await expect(deal2).toContainText('Lock in $39.99');
+    await expect(deal2, 'the subscription is not the cheaper first order')
+      .not.toContainText(/best value/i);
+    await expect(deal2).toContainText('Every bottle stays $39.99');
+    await expect(deal2).toContainText('$10.00 off every bottle after your first');
     await expect(deal2).toContainText(/pause or cancel anytime/i);
     /* THE SHIPPING PILL IS BACK, 30 October: free shipping is this option's
        one advantage over the bottle and it was reading as small print. */

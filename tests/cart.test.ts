@@ -604,3 +604,34 @@ test('every button on the kit page still buys the single bottle', () => {
   expect(cartPath('single'), 'the kit variant must not be wired up yet')
     .not.toContain(PROTOCOL_VARIANT_ID ?? 'no-kit-variant');
 });
+
+test('the subscription never claims to beat the first-order price', async () => {
+  /* THE TRAP THIS CLOSES. The welcome offer takes the first bottle to $37.50
+     and the subscription is $39.99, so "best value" became false the moment
+     the discount went from 10% to 25%: she can disprove it with the two
+     numbers either side of the badge.
+
+     Asserted as arithmetic rather than as a string, because the thing that
+     makes the claim false is the relationship between the prices, and that
+     is what will change again. If a future discount makes the subscription
+     genuinely cheaper on the first order, this fails and the badge can go
+     back to claiming it. */
+  const { SINGLE_AFTER_DISCOUNT, SUBSCRIBE_PRICE, ONE_MONTH_PRICE } =
+    await import('../src/lib/offer');
+  const { SUB_BEST_VALUE } = await import('../src/lib/kitCopy');
+
+  const firstOrderIsCheaperOneTime = SINGLE_AFTER_DISCOUNT < SUBSCRIBE_PRICE;
+  expect(
+    firstOrderIsCheaperOneTime,
+    `the one-time first order is ${SINGLE_AFTER_DISCOUNT} and the subscription `
+    + `is ${SUBSCRIBE_PRICE}`,
+  ).toBe(true);
+  expect(
+    SUB_BEST_VALUE.toLowerCase(),
+    'the subscription badge claims a comparison it loses on the first order',
+  ).not.toContain('best value');
+
+  /* And what IS true: every bottle after the first is cheaper on the
+     subscription than buying one at a time at full price. */
+  expect(SUBSCRIBE_PRICE).toBeLessThan(ONE_MONTH_PRICE);
+});
