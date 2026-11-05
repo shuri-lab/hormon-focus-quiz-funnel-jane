@@ -546,7 +546,7 @@ test.describe('the quiz', () => {
     await expect(rating.locator('.pfRatingBy img')).toHaveAttribute('alt', 'Okendo');
 
     /* The guarantee, the questions, and the button again. */
-    await expect(page.locator('.kitPromise')).toContainText('60-Day Happiness Guarantee');
+    await expect(page.locator('.kitPromise')).toContainText('60-Day Guarantee');
     /* JJ's own six questions now, at David's request. */
     await expect(page.locator('.kitFaq details')).toHaveCount(6);
     /* The closer buys what the page leads with, which is the bottle now, so
@@ -958,7 +958,7 @@ test.describe('the kit page', () => {
       expect(bands[offerAt + 1], 'the guarantee is the one directly under it')
         .toBe('kitBand teal');
       await expect(page.locator('.kitBand.teal').locator('.kitPromise'))
-        .toContainText('60-Day Happiness Guarantee');
+        .toContainText('60-Day Guarantee');
     });
 
   test('both rails loop seamlessly, which is arithmetic and not a judgement',

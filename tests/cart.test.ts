@@ -593,7 +593,8 @@ test('the three bonuses are named, priced and free', () => {
     expect(b.worth, `${b.what} has no price`).toMatch(/^\$\d/);
   }
   /* And the guarantee closes it, as it does on every other stack. */
-  expect(QUIZ_KIT_ROWS.at(-1)!.what).toBe('The 60-Day Happiness Guarantee');
+  /* Renamed 5 November: the adjective came off, the refund window did not. */
+  expect(QUIZ_KIT_ROWS.at(-1)!.what).toBe('The 60-Day Guarantee');
 });
 
 test('every button on the kit page still buys the single bottle', () => {

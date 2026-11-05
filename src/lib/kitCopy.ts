@@ -95,7 +95,10 @@ export const HF_BODY =
 
 /* JJ's page, with the one contraction written out for the house style. */
 export const PROMISE_EYEBROW = 'Our promise';
-export const PROMISE_HEAD = '60-Day Happiness Guarantee';
+/* "Happiness" came out on 5 November, David. The refund window is the thing
+   being named and sixty days is the fact in it; the adjective was doing no
+   work. The same name is used in the kit's value stack, so the two agree. */
+export const PROMISE_HEAD = '60-Day Guarantee';
 export const PROMISE_BODY =
   'Try it for 60 days. If you are not satisfied, you get your money back.';
 export const PROMISE_FINE = 'US orders only · Covers up to two bottles · Shipping not refunded';
@@ -485,7 +488,7 @@ export const HOW_BODY =
 
 export const OFFER_CARD_HEAD = PLAN_NAME;
 export const OFFER_CARD_SUB =
-  'One bottle of Hormone Focus, 60 capsules, two a day, and three digital guides.';
+  'One bottle of Hormone Focus, 60 capsules, two a day, and three guides.';
 
 /** Under the two options, where the risk comes off. */
 export const OFFER_ONCE_NOTE = KIT_DISCOUNT_NOTE;
@@ -510,7 +513,7 @@ export const KIT_HERO_LABEL = PLAN_NAME;
 export const KIT_HERO_HEAD = 'Not just a bottle. The Feel Like YOU Again Kit.';
 export const KIT_HERO_SUB =
   'The supplement, the recipes, the plan, and a tracker. '
-  + 'Everything you need to start.';
+  + 'Everything you need.';
 
 /* THE PRICE BLOCK, 29 October, replacing a sentence.
  *

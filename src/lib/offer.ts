@@ -58,7 +58,7 @@ export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
 /* RENAMED 30 October 2026, David: the kit is "The Feel Like YOU Again Kit"
    and the 60-Day wording comes off its name.
    WHAT KEEPS ITS SIXTY DAYS, because none of it is the kit's name: the
-   60-Day Happiness Guarantee is the refund window and a policy term, The
+   60-Day Guarantee is the refund window and a policy term, The
    60-Day Hormone Fix is the ebook's own title, and PLAN_SHORT below still
    names the TWO-bottle pack on /offer, which really is sixty days of it. */
 export const PLAN_NAME = 'The Feel Like YOU Again Kit';
@@ -222,7 +222,7 @@ export const QUIZ_KIT_ROWS: StackItem[] = [
     free: true, bonus: true, img: '/img/kit-tracker-thumb.webp',
   },
   {
-    what: 'The 60-Day Happiness Guarantee', worth: 'included',
+    what: 'The 60-Day Guarantee', worth: 'included',
     /* THE SEAL ITSELF, not a tick. David, 30 October: the row carries the
        same badge the guarantee band further down the page carries.
 
