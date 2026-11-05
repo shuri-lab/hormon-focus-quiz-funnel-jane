@@ -278,10 +278,14 @@ test.describe('the quiz', () => {
        $146.99 down to $45; there are no bonuses in this offer, so the only
        honest version is one bottle struck from $49.99 to what she pays. */
     const price = page.locator('.kitHero .kitPrice');
-    await expect(price).toContainText('One bottle');
+    await expect(price).toContainText('Usually');
     await expect(price.locator('s')).toHaveText('$49.99');
-    await expect(price.locator('.kitPriceNow b')).toHaveText('$45.00');
-    await expect(price.locator('.kitPriceSave')).toHaveText('Save 10%');
+    await expect(price.locator('.kitPriceToday b')).toHaveText('$37.50');
+    await expect(price.locator('.kitPriceSave')).toHaveText('You save $12.49 today');
+    /* THE OFFER IS NAMED, 5 November. At 10% it was a footnote under the
+       price; at 25% it is the strongest thing on the page. */
+    await expect(price.locator('.kitWelcome')).toContainText('Welcome offer');
+    await expect(price.locator('.kitWelcome')).toContainText('25% off your first order');
     await expect(price, 'no kit value on the bottle page').not.toContainText('$146.99');
 
     /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
@@ -418,12 +422,12 @@ test.describe('the quiz', () => {
        front of cold traffic. The kit is off this page and unchanged on
        /offer, which the test below holds.
 
-       $45.00 AND NOT $44.99, which is the number that matters here. Ten
-       percent of 49.99 is 4.999, Shopify rounds the DISCOUNT to $4.99, and
-       she is charged $45.00. Verified at the live checkout on 22 October:
-       Subtotal $49.99, order discount JJTEN -$4.99, total USD $45.00. If
-       this assertion and the checkout ever disagree, the page is lying
-       about a price and this is the thing that says so. */
+       $37.50 AND NOT $37.49, which is the number that matters here. A
+       quarter of 49.99 is 12.4975, Shopify rounds the DISCOUNT to $12.49,
+       and she is charged $37.50. The same rounding gave $45.00 under the
+       old 10% code, verified at the live checkout on 22 October. If this
+       assertion and the checkout ever disagree, the page is lying about a
+       price and this is the thing that says so. */
     const lead = page.locator('.kitLead');
 
     /* TWO BOXES, EACH WITH ITS OWN BUTTON, since 30 October 2026. This was a
@@ -435,7 +439,7 @@ test.describe('the quiz', () => {
 
        THE DEAL SHE IS BEING OFFERED. */
     const deal = lead.locator('.kitDeal');
-    await expect(deal.locator('.kitDealNum')).toHaveText('$45.00');
+    await expect(deal.locator('.kitDealNum')).toHaveText('$37.50');
     /* THE OLD PRICE IS IN THE PRICE ROW, 2 November, not in the badge. It
        was legible only inside a 12.5px pill on a purple fill, which made it
        the smallest type on the card for one of the two numbers that decide
@@ -443,14 +447,14 @@ test.describe('the quiz', () => {
        pairing rather than the pill. */
     await expect(deal.locator('.kitWas')).toHaveText('$49.99');
     await expect(deal.locator('.kitDealBadge'), 'the badge names the saving')
-      .toHaveText('Save 10%');
+      .toHaveText('Save 25%');
     await expect(deal.locator('.kitDealBadge'), 'and not the old price')
       .not.toContainText('$49.99');
-    await expect(deal).toContainText('$1.50 a day');
-    await expect(deal).toContainText('10% off applied at checkout');
+    await expect(deal).toContainText('$1.25 a day');
+    await expect(deal).toContainText('25% off applied at checkout');
     await expect(deal.locator('a.kitBtn')).toContainText('Get Hormone Focus');
     await expect(deal.locator('a.kitBtn'))
-      .toHaveAttribute('href', /cart\/41200079175791:1.*discount=JJTEN/);
+      .toHaveAttribute('href', /cart\/41200079175791:1.*discount=HORMONE25OFF/);
 
     /* AND THE ALTERNATIVE, which carries its own 20% in Shopify and must
        never also carry JJTEN: Shopify takes one discount parameter. */
@@ -469,7 +473,7 @@ test.describe('the quiz', () => {
       .not.toHaveClass(/ghost/);
     const subHref = await deal2.locator('a.kitBtn').getAttribute('href');
     expect(subHref).toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
-    expect(subHref, 'JJTEN must not ride the subscription').not.toContain('JJTEN');
+    expect(subHref, 'the code must not ride the subscription').not.toContain('HORMONE25OFF');
 
     /* FREE SHIPPING IS THE SUBSCRIPTION'S AND NOT THE BOTTLE'S. The one-time
        link spends Shopify's single discount parameter on the 10% code, so it
@@ -501,7 +505,7 @@ test.describe('the quiz', () => {
     );
     expect(bottleLinks.length, 'the lead card and the closer').toBe(2);
     for (const h of bottleLinks) {
-      expect(h, 'a bottle link without the discount').toContain('discount=JJTEN');
+      expect(h, 'a bottle link without the discount').toContain('discount=HORMONE25OFF');
     }
     await expect(page.locator('a[href*="54330638663791"]'), 'the kit cart link is off this page')
       .toHaveCount(0);
@@ -541,11 +545,11 @@ test.describe('the quiz', () => {
        it carries the 10% code rather than the kit's free-shipping one. */
     await expect(page.locator('a[data-close]')).toHaveText(/Get Hormone Focus/);
     await expect(page.locator('a[data-close]'))
-      .toHaveAttribute('href', /41200079175791:1.*discount=JJTEN/);
+      .toHaveAttribute('href', /41200079175791:1.*discount=HORMONE25OFF/);
     /* And its note says the price she is charged, with no free shipping on
-       it: $45.00, read off the live checkout. */
+       it: $37.50, read off the live checkout. */
     await expect(page.locator('.kitClose .kitNote').first())
-      .toContainText('$45.00 · 10% off applied at checkout · 60-day money-back guarantee');
+      .toContainText('$37.50 · 25% off applied at checkout · 60-day money-back guarantee');
 
     /* No health answer or result rides in any link out. */
     const out = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
@@ -613,7 +617,7 @@ test.describe('the quiz', () => {
        29 October. It was her own symptom until then. */
     await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
-    await expect(page.locator('.kitLead .kitDealNum')).toHaveText('$45.00');
+    await expect(page.locator('.kitLead .kitDealNum')).toHaveText('$37.50');
     /* Same four whatever she answered — see the note on the lead review above. */
     await expect(page.locator('[data-proof="lead"] .kitRev').first())
       .toContainText('given me my life back');
@@ -1026,7 +1030,7 @@ test.describe('the kit page', () => {
         (as) => as.map((a) => (a as HTMLAnchorElement).href),
       );
       for (const h of offerHrefs) {
-        expect(h, 'JJTEN leaked onto /offer').not.toContain('JJTEN');
+        expect(h, 'the quiz code leaked onto /offer').not.toContain('HORMONE25OFF');
       }
     });
 
@@ -1514,7 +1518,7 @@ test.describe('the two offers', () => {
 
   test('both offers send her to the same two carts', async ({ page }) => {
     /* NOTHING ABOUT WHERE THE BUTTONS GO CHANGED when the page split. Both
-       variants buy the single bottle with JJTEN or the subscription without
+       variants buy the single bottle with the code or the subscription without
        it; the kit's own variant does not exist yet, and the day it does,
        this is the test that says which links have to move. */
     for (const slug of ['kit', 'offer-kit']) {
@@ -1528,11 +1532,11 @@ test.describe('the two offers', () => {
       expect(links.map((l) => l.offer), `${slug}: the two deal boxes`)
         .toEqual(['single', 'subscribe']);
       expect(links[0].href, `${slug}: the bottle carries the code`)
-        .toMatch(/cart\/41200079175791:1.*discount=JJTEN/);
+        .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
       expect(links[1].href, `${slug}: the subscription carries its plan`)
         .toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
       expect(links[1].href, `${slug}: JJTEN must not ride the subscription`)
-        .not.toContain('JJTEN');
+        .not.toContain('HORMONE25OFF');
       await expect(page.locator(`a[href*="54330638663791"]`), `${slug}: the two-bottle variant`)
         .toHaveCount(0);
     }
@@ -1680,10 +1684,17 @@ test('both deal boxes strike the old price the same way, and legibly',
 /* ------------------------------ the stage-aware nurture copy, 3 November -- */
 
 test.describe('the mechanism is the one that is true for her', () => {
-  /** Seeds a state directly: these are address-reachable screens. */
+  /**
+   * Seeds a state BEFORE the app boots.
+   *
+   * It used to navigate and then write sessionStorage, which races: the quiz
+   * provider mounts with whatever was already there and writes its own state
+   * back on the next change, so the seed could be overwritten before the
+   * screen read it. addInitScript runs before any page script, so the app
+   * has never seen anything else.
+   */
   const walk = async (page: import('@playwright/test').Page, S: Record<string, unknown>) => {
-    await page.goto('/quiz');
-    await page.evaluate(
+    await page.addInitScript(
       (st) => sessionStorage.setItem('hf_quiz_state_v3', JSON.stringify(st)),
       { pattern: 'most', tried: ['food'], name: 'Dana', ...S },
     );
@@ -1784,3 +1795,42 @@ test.describe('the mechanism is the one that is true for her', () => {
     await expect(page.locator('.actionBar .cta'), 'a way forward from rDoc').toHaveCount(0);
   });
 });
+
+test('the welcome offer says what it is, what it costs and why she has it',
+  async ({ page }) => {
+    /* THE OFFER IS THE STRONGEST THING ON THIS PAGE at 25%, so it is asserted
+       as a whole: the name, both prices, the saving in money, and the reason
+       she is seeing a price the website does not show. */
+    await page.goto('/quiz/kit');
+    const card = page.locator('.kitHero .kitPrice.isWelcome');
+
+    await expect(card.locator('.kitWelcome')).toContainText('Welcome offer');
+    await expect(card.locator('.kitWelcome')).toContainText('25% off your first order');
+    await expect(card.locator('.kitWas.isBig')).toHaveText('$49.99');
+    await expect(card.locator('.kitPriceToday b')).toHaveText('$37.50');
+    await expect(card.locator('.kitPriceSave')).toHaveText('You save $12.49 today');
+    /* WHY SHE IS SEEING IT lives on the offer card rather than in the hero:
+       the hero block went back to its earlier shape on 5 November. The store
+       sells this bottle at $49.99 without the code, so the sentence is a
+       fact about the store rather than a flourish. */
+    await expect(page.locator('.kitDealWhy'))
+      .toContainText('Not available on the website');
+
+    /* THE OLD PRICE HAS TO BE READABLE, which is the thing that was wrong at
+       13px: asserted as rendered size and as a ruled line, not as markup. */
+    const was = await card.locator('.kitWas.isBig').evaluate((e) => ({
+      px: Math.round(parseFloat(getComputedStyle(e).fontSize)),
+      ruled: getComputedStyle(e, '::after').content !== 'none',
+    }));
+    expect(was.px, `${was.px}px is too small to read as the old price`)
+      .toBeGreaterThanOrEqual(24);
+    expect(was.ruled, 'no rule through the old price').toBe(true);
+
+    /* AND THE LINK CARRIES THE CODE THAT MAKES THE NUMBER TRUE. Verified
+       against the live cart on 5 November: HORMONE25OFF takes 49.99 to
+       37.50, and no code at all leaves it at 49.99. */
+    const href = await page.locator('#kit-offer a[data-offer="single"]').getAttribute('href');
+    expect(href, 'the page promises 25% and the link must carry it')
+      .toContain('discount=HORMONE25OFF');
+    expect(href, 'the old ten percent code must be gone').not.toContain('JJTEN');
+  });

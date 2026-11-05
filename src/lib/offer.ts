@@ -122,35 +122,55 @@ export const PROTOCOL_DISCOUNT_CODE: string | null = 'PROTOCOL';
 export const KIT_SHIPPING_CODE: string | null = 'HF60FREESHIP';
 
 /**
- * Ten percent off one bottle, for the quiz offer page only.
+ * The welcome discount's code: 25% off one bottle, on the quiz page only.
  *
- * VERIFIED AGAINST THE LIVE CHECKOUT, 22 October 2026, by typing it into
- * Shopify's own discount field and by loading the cart permalink that carries
- * it. Both produce the same thing on variant 41200079175791:
+ * VERIFIED AGAINST THE LIVE CART, 5 November 2026, by loading the permalink
+ * this page builds and reading /cart.js back. Four sessions, each fresh:
  *
- *   Subtotal $49.99 · Order discount JJTEN -$4.99 · Total USD $45.00
+ *   no code at all   $49.99 -> $49.99   off 0.00
+ *   HORMONE25OFF     $49.99 -> $37.50   off 12.49   <-- this one
+ *   NOTAREALCODE123  $49.99 -> $49.99   off 0.00
+ *   JJTEN            $49.99 -> $45.00   off  4.99
  *
- * The code David first gave was JJ10, and Shopify answered that one with
- * "Enter a valid discount code". Nothing was built on it. Do not change this
- * string without putting the new one through the same check: a code the page
+ * The invalid code is in there on purpose: without it, a cart that ignores
+ * every code looks exactly like a cart that honours this one, and "the total
+ * went down" would prove nothing.
+ *
+ * AND IT PROVED THE SALE HAD ENDED. The store was running an automatic
+ * PRE-BLACK FRIDAY 25OFF discount that gave $37.50 to everybody; the first
+ * row above shows it is gone. So between moving this page to 25% and setting
+ * this code, the page promised $37.50 while JJTEN charged $45.00. That is
+ * the gap the note here used to warn about, and it was real.
+ *
+ * It was JJTEN, worth 10%, until today. Before that David gave JJ10, which
+ * Shopify answered with "Enter a valid discount code"; nothing was built on
+ * it. Put any replacement through the same four-row check: a code the page
  * promises and the cart refuses is worse than no discount at all.
  *
- * NOT ON /offer. Those pages sell the same bottle at full price and are out
- * of this change's scope, so the code is threaded through cartPath by the
- * caller rather than baked into the single-bottle path.
+ * NOT ON /offer. Those pages sell the same bottle at full price, so the code
+ * is threaded through cartPath by the caller rather than baked into the
+ * single-bottle path.
  */
-export const SINGLE_DISCOUNT_CODE: string | null = 'JJTEN';
+export const SINGLE_DISCOUNT_CODE: string | null = 'HORMONE25OFF';
+
+/** The welcome discount, as a whole number, for the copy that names it. */
+export const SINGLE_DISCOUNT_PERCENT = 25;
 
 /**
- * What Shopify actually charges for one bottle with that code: $45.00.
+ * What Shopify charges for one bottle at 25% off: $37.50.
  *
- * NOT 44.99, AND NOT ARITHMETIC. Ten percent of 49.99 is 4.999, Shopify
- * rounds the DISCOUNT to $4.99 rather than the total to $44.99, and the
- * customer pays $45.00. Computing it here would print a price a cent under
- * what she is charged, which is the exact failure the page must not have.
- * Read off the live checkout and written down.
+ * NOT ARITHMETIC, AND NOT $37.49. A quarter of 49.99 is 12.4975; Shopify
+ * rounds the DISCOUNT rather than the total, to $12.49, and the customer
+ * pays $37.50. Computing it would print a price a cent under what she is
+ * charged, which is the exact failure this page must not have.
+ *
+ * READ OFF THE LIVE CART, 5 November 2026, with HORMONE25OFF on the
+ * permalink: original 49.99, total 37.50, discount 12.49. See the note on
+ * the code above for the four sessions that produced it.
+ *
+ * It was $45.00 under the 10% code until 5 November 2026.
  */
-export const SINGLE_AFTER_DISCOUNT = 45.00;
+export const SINGLE_AFTER_DISCOUNT = 37.50;
 
 /* ------------------------------------------ the quiz page's 60-Day Kit -- */
 
@@ -273,7 +293,7 @@ export const SHOT_CAUSE: Record<string, string> = {
    under the names the page already uses, so there is one source and no cycle.
    Both are read by the copy gate either way. */
 export const KIT_BUY_CTA = 'Get my Kit';
-export const KIT_DISCOUNT_NOTE = '10% off applied at checkout';
+export const KIT_DISCOUNT_NOTE = `${SINGLE_DISCOUNT_PERCENT}% off applied at checkout`;
 
 /** True when the subscription plan exists. False keeps the option unrendered. */
 export const SUBSCRIPTION_LIVE = true;

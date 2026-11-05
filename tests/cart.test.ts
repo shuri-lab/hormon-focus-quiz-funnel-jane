@@ -488,22 +488,45 @@ test('the discounted bottle is priced at what Shopify actually charges', async (
   const { SINGLE_AFTER_DISCOUNT, ONE_MONTH_PRICE, singleDailyPrice } =
     await import('../src/lib/offer');
 
-  /* $45.00 AND NOT $44.99, which is the whole point of this test.
-     Ten percent of 49.99 is 4.999. Shopify rounds the DISCOUNT to $4.99,
-     not the total to $44.99, so she pays $45.00. Verified at the live
-     checkout on 22 October 2026: Subtotal $49.99, order discount JJTEN
-     -$4.99, total USD $45.00.
+  /* $37.50 AND NOT $37.49, which is the whole point of this test.
+     A quarter of 49.99 is 12.4975. Shopify rounds the DISCOUNT to $12.49,
+     not the total to $37.49, so she pays $37.50. The same rounding gave
+     $45.00 under the old 10% code, verified at the live checkout on
+     22 October 2026: Subtotal $49.99, order discount JJTEN -$4.99, total
+     USD $45.00.
      Anyone "fixing" this to the arithmetic would make the page promise a
      cent less than the cart charges, which is the exact failure the brief
      called worse than having no discount at all. */
-  expect(SINGLE_AFTER_DISCOUNT).toBe(45.00);
+  expect(SINGLE_AFTER_DISCOUNT).toBe(37.50);
   expect(
     SINGLE_AFTER_DISCOUNT,
     'the naive arithmetic is a cent under what the checkout charges',
-  ).not.toBe(Number((ONE_MONTH_PRICE * 0.9).toFixed(2)));
+  ).not.toBe(Number((ONE_MONTH_PRICE * 0.75).toFixed(2)));
 
   /* And the day rate is the bottle's thirty days, not the kit's sixty. */
-  expect(singleDailyPrice()).toBe('$1.50');
+  expect(singleDailyPrice()).toBe('$1.25');
+});
+
+test('the page promises the discount the code actually carries', async () => {
+  /* THE PAGE AND THE CODE HAVE TO AGREE. Settled 5 November: HORMONE25OFF
+     takes 49.99 to 37.50 against the live cart, so the percentage the page
+     names and the price it charges are the same offer.
+
+     It was briefly not so. The page moved to 25% before the code existed,
+     and for those hours the link still carried JJTEN at 10%. The store's
+     automatic 25OFF sale was covering it; that sale has since ended, which
+     is how the gap was found. This is the assertion that would have caught
+     it, so it stays. */
+  const {
+    SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_PERCENT, ONE_MONTH_PRICE: full,
+  } = await import('../src/lib/offer');
+
+  const implied = (1 - SINGLE_AFTER_DISCOUNT / full) * 100;
+  expect(
+    Math.round(implied),
+    `the page charges ${SINGLE_AFTER_DISCOUNT} off ${full}, which is `
+    + `${implied.toFixed(1)}%, and says ${SINGLE_DISCOUNT_PERCENT}%`,
+  ).toBe(SINGLE_DISCOUNT_PERCENT);
 });
 
 test('the code rides on the quiz link and on no other', async () => {
@@ -514,7 +537,7 @@ test('the code rides on the quiz link and on no other', async () => {
      /offer and /plan selling the same bottle at full price. */
   const withCode = cartPath('single', SINGLE_DISCOUNT_CODE);
   expect(withCode).toContain(`/cart/${V}:1`);
-  expect(withCode).toContain('discount=JJTEN');
+  expect(withCode).toContain('discount=HORMONE25OFF');
   expect(withCode).toContain('storefront=true');
 
   const plain = cartPath('single');

@@ -14,14 +14,16 @@ import {
    rows became the shared BuyRows, and "free" is now ValueStack's own word.
    All of them are still exported and still gated. */
 import {
-  BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_ONE_LABEL, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
+  BOTTLE_CTA, BOTTLE_FULL_LABEL, BOTTLE_HERO_HEAD, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
   BOTTLE_WHATYOUGET, FREE_SHIPPING, HF_NAME,
   KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD,
   KIT_ONCE_NOTE, KIT_SAVE_PREFIX, KIT_SHOT_ALT, KIT_STACK_HEAD, KIT_SUB_NOTE,
   KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
-  SUB_PILL, TRUST_ITEMS, bottleBatchLine, kitBatchLine,
+  SUB_PILL, TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
+  bottleBatchLine,
+  kitBatchLine, welcomeSaving,
 } from '../lib/kitCopy';
 
 /* THE OFFER, AS IT IS ON JJ'S OWN PAGE.
@@ -150,14 +152,36 @@ export function KitPrice() {
  */
 export function BottlePrice() {
   return (
-    <div className="kitPrice">
-      <p className="kitPriceWas">
-        <span>{BOTTLE_ONE_LABEL}</span> <s>{money(ONE_MONTH_PRICE)}</s>
+    <div className="kitPrice isWelcome">
+      {/* THE OFFER, NAMED AND FIRST. At 10% this was a footnote under the
+          price; at 25% it is the strongest thing on the page, so it is said
+          before the numbers rather than inferred from them.
+
+          IT WAS A BORDERED CARD WITH A RIBBON AND AN ARROW for an hour on
+          5 November. David looked at it and asked for this back, so the card
+          is gone and the exclusivity line with it: that sentence is on the
+          offer card, under the button, which is where she is deciding. */}
+      <p className="kitWelcome">
+        <b>{WELCOME_LABEL}</b>
+        <span>{WELCOME_DETAIL}</span>
       </p>
-      <p className="kitPriceNow">
-        <span>{KIT_TODAY_LABEL}</span> <b>{money(SINGLE_AFTER_DISCOUNT)}</b>
+
+      {/* BOTH PRICES ON ONE LINE, each under its own label, with the old one
+          ruled through the way the value stack rules its rows. It was 13px
+          grey type: you could not tell at a glance that the bottle is
+          normally $49.99, which is the whole argument. */}
+      <p className="kitPriceRow">
+        <span className="kitPriceFull">
+          <small>{BOTTLE_FULL_LABEL}</small>
+          <s className="kitWas isBig">{money(ONE_MONTH_PRICE)}</s>
+        </span>
+        <span className="kitPriceToday">
+          <small>{KIT_TODAY_LABEL}</small>
+          <b>{money(SINGLE_AFTER_DISCOUNT)}</b>
+        </span>
       </p>
-      <p className="kitPriceSave">{BOTTLE_SAVE}</p>
+
+      <p className="kitPriceSave">{welcomeSaving()}</p>
     </div>
   );
 }
@@ -314,6 +338,9 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
             {isKit ? KIT_BUY_CTA : BOTTLE_CTA} <Arrow />
           </a>
           <p className="kitDealFine">{OFFER_ONCE_NOTE}</p>
+          {/* The same fact as the hero's, in one line, where she is actually
+              clicking. */}
+          {!isKit && <p className="kitDealWhy">{WELCOME_WHY_SHORT}</p>}
         </div>
 
         <div className="kitOr"><span>or</span></div>

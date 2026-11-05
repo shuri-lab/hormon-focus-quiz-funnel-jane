@@ -17,8 +17,9 @@
  * contractions, no claim the brand may not make.
  */
 import {
-  BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, PLAN_NAME,
-  batchCount, dailyPrice,
+  BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, ONE_MONTH_PRICE,
+  PLAN_NAME, SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_PERCENT, batchCount,
+  dailyPrice, money,
 } from './offer';
 import { MG_HEADLINE } from './offerCopy';
 import type { SymptomId } from './logic';
@@ -619,7 +620,60 @@ export const BOTTLE_PLAN_LEAD =
   'Your bottle is step one. Here is the rest of the plan to do alongside it.';
 
 /** The saving on the bottle, stated rather than summed from a value stack. */
-export const BOTTLE_SAVE = 'Save 10%';
+export const BOTTLE_SAVE = `Save ${SINGLE_DISCOUNT_PERCENT}%`;
+
+/* ------------------------------------------- the welcome offer --------- */
+
+/**
+ * WHAT THE TRADE CALLS A FIRST-ORDER DISCOUNT, 5 November 2026.
+ *
+ * It was 10% and read as a footnote: "10% off applied at checkout", under a
+ * struck price set at 13px. At 25% it is the strongest thing on the page and
+ * has to look like it, so it is named rather than implied. "Welcome offer"
+ * is the usual term for a discount a first-time customer gets, and it says
+ * why she is getting it, which "25% off" on its own does not.
+ *
+ * IT IS NOT A COUNTDOWN AND IT IS NOT SCARCE. No timer, no "today only", no
+ * expiry she cannot verify. It is simply what a new customer pays.
+ *
+ * DRAFT FOR JANE.
+ */
+export const WELCOME_LABEL = 'Welcome offer';
+export const WELCOME_DETAIL = `${SINGLE_DISCOUNT_PERCENT}% off your first order`;
+
+/** Under the price: the money, not the percentage. */
+export const welcomeSaving = (): string =>
+  `You save ${money(ONE_MONTH_PRICE - SINGLE_AFTER_DISCOUNT)} today`;
+
+/** The label over the struck price in the hero. */
+export const BOTTLE_FULL_LABEL = 'Usually';
+
+/**
+ * WHY SHE IS SEEING THIS PRICE, said where she is deciding.
+ *
+ * David, 5 November: say somewhere that this is not a price she finds
+ * elsewhere, because it is not.
+ *
+ * IT IS TRUE, AND IT WAS CHECKED. The store sells this bottle at $49.99 to
+ * anyone arriving without the code, verified on 5 November against the live
+ * cart: no code, $49.99; HORMONE25OFF, $37.50. The code is not published on
+ * the site, so the sentence is a fact about the store rather than a flourish.
+ *
+ * IT GOES STALE THE DAY A PUBLIC SALE RUNS. An automatic site-wide discount
+ * gives everybody the same price and takes precedence over a code, which is
+ * exactly what the PRE-BLACK FRIDAY 25OFF sale was doing until it ended. If
+ * one runs again, this line stops being true and has to come off.
+ *
+ * NO TIMER AND NO COUNTDOWN. "First order" is the condition, not a deadline.
+ *
+ * DRAFT FOR JANE.
+ */
+export const WELCOME_WHY =
+  'This price is for women who finished the Hormone Check. It is not on the '
+  + 'website, and it is for your first order.';
+
+/** The short version, for the value stack where space is tighter. */
+export const WELCOME_WHY_SHORT = 'Your Hormone Check price. Not available on the website.';
 
 /** The product's own name, over the bottle in the card head. */
 export const HF_NAME = 'Hormone Focus';

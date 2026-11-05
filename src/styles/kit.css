@@ -1619,7 +1619,10 @@
    trimming on 29 October through .isKit, and the bottle kept the old ones.
    A square shot is also taller than the kit's 4:3 at the same cap. */
 @media (max-height: 720px) {
-  .kitHeroShot:not(.isKit) { max-height: 14vh; }
+  /* 12vh, not 14. Restoring both this and the Okendo mark under the rating
+     left 390x560 with zero slack, and of the two the mark is worth more:
+     it is proof, and this is 2vh of bottle. */
+  .kitHeroShot:not(.isKit) { max-height: 12vh; }
 }
 @media (max-height: 520px) {
   .kitHeroShot:not(.isKit) { max-height: 9vh; }
@@ -1680,3 +1683,107 @@
 
 /* The nurture screens' own copies, for the same reason. */
 .nFigImg, .nStepIcon, .nHow { mix-blend-mode: multiply; }
+
+/* ========================================================================
+   THE WELCOME OFFER                                       5 November 2026
+   ========================================================================
+
+   The discount went from 10% to 25%, and at 25% it is the strongest thing
+   on the page. It was a 13px grey "10% off applied at checkout" under a
+   struck price set at the same size: you could not tell at a glance that
+   the bottle is normally $49.99, which is the whole argument.
+   ------------------------------------------------------------------------ */
+
+.kitPrice.isWelcome { max-width: 320px; gap: 0; }
+
+/* The offer, named, above the numbers. A pill rather than the bordered card
+   that was here briefly on 5 November: David preferred this. */
+.kitWelcome {
+  margin: 0 0 11px; display: inline-flex; align-items: baseline;
+  flex-wrap: wrap; justify-content: center; gap: 2px 8px;
+  padding: 7px 14px; border-radius: 999px;
+  background: var(--plum); color: #fff;
+}
+.kitWelcome b {
+  font-size: 12.5px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.kitWelcome span { font-size: 13px; font-weight: 700; opacity: .92; }
+
+.kitDealWhy {
+  margin: 7px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--ink-3);
+}
+
+/* Both prices on one line, each under its own label. */
+.kitPriceRow {
+  margin: 0; display: flex; align-items: flex-end;
+  justify-content: center; gap: 18px;
+}
+.kitPriceFull, .kitPriceToday { display: grid; justify-items: center; gap: 2px; }
+.kitPriceFull small, .kitPriceToday small {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.kitPriceToday small { color: var(--plum-2); }
+.kitPriceToday b {
+  font-size: clamp(38px, 10.5vw, 48px); font-weight: 800;
+  letter-spacing: -.035em; line-height: 1; color: var(--plum);
+}
+
+/* THE OLD PRICE, RULED LIKE THE VALUE STACK'S. Same red diagonal, scaled up:
+   a line through a price is what reads as "not this", and a 13px grey
+   strikethrough reads as nothing at all. */
+.kitWas.isBig { font-size: 30px; font-weight: 700; color: var(--ink-2); }
+.kitWas.isBig::after { height: 3px; }
+
+/* What she keeps, in money rather than in percent. */
+.kitPrice.isWelcome .kitPriceSave {
+  margin-top: 10px; background: var(--good-wash); color: var(--good);
+  font-size: 12.5px; font-weight: 800;
+}
+
+/* -- paying for it on a short screen -------------------------------------
+   MEASURED at the five viewports an in-app browser hands out: the named
+   offer and the two-line price row cost about 58px, and four of the five put
+   the button under the fold.
+
+   THE LABELS GO BESIDE THE NUMBERS instead of above them, which buys back a
+   whole row without losing a word, and everything tightens a step. The two
+   prices stay the same size relative to each other, because the comparison
+   between them is the entire point of the block. */
+@media (max-height: 720px) {
+  .kitHero .kitWelcome {
+    margin-bottom: 7px; padding: 4px 11px; gap: 1px 6px;
+  }
+  .kitHero .kitWelcome b { font-size: 11px; }
+  .kitHero .kitWelcome span { font-size: 11.5px; }
+
+  .kitHero .kitPriceRow { gap: 14px; align-items: baseline; }
+  .kitHero .kitPriceFull, .kitHero .kitPriceToday {
+    display: inline-flex; align-items: baseline; gap: 5px;
+  }
+  .kitHero .kitPriceFull small, .kitHero .kitPriceToday small { font-size: 10px; }
+  .kitHero .kitPriceToday b { font-size: 34px; }
+  .kitHero .kitWas.isBig { font-size: 23px; }
+  .kitHero .kitPrice.isWelcome .kitPriceSave {
+    margin-top: 6px; padding: 3px 9px; font-size: 11.5px;
+  }
+}
+
+@media (max-height: 520px) {
+  .kitHero .kitWelcome { margin-bottom: 5px; }
+  .kitHero .kitPriceToday b { font-size: 28px; }
+  .kitHero .kitWas.isBig { font-size: 19px; }
+  /* At this height the label beside the old price is the one word the block
+     can lose: the rule through it already says what it is. */
+  .kitHero .kitPriceFull small { display: none; }
+  /* And the saving in money gives way to the saving in percent, which the
+     pill above is already carrying. Both prices are still on screen, so
+     nothing about the offer is hidden, only said once instead of twice. */
+  .kitHero .kitPrice.isWelcome .kitPriceSave { display: none; }
+}
+
+/* The Okendo mark under the hero rating was hidden here for an hour on
+   5 November to pay for the bordered price card. The card is gone and the
+   room came back with it: measured at all five in-app viewports, the button
+   clears the fold with the mark showing. */
