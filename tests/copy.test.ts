@@ -382,6 +382,22 @@ const CLOCK_EXEMPT = new Set([
   "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
   + 'this together on your own. It gives you 60 days to stay with the same simple '
   + 'plan instead of changing things every few days.',
+
+  /* THE KIT PAGE'S HEADLINE, 6 November 2026, AND IT IS NOT LIKE THE OTHERS.
+     Every string above is a duration that is not a promise: a refund window,
+     how long a plan runs, two weeks of writing things down. This one is a
+     RESULT WITH A CLOCK ON IT in the brand's own voice, which is the exact
+     thing this rule exists to catch.
+
+     It is here because David asked for it by name on 6 November and because
+     the kit is called The Feel Like YOU Again Kit, so the sentence is the
+     product's name with a date added. It is NOT here because the rule is
+     wrong.
+
+     PENDING JANE AND COMPLIANCE. If they will not have it, the fix is one
+     line in kitCopy.ts: attribute it ("as customers report") or drop the
+     clock ("Feel like YOU again."), and delete this entry. */
+  'Feel like YOU again in 60 days.',
 ]);
 
 test('no timeline is stated without saying whose timeline it is', () => {

@@ -510,10 +510,45 @@ export const OFFER_ONCE_NOTE = KIT_DISCOUNT_NOTE;
 /** The kit's name over the hero, from offer.ts so one file owns it. */
 export const KIT_HERO_LABEL = PLAN_NAME;
 
-export const KIT_HERO_HEAD = 'Not just a bottle. The Feel Like YOU Again Kit.';
+/**
+ * THE KIT'S HEADLINE, WITH HER NAME IN IT. David, 6 November.
+ *
+ * ================= THIS ONE NEEDS JANE AND COMPLIANCE =================
+ *
+ * "Feel like YOU again in 60 days" is a RESULT WITH A CLOCK ON IT, said in
+ * the brand's own voice. It is the exact shape tests/copy.test.ts exists to
+ * stop: a duration tied to a change, with nobody attributing it. Every other
+ * line on these pages either carries "as customers report" or makes no
+ * promise at all.
+ *
+ * It is exempted by name in CLOCK_EXEMPT rather than quietly let through, so
+ * it is a decision somebody made and can find. The two ways to make it pass
+ * on its own merits, if compliance does not want the exemption:
+ *
+ *   attribute it   "Feel like YOU again in 60 days, as customers report."
+ *   drop the clock "Feel like YOU again."
+ *
+ * THE KIT IS NAMED THIS. "The Feel Like YOU Again Kit" is the product, and
+ * this is that name as a sentence, which is the argument for it. A product
+ * name is not a claim; a sentence promising a result by a date is.
+ */
+export const KIT_HERO_HEAD = 'Feel like YOU again in 60 days.';
+
+/**
+ * The same line with her name on the front.
+ *
+ * A COMMA AFTER THE NAME, which the brief did not have: "Dana feel like YOU
+ * again" reads as an instruction to somebody called Dana. The result page
+ * addresses her the same way, "Dana, here is your result".
+ */
+export const kitHeroHead = (name: string): string =>
+  (name ? `${name}, feel like YOU again in 60 days.` : KIT_HERO_HEAD);
+/* THE EM DASH IS A PERIOD. The brief wrote "exactly what to do, no crash
+   diets" with an em dash at the join; the house style has had none since
+   29 October and the gate fails the build over one. */
 export const KIT_HERO_SUB =
-  'The supplement, the recipes, the plan, and a tracker. '
-  + 'Everything you need.';
+  'Hormone Focus, plus a day-by-day plan, recipes, and tracker that tell you '
+  + 'exactly what to do. No crash diets, no willpower, no guessing.';
 
 /* THE PRICE BLOCK, 29 October, replacing a sentence.
  *

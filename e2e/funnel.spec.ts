@@ -742,7 +742,7 @@ test.describe('the addresses', () => {
        until the A/B was set up. */
     ['kit', 'Hormone Focus, your daily support'],
     /* And the kit, preserved whole at its own address, off the flow. */
-    ['offer-kit', 'Not just a bottle. The Feel Like YOU Again Kit.'],
+    ['offer-kit', 'Feel like YOU again in 60 days.'],
     ['speak-to-your-doctor', 'Talk to your healthcare professional'],
   ] as const;
 
@@ -1519,7 +1519,7 @@ test.describe('the two offers', () => {
       /* And forward from the kit page is nowhere: it is not in the sequence,
          so there is no Continue to press. */
       await page.goto('/quiz/offer-kit');
-      await expect(heading(page)).toHaveText('Not just a bottle. The Feel Like YOU Again Kit.');
+      await expect(heading(page)).toHaveText('Feel like YOU again in 60 days.');
       await expect(page.locator('.segbar i.on'), 'the kit page is not a step in the walk')
         .toHaveCount(0);
     });
@@ -1848,3 +1848,32 @@ test('the welcome offer says what it is, what it costs and why she has it',
       .toContain('discount=HORMONE25OFF');
     expect(href, 'the old ten percent code must be gone').not.toContain('JJTEN');
   });
+
+test('the kit headline uses her name, and stands up without one', async ({ page }) => {
+  /* SHE GAVE HER NAME AT THE EMAIL GATE, and a woman who arrived from JJ's
+     own list never saw that screen. Both have to read as a sentence: the
+     fallback is not a cosmetic nicety, it is most of JJ's list. */
+  const seed = {
+    sym: ['sleep'], main: 'sleep', age: '40-44', cycle: 'unpredictable',
+    pattern: 'most', tried: ['food'], want: 'sleep',
+  };
+
+  for (const [name, expected] of [
+    ['Dana', 'Dana, feel like YOU again in 60 days.'],
+    ['', 'Feel like YOU again in 60 days.'],
+    /* A name of only spaces is the one a real form produces, and it must not
+       render as ", feel like YOU again". */
+    ['   ', 'Feel like YOU again in 60 days.'],
+  ]) {
+    await page.addInitScript(
+      (st) => sessionStorage.setItem('hf_quiz_state_v3', JSON.stringify(st)),
+      { ...seed, name },
+    );
+    await page.goto('/quiz/offer-kit');
+    await expect(heading(page), `name ${JSON.stringify(name)}`).toHaveText(expected);
+  }
+
+  /* And the one-bottle offer keeps its own headline: this is the kit's. */
+  await page.goto('/quiz/kit');
+  await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
+});

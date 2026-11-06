@@ -29,8 +29,8 @@ import { INGREDIENTS } from '../../lib/offerCopy';
 import {
   BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_HERO_SUB, BOTTLE_PLAN_LEAD, BOTTLE_SHOT_ALT,
   CLOSE_CTA, HERO_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
-  KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD, KIT_HERO_HEAD,
-  KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD,
+  KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
+  KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD, kitHeroHead,
   PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY, PLAN_STEP_2,
   PLAN_STEP_2_BODY, PLAN_STEP_3, PLAN_STEP_3_BODY, PROOF_EYEBROW, PROOF_HEAD,
   PROOF_MORE_HEAD, PROOF_NOTE, SINGLE_DISCOUNT_NOTE, STICKY_CTA, TEASER_HEAD,
@@ -191,7 +191,11 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
             she reached the picture. The name is in the headline now. */}
         <p className="kitHeroEyebrow">{HERO_EYEBROW[stageOf(outcome)]}</p>
         <ScreenTitle className="kitHeroH1">
-          {isKit ? KIT_HERO_HEAD : BOTTLE_HERO_HEAD}
+          {/* HER NAME ON THE KIT'S HEADLINE, 6 November. She gave it at the
+              email gate; a woman who came from JJ's list skipped that screen
+              and has none, so the line stands on its own for her. The
+              bottle page is unchanged. */}
+          {isKit ? kitHeroHead(S.name.trim()) : BOTTLE_HERO_HEAD}
         </ScreenTitle>
         <p className="kitHeroSub">{isKit ? KIT_HERO_SUB : BOTTLE_HERO_SUB}</p>
 
