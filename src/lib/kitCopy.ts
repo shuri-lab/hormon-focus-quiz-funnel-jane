@@ -543,12 +543,12 @@ export const KIT_HERO_HEAD = 'Feel like YOU again in 60 days.';
  */
 export const kitHeroHead = (name: string): string =>
   (name ? `${name}, feel like YOU again in 60 days.` : KIT_HERO_HEAD);
-/* THE EM DASH IS A PERIOD. The brief wrote "exactly what to do, no crash
-   diets" with an em dash at the join; the house style has had none since
-   29 October and the gate fails the build over one. */
+/* "No crash diets, no willpower, no guessing" came off on 6 November. The
+   sentence ends on what the kit gives her rather than on three things it is
+   not, and the hero is one line shorter for it. */
 export const KIT_HERO_SUB =
   'Hormone Focus, plus a day-by-day plan, recipes, and tracker that tell you '
-  + 'exactly what to do. No crash diets, no willpower, no guessing.';
+  + 'exactly what to do.';
 
 /* THE PRICE BLOCK, 29 October, replacing a sentence.
  *
