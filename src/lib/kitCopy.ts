@@ -18,8 +18,8 @@
  */
 import {
   BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, ONE_MONTH_PRICE,
-  PLAN_NAME, SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_PERCENT, SUBSCRIBE_PRICE,
-  batchCount, dailyPrice, money,
+  PLAN_NAME, QUIZ_KIT_AFTER_DISCOUNT, SINGLE_AFTER_DISCOUNT,
+  SINGLE_DISCOUNT_PERCENT, SUBSCRIBE_PRICE, batchCount, dailyPrice, money,
 } from './offer';
 import { MG_HEADLINE } from './offerCopy';
 import type { SymptomId } from './logic';
@@ -488,7 +488,7 @@ export const HOW_BODY =
 
 export const OFFER_CARD_HEAD = PLAN_NAME;
 export const OFFER_CARD_SUB =
-  'One bottle of Hormone Focus, 60 capsules, two a day, and three guides.';
+  'Two bottles of Hormone Focus, 60 days of capsules, and three guides.';
 
 /** Under the two options, where the risk comes off. */
 export const OFFER_ONCE_NOTE = KIT_DISCOUNT_NOTE;
@@ -541,8 +541,24 @@ export const KIT_HERO_HEAD = 'Feel like YOU again in 60 days.';
  * again" reads as an instruction to somebody called Dana. The result page
  * addresses her the same way, "Dana, here is your result".
  */
-export const kitHeroHead = (name: string): string =>
-  (name ? `${name}, feel like YOU again in 60 days.` : KIT_HERO_HEAD);
+export function kitHeroHead(raw: string): string {
+  const name = raw.trim();
+  /* FALLS BACK UNLESS IT STARTS WITH A LETTER. A name box collects spaces,
+     an empty string, an emoji and the occasional "1", and ", feel like YOU
+     again" is worse than no name at all. The unicode class rather than A-Z,
+     so Ana and Zoë are names and 7 is not. */
+  if (!/^\p{L}/u.test(name)) return KIT_HERO_HEAD;
+
+  /* HER FIRST NAME, AND ONLY ITS FIRST LETTER CAPITALISED.
+     The rest is left as she typed it, so McKenna and O'Neill survive, EXCEPT
+     when she typed the whole thing in capitals: "DANA, feel like YOU again"
+     shouts her name back at her, and caps lock on a name field is a habit
+     rather than a spelling. */
+  const first = name.split(/\s+/)[0];
+  const body = first === first.toUpperCase() ? first.toLowerCase() : first;
+  const shown = body.charAt(0).toUpperCase() + body.slice(1);
+  return `${shown}, feel like YOU again in 60 days.`;
+}
 /* "No crash diets, no willpower, no guessing" came off on 6 November. The
    sentence ends on what the kit gives her rather than on three things it is
    not, and the hero is one line shorter for it. */
@@ -630,6 +646,29 @@ export const KIT_BATCH_SHOWN = BATCH_ON_SHELF > 0;
 
 export const KIT_CLOSE_HEAD = 'Your kit can be on its way today.';
 
+/* ------------------------------------------- the kit's two anchors ----- */
+
+/**
+ * WHAT $47 IS NEXT TO, and why she is being offered it.
+ *
+ * The first is the comparison that makes the number land: two bottles and
+ * three guides for less than one bottle costs on its own. It is arithmetic
+ * on constants in this file, not a claim.
+ *
+ * The second is the reason-why, and it is the line that keeps $47 from
+ * undercutting JJ's own site: this price belongs to the Hormone Check, not
+ * to the store. Same fact as the one-bottle page's welcome line, and it goes
+ * stale the same way, on the day a site-wide sale runs.
+ *
+ * DRAFT FOR JANE, both.
+ */
+export const kitLessThanOne = (): string =>
+  `That is less than one bottle of Hormone Focus on its own (${money(ONE_MONTH_PRICE)}).`;
+
+export const kitReasonWhy = (): string =>
+  'Because you finished your Hormone Check, you get the full 60-day kit for '
+  + `${money(QUIZ_KIT_AFTER_DISCOUNT)}.`;
+
 /**
  * The kit shot's alt text.
  *
@@ -639,7 +678,7 @@ export const KIT_CLOSE_HEAD = 'Your kit can be on its way today.';
  * it loads.
  */
 export const KIT_SHOT_ALT =
-  'The Feel Like YOU Again Kit: one bottle of Hormone Focus, '
+  'The Feel Like YOU Again Kit: two bottles of Hormone Focus, '
   + 'The 60-Day Hormone Fix, Hormone Healthy Recipes and the Daily Symptom Tracker';
 
 /* ------------------------------------- the one-bottle offer, variant B -- */

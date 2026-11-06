@@ -19,7 +19,9 @@ import {
 } from '../../components/Proof';
 import { kitProof } from '../../lib/reviews';
 import { REVIEW_COUNT } from '../../lib/reviews';
-import { SINGLE_AFTER_DISCOUNT, money, singleDailyPrice } from '../../lib/offer';
+import {
+  QUIZ_KIT_AFTER_DISCOUNT, SINGLE_AFTER_DISCOUNT, money, singleDailyPrice,
+} from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
 /* HERO_HEAD, HERO_HEAD_DEFAULT and HERO_SUB_BY_STAGE are no longer imported:
    the hero sells the package now, so its headline and sub are the kit's
@@ -30,12 +32,12 @@ import {
   BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_HERO_SUB, BOTTLE_PLAN_LEAD, BOTTLE_SHOT_ALT,
   CLOSE_CTA, HERO_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
   KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
-  KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD, kitHeroHead,
+  KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD,
   PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY, PLAN_STEP_2,
   PLAN_STEP_2_BODY, PLAN_STEP_3, PLAN_STEP_3_BODY, PROOF_EYEBROW, PROOF_HEAD,
   PROOF_MORE_HEAD, PROOF_NOTE, SINGLE_DISCOUNT_NOTE, STICKY_CTA, TEASER_HEAD,
   TRUST_LEAD,
-  WHY_OPENER, WHY_PRODUCT, WHY_STAGE,
+  WHY_OPENER, WHY_PRODUCT, WHY_STAGE, kitHeroHead, kitLessThanOne, kitReasonWhy,
 } from '../../lib/kitCopy';
 import {
   BottlePrice, KitGuarantee, KitOffer, KitPrice, kitHref,
@@ -125,7 +127,10 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
      server has no sessionStorage, so this link was being served with her
      attribution missing and never rebuilt. */
   const hydrated = useHydrated();
-  const href = useMemo(() => kitHref(outcome, angle.slug), [outcome, angle.slug, hydrated]);
+  const href = useMemo(
+    () => kitHref(outcome, angle.slug, variant),
+    [outcome, angle.slug, variant, hydrated],
+  );
 
   /* The bar shows wherever the page has no call to action of its own in
      view, and stays off the legal text at the foot.
@@ -235,6 +240,18 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
           {isKit ? HERO_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </button>
         <p className="kitHeroRisk">{HERO_RISK}</p>
+
+        {/* THE KIT'S TWO ANCHORS, UNDER THE BUTTON rather than above it.
+            They belong by the price, and in the price block they cost 102px
+            and put the button 57px under the fold on every in-app viewport.
+            Here they are still by the call to action, and the four things
+            that have to be on the first screen still are. */}
+        {isKit && (
+          <>
+            <p className="kitPriceAnchor">{kitLessThanOne()}</p>
+            <p className="kitPriceAnchor isWhy">{kitReasonWhy()}</p>
+          </>
+        )}
       </section>
 
       {/* -------------------------------------- 2. proof, straight away ----
@@ -450,8 +467,13 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
         <div data-proof="closing"><Quote review={proof.closing} long /></div>
         <h2 className="kitH2">{KIT_CLOSE_HEAD}</h2>
         <a
-          className="cta kitBtn" href={href} data-offer="single" data-close
-          onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'quiz-kit-close')}
+          className="cta kitBtn" href={href} data-offer={isKit ? 'protocol' : 'single'} data-close
+          onClick={() => track.checkout(
+            outcome,
+            isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT,
+            isKit ? 'protocol' : 'single',
+            'quiz-kit-close',
+          )}
         >
           {isKit ? CLOSE_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </a>

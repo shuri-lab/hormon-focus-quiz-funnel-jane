@@ -1791,3 +1791,14 @@
    5 November to pay for the bordered price card. The card is gone and the
    room came back with it: measured at all five in-app viewports, the button
    clears the fold with the mark showing. */
+
+/* The kit's two anchors under its price: what $47 sits next to, and why she
+   has it. Secondary by design, the two prices above are the block. */
+.kitPriceAnchor {
+  margin: 9px 0 0; max-width: 30ch;
+  font-size: 12px; line-height: 1.45; color: var(--ink-2);
+}
+.kitPriceAnchor.isWhy { margin-top: 6px; color: var(--ink-3); }
+
+/* The guarantee closes the stack, so it needs the gap the bonuses have. */
+.kitVsPromises { margin-top: 9px; }

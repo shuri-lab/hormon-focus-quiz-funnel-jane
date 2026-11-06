@@ -994,52 +994,40 @@ test.describe('the kit page', () => {
       }
     });
 
-  test('the kit page sells the kit and still checks out as the bottle',
+  test('the kit page sells two bottles, and the cart ships two',
     async ({ page }) => {
-      /* THE KIT PAGE, AT ITS OWN ADDRESS SINCE 2 November. It is off the
-         flow: the walk ends on the one-bottle offer, and this is preserved
-         whole, ready to A/B the day the kit has a Shopify variant and
-         somebody to fulfil its guides.
+      /* THE LONGEST-STANDING UNTRUTH ON THIS PAGE, closed 6 November. It
+         called itself a 60-day kit and put ONE bottle in the cart, which is
+         thirty days of it. It buys the two-bottle bundle now, so every
+         "60-day" on the page is a fact about what arrives.
 
-         THE GAP IT SHIPS WITH, and it is deliberate. The page is the kit:
-         the name, the three bonuses, a $146.99 value stack. The kit has no
-         Shopify variant yet, so every button still buys the single bottle,
-         41200079175791. Which is exactly why it is not in the flow.
-
-         ASSERTED RATHER THAN ONLY WRITTEN DOWN, because the day the kit
-         does get a variant this test is the thing that says which links
-         have to change, and until then it is the thing that stops someone
-         "fixing" the page by pointing it at the two-bottle kit variant,
-         which is a different offer at a different price.
-
-         THE BONUSES ARE A FULFILMENT PROMISE THE CART DOES NOT KEEP. That
-         is a question for the store, not for this file; what this file can
-         do is make sure nobody thinks it is already solved. */
+         ASSERTED AS THE VARIANT, not as the words: the words were right
+         before and the cart was wrong. */
       await page.goto('/quiz/offer-kit');
-      /* SCOPED, because the price block is deliberately in two places since
-         29 October: once under the hero and once in the card. */
-      await expect(page.locator('#kit-offer').getByText('Total value'), "the kit's value stack")
-        .toBeVisible();
-      await expect(page.locator('.kitHero').getByText('Total value'), 'and under the hero')
-        .toBeVisible();
-      await expect(page.locator('#kit-offer').getByText('The 60-Day Hormone Fix'), 'the first bonus')
-        .toBeVisible();
-      await expect(page.locator('a[href*="54330638663791"]'), 'the two-bottle kit variant')
-        .toHaveCount(0);
-      await expect(page.locator('a[href*="41200079175791"]').first(), 'the bottle is the cart')
-        .toBeAttached();
 
-      await page.goto('/offer');
-      await expect(page.locator('a[href*="54330638663791"]').first(), 'the kit still sells there')
-        .toBeAttached();
-      /* And there it is still the full-price bottle: the 10% code is passed
-         by the quiz page alone, which is what keeps these pages apart. */
-      const offerHrefs = await page.locator('a[href*="41200079175791"]').evaluateAll(
-        (as) => as.map((a) => (a as HTMLAnchorElement).href),
-      );
-      for (const h of offerHrefs) {
-        expect(h, 'the quiz code leaked onto /offer').not.toContain('HORMONE25OFF');
-      }
+      const buy = page.locator('#kit-offer a[data-offer]').first();
+      await expect(buy, 'the kit must buy the two-bottle bundle')
+        .toHaveAttribute('href', /cart\/54330638663791:1/);
+      await expect(buy, 'with its own code').toHaveAttribute('href', /discount=KIT47/);
+      await expect(buy, 'and never the single bottle')
+        .not.toHaveAttribute('href', /41200079175791/);
+
+      /* The stack says two bottles and totals JJ's own $196.99. */
+      await expect(page.locator('#kit-offer')).toContainText('2 bottles, 60-day supply');
+      await expect(page.locator('.kitVsTotalV')).toHaveText('$196.99');
+      await expect(page.locator('.kitHero .kitPrice')).toContainText('$47.00');
+      await expect(page.locator('.kitHero .kitPrice')).toContainText('You save $149.99');
+
+      /* AND NO ONE-BOTTLE COPY SURVIVES, apart from the anchor that exists
+         to compare against one: "less than one bottle on its own". */
+      const text = await page.locator('.rise').innerText();
+      const leftovers = (text.match(/[^.\n]*(30-day supply|single bottle)[^.\n]*/gi) ?? []);
+      expect(leftovers, 'one-bottle copy left on a two-bottle page').toEqual([]);
+
+      /* THE THREE BONUSES ARE STILL A PROMISE THE CART DOES NOT KEEP. The
+         bottles ship; the guide, the recipes and the tracker do not. That is
+         a question for the store, and this says nobody has solved it yet. */
+      await expect(page.locator('#kit-offer')).toContainText('The 60-Day Hormone Fix');
     });
 
   test('both buy buttons still carry her ad tags, and never her answers',
@@ -1524,11 +1512,10 @@ test.describe('the two offers', () => {
         .toHaveCount(0);
     });
 
-  test('both offers send her to the same two carts', async ({ page }) => {
-    /* NOTHING ABOUT WHERE THE BUTTONS GO CHANGED when the page split. Both
-       variants buy the single bottle with the code or the subscription without
-       it; the kit's own variant does not exist yet, and the day it does,
-       this is the test that says which links have to move. */
+  test('each offer sends her to its own cart', async ({ page }) => {
+    /* THEY SHARED A CART UNTIL 6 November, when the kit started buying the
+       two-bottle bundle it had always claimed to be. That was the day this
+       test said the links had to move, and they did. */
     for (const slug of ['kit', 'offer-kit']) {
       await page.goto(`/quiz/${slug}`);
       const links = await page.locator('#kit-offer a[href*="shop.jjsmithonline.com"]')
@@ -1537,16 +1524,24 @@ test.describe('the two offers', () => {
           href: (a as HTMLAnchorElement).href,
         })));
 
+      /* THE TWO OFFERS NO LONGER SHARE A CART, since 6 November: the kit
+         buys the two-bottle bundle and the bottle offer buys one bottle,
+         which is the difference between them. */
       expect(links.map((l) => l.offer), `${slug}: the two deal boxes`)
-        .toEqual(['single', 'subscribe']);
-      expect(links[0].href, `${slug}: the bottle carries the code`)
-        .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
+        .toEqual([slug === 'offer-kit' ? 'protocol' : 'single', 'subscribe']);
+
+      if (slug === 'offer-kit') {
+        expect(links[0].href, 'the kit buys the bundle with its own code')
+          .toMatch(/cart\/54330638663791:1.*discount=KIT47/);
+      } else {
+        expect(links[0].href, 'the bottle carries the welcome code')
+          .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
+      }
+
       expect(links[1].href, `${slug}: the subscription carries its plan`)
         .toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
-      expect(links[1].href, `${slug}: JJTEN must not ride the subscription`)
-        .not.toContain('HORMONE25OFF');
-      await expect(page.locator(`a[href*="54330638663791"]`), `${slug}: the two-bottle variant`)
-        .toHaveCount(0);
+      expect(links[1].href, `${slug}: no code may ride the subscription`)
+        .not.toMatch(/HORMONE25OFF|KIT47/);
     }
   });
 
@@ -1668,6 +1663,7 @@ test('both deal boxes strike the old price the same way, and legibly',
       const was = await page.locator('#kit-offer .kitWas').evaluateAll(
         (els) => els.map((e) => ({
           text: e.textContent,
+          inDeal: e.closest('.kitDeal') !== null,
           px: Math.round(parseFloat(getComputedStyle(e).fontSize)),
           /* The red diagonal is a pseudo-element, so its presence is the
              honest check that the strike is the deliberate one. */
@@ -1676,7 +1672,9 @@ test('both deal boxes strike the old price the same way, and legibly',
       );
       expect(was.length, `${slug}: both boxes show what she is not paying`).toBe(2);
       for (const w of was) {
-        expect(w.text, `${slug}: the old price`).toBe('$49.99');
+        /* The kit strikes TWO bottles, the bottle offer strikes one. */
+        expect(w.text, `${slug}: the old price`)
+          .toBe(slug === 'offer-kit' && w.inDeal ? '$99.99' : '$49.99');
         expect(w.px, `${slug}: ${w.px}px is too small to read`).toBeGreaterThanOrEqual(20);
         expect(w.ruled, `${slug}: no rule through the old price`).toBe(true);
       }

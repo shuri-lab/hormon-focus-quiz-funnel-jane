@@ -3,7 +3,9 @@ import { useHydrated } from '../lib/useHydrated';
 import { useMemo } from 'react';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  KIT_BUY_CTA, MONEY_BACK_BADGE, ONE_MONTH_PRICE, QUIZ_KIT_ROWS,
+  KIT_BUY_CTA, KIT_DISCOUNT_CODE, KIT_TWO_BOTTLE_VALUE, MONEY_BACK_BADGE,
+  ONE_MONTH_PRICE,
+  QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_ROWS,
   QUIZ_KIT_SAVING, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE, SHOT_KIT_HERO,
   SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money,
   singleDailyPrice,
@@ -22,7 +24,7 @@ import {
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
   TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
-  bottleBatchLine, subLockLine,
+  bottleBatchLine, kitReasonWhy, subLockLine,
   kitBatchLine, welcomeSaving,
 } from '../lib/kitCopy';
 
@@ -107,8 +109,17 @@ interface Props {
  * SINGLE_DISCOUNT_CODE is passed here and nowhere else, which is what keeps
  * /offer and /plan selling the same bottle at full price.
  */
-export function kitHref(outcome: string, angle: string): string {
-  return shopUrl(SHOP_BASE, outcome, angle, 'single', SINGLE_DISCOUNT_CODE);
+export function kitHref(
+  outcome: string,
+  angle: string,
+  variant: 'bottle' | 'kit' = 'bottle',
+): string {
+  /* THE KIT BUYS THE BUNDLE, 6 November. Two bottles is what makes its
+     "60-day" true, so its button carries PROTOCOL_VARIANT_ID with KIT47.
+     The one-bottle offer is untouched: single variant, HORMONE25OFF. */
+  return variant === 'kit'
+    ? shopUrl(SHOP_BASE, outcome, angle, 'protocol', KIT_DISCOUNT_CODE)
+    : shopUrl(SHOP_BASE, outcome, angle, 'single', SINGLE_DISCOUNT_CODE);
 }
 
 function Tick() {
@@ -135,7 +146,7 @@ export function KitPrice() {
         <span>{KIT_TOTAL_LABEL}</span> <s>{QUIZ_KIT_VALUE_TOTAL}</s>
       </p>
       <p className="kitPriceNow">
-        <span>{KIT_TODAY_LABEL}</span> <b>{money(SINGLE_AFTER_DISCOUNT)}</b>
+        <span>{KIT_TODAY_LABEL}</span> <b>{money(QUIZ_KIT_AFTER_DISCOUNT)}</b>
       </p>
       <p className="kitPriceSave">{KIT_SAVE_PREFIX} {QUIZ_KIT_SAVING}</p>
     </div>
@@ -204,8 +215,13 @@ export function BottlePrice() {
  * only, and both read the same StackItem[].
  */
 function KitStack() {
-  const items = QUIZ_KIT_ROWS.filter((i) => !i.bonus);
+  /* THE GUARANTEE CLOSES THE STACK, not sits second. The rows split three
+     ways rather than two: what she is buying, the bonuses she is given, and
+     then the guarantee, which is a promise about the order rather than a
+     thing in the box. A row priced in money is one of the first kind. */
+  const items = QUIZ_KIT_ROWS.filter((i) => !i.bonus && i.worth.startsWith('$'));
   const bonuses = QUIZ_KIT_ROWS.filter((i) => i.bonus);
+  const promises = QUIZ_KIT_ROWS.filter((i) => !i.bonus && !i.worth.startsWith('$'));
 
   return (
     <div className="kitVs" data-af="stack">
@@ -249,6 +265,23 @@ function KitStack() {
         ))}
       </div>
 
+      {promises.length > 0 && (
+        <ul className="kitVsList kitVsPromises">
+          {promises.map((it) => (
+            <li key={it.what}>
+              <span className="kitVsName">
+                {it.img
+                  ? <img className="kitVsImg" src={it.img} alt="" width={180} height={180}
+                      loading="lazy" decoding="async" />
+                  : <span className="kitVsTick"><Tick /></span>}
+                <span>{it.what}</span>
+              </span>
+              <span className="kitVsVal">{it.worth}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="kitVsTotal">
         <span>{KIT_TOTAL_LABEL}</span>
         <span className="kitVsTotalV struck">{QUIZ_KIT_VALUE_TOTAL}</span>
@@ -279,7 +312,10 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
      her attribution and every cart link shipped without a utm_*. Reading
      this gives the second render that rebuilds them. See useHydrated.ts. */
   const hydrated = useHydrated();
-  const once = useMemo(() => kitHref(outcome, angle), [outcome, angle, hydrated]);
+  const once = useMemo(
+    () => kitHref(outcome, angle, variant),
+    [outcome, angle, variant, hydrated],
+  );
   const sub = useMemo(
     () => shopUrl(SHOP_BASE, outcome, angle, 'subscribe'),
     [outcome, angle, hydrated],
@@ -325,19 +361,32 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
             {isKit ? `${KIT_SAVE_PREFIX} ${QUIZ_KIT_SAVING}` : BOTTLE_SAVE}
           </span>
           <div className="kitDealNow">
-            <s className="kitWas">{money(ONE_MONTH_PRICE)}</s>
-            <span className="kitDealNum">{money(SINGLE_AFTER_DISCOUNT)}</span>
+            {/* THE KIT IS STRUCK AGAINST TWO BOTTLES, not one: that is what
+                is in the box, and $99.98 is what those cost bought singly. */}
+            <s className="kitWas">
+              {money(isKit ? KIT_TWO_BOTTLE_VALUE : ONE_MONTH_PRICE)}
+            </s>
+            <span className="kitDealNum">
+              {money(isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT)}
+            </span>
           </div>
           <p className="kitDealNote">
-            {KIT_ONCE_NOTE} &middot; {singleDailyPrice()} a day
+            {KIT_ONCE_NOTE}
+            {!isKit && <> &middot; {singleDailyPrice()} a day</>}
           </p>
           <a
-            className="cta kitBtn" href={once} data-offer="single"
-            onClick={() => track.checkout(outcome, SINGLE_AFTER_DISCOUNT, 'single', 'kit-main')}
+            className="cta kitBtn" href={once} data-offer={isKit ? 'protocol' : 'single'}
+            onClick={() => track.checkout(
+              outcome,
+              isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT,
+              isKit ? 'protocol' : 'single',
+              'kit-main',
+            )}
           >
             {isKit ? KIT_BUY_CTA : BOTTLE_CTA} <Arrow />
           </a>
-          <p className="kitDealFine">{OFFER_ONCE_NOTE}</p>
+          {!isKit && <p className="kitDealFine">{OFFER_ONCE_NOTE}</p>}
+          {isKit && <p className="kitDealFine">{kitReasonWhy()}</p>}
           {/* The same fact as the hero's, in one line, where she is actually
               clicking. */}
           {!isKit && <p className="kitDealWhy">{WELCOME_WHY_SHORT}</p>}

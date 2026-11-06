@@ -558,7 +558,7 @@ test('the kit value stack adds up to the number the page leads with', () => {
      itself, which is the one place no test can reach. Computing it from the
      rows is what keeps the two HTML copies honest when a price moves; this
      asserts the sum so that a deliberate change still has to be deliberate. */
-  expect(QUIZ_KIT_VALUE_TOTAL).toBe('$146.99');
+  expect(QUIZ_KIT_VALUE_TOTAL).toBe('$196.99');
 
   const dollars = (s: string) => Number(s.replace(/[^0-9.]/g, ''));
   const sum = QUIZ_KIT_ROWS
@@ -567,16 +567,24 @@ test('the kit value stack adds up to the number the page leads with', () => {
   expect(`$${sum.toFixed(2)}`, 'the rows do not sum to the total').toBe(QUIZ_KIT_VALUE_TOTAL);
 });
 
-test('the kit is one bottle, where JJ\'s own page sells two', () => {
-  /* KIT_VALUE above is her two-bottle stack at $196.99. This page sells one
-     bottle with the same three bonuses, so reading both off one array would
-     put a two-bottle value over a one-bottle order. */
-  expect(QUIZ_KIT_ROWS[0].what).toBe('Hormone Focus, 30-day supply');
-  expect(QUIZ_KIT_ROWS[0].worth).toBe('$49.99');
+test('the quiz kit and JJ\'s own page describe the same offer', () => {
+  /* IT SOLD ONE BOTTLE UNTIL 6 November, while calling itself a 60-day kit,
+     which a 30-day supply cannot be. It is the two-bottle bundle now, so the
+     two doors agree: same contents, same $196.99, to the cent. */
+  expect(QUIZ_KIT_ROWS[0].what).toBe('Hormone Focus: 2 bottles, 60-day supply');
+  expect(QUIZ_KIT_ROWS[0].worth).toBe('$99.99');
+  expect(QUIZ_KIT_VALUE_TOTAL, "and JJ's own total").toBe(KIT_TOTAL_VALUE);
+
+  /* $99.99 IS HERS, AND IT IS A CENT ABOVE THE ARITHMETIC. Two bottles at
+     $49.99 is $99.98; her page says $99.99. A woman who reads $196.99 there
+     and $196.98 here has caught the funnel contradicting itself. */
+  expect(QUIZ_KIT_ROWS[0].worth).not.toBe('$99.98');
+
+  /* NO ONE-BOTTLE COPY LEFT IN THE STACK. */
   for (const row of QUIZ_KIT_ROWS) {
-    expect(row.what, 'the quiz kit must not promise two bottles').not.toMatch(/two bottles/i);
+    expect(row.what, `"${row.what}" still describes one bottle`)
+      .not.toMatch(/one bottle|30-day supply|single bottle/i);
   }
-  expect(KIT_TOTAL_VALUE, "JJ's two-bottle stack is untouched").toBe('$196.99');
 });
 
 test('the three bonuses are named, priced and free', () => {
@@ -635,4 +643,50 @@ test('the subscription never claims to beat the first-order price', async () => 
   /* And what IS true: every bottle after the first is cheaper on the
      subscription than buying one at a time at full price. */
   expect(SUBSCRIBE_PRICE).toBeLessThan(ONE_MONTH_PRICE);
+});
+
+test('the kit buys the two-bottle bundle, and the bottle offer does not', async () => {
+  /* THE WHOLE POINT OF 6 November: the page promises a 60-day supply and the
+     cart has to deliver one. It sent a single bottle until today.
+
+     Both paths are asserted together because they share kitHref and a change
+     to one is a change to the other: the kit takes the bundle variant with
+     KIT47, the one-bottle offer keeps the single variant with HORMONE25OFF,
+     and neither may carry the other's code. */
+  const {
+    cartPath, KIT_DISCOUNT_CODE, SINGLE_DISCOUNT_CODE,
+    PROTOCOL_VARIANT_ID, SINGLE_VARIANT_ID, KIT_SHIPPING_CODE,
+  } = await import('../src/lib/offer');
+
+  const kit = cartPath('protocol', KIT_DISCOUNT_CODE);
+  expect(kit, 'the kit must buy the bundle').toContain(PROTOCOL_VARIANT_ID!);
+  expect(kit, 'with its own code').toContain(`discount=${KIT_DISCOUNT_CODE}`);
+  expect(kit, 'and never the bottle variant').not.toContain(SINGLE_VARIANT_ID);
+
+  /* SHOPIFY TAKES ONE DISCOUNT PARAMETER, so the kit's code goes on INSTEAD
+     of the free-shipping one. Worth knowing rather than discovering: the kit
+     page trades HF60FREESHIP for KIT47. */
+  expect(kit, 'two codes cannot both ride').not.toContain(KIT_SHIPPING_CODE!);
+
+  /* /offer, /live and /plan call it with nothing and keep the shipping code
+     exactly as they had it. */
+  expect(cartPath('protocol')).toContain(`discount=${KIT_SHIPPING_CODE}`);
+
+  const bottle = cartPath('single', SINGLE_DISCOUNT_CODE);
+  expect(bottle).toContain(SINGLE_VARIANT_ID);
+  expect(bottle).toContain(`discount=${SINGLE_DISCOUNT_CODE}`);
+  expect(bottle, 'the bottle must not carry the kit code').not.toContain(KIT_DISCOUNT_CODE!);
+});
+
+test('the kit saving counts against what the kit costs', async () => {
+  /* It computed against SINGLE_AFTER_DISCOUNT while the page charged the
+     bundle price, which would have printed a saving nobody gets. */
+  const {
+    QUIZ_KIT_SAVING, QUIZ_KIT_VALUE_TOTAL, QUIZ_KIT_AFTER_DISCOUNT,
+  } = await import('../src/lib/offer');
+
+  const n = (s: string) => Number(s.replace(/[^0-9.]/g, ''));
+  expect(n(QUIZ_KIT_VALUE_TOTAL) - QUIZ_KIT_AFTER_DISCOUNT).toBeCloseTo(n(QUIZ_KIT_SAVING), 2);
+  expect(QUIZ_KIT_SAVING).toBe('$149.99');
+  expect(QUIZ_KIT_AFTER_DISCOUNT).toBe(47.00);
 });
