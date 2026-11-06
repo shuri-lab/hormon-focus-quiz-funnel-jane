@@ -30,17 +30,20 @@ import { INGREDIENTS } from '../../lib/offerCopy';
    kit's closer replaces it. All six are still exported and still gated. */
 import {
   BOTTLE_CTA, BOTTLE_HERO_HEAD, BOTTLE_HERO_SUB, BOTTLE_PLAN_LEAD, BOTTLE_SHOT_ALT,
-  CLOSE_CTA, HERO_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
+/* HERO_CTA and STICKY_CTA are no longer imported: those two buttons scroll
+   rather than buy, so they read KIT_SEE_CTA now. Both are still exported
+   and still gated; CLOSE_CTA, which does buy, still says Get my Kit. */
+  CLOSE_CTA, HERO_EYEBROW, HERO_RISK, HF_EYEBROW, HF_HEAD,
   KIT_CLOSE_HEAD, KIT_FAQ, KIT_FAQ_EYEBROW, KIT_FAQ_HEAD,
   KIT_HERO_SUB, KIT_SHOT_ALT, MECH_EYEBROW, MECH_HEAD,
   PLAN_EYEBROW, PLAN_HEAD, PLAN_STEP_1, PLAN_STEP_1_BODY, PLAN_STEP_2,
   PLAN_STEP_2_BODY, PLAN_STEP_3, PLAN_STEP_3_BODY, PROOF_EYEBROW, PROOF_HEAD,
-  PROOF_MORE_HEAD, PROOF_NOTE, SINGLE_DISCOUNT_NOTE, STICKY_CTA, TEASER_HEAD,
+  PROOF_MORE_HEAD, PROOF_NOTE, SINGLE_DISCOUNT_NOTE, TEASER_HEAD,
   TRUST_LEAD,
-  WHY_OPENER, WHY_PRODUCT, WHY_STAGE, kitHeroHead, kitLessThanOne, kitReasonWhy,
+  KIT_SEE_CTA, WHY_OPENER, WHY_PRODUCT, WHY_STAGE, kitHeroHead,
 } from '../../lib/kitCopy';
 import {
-  BottlePrice, KitGuarantee, KitOffer, KitPrice, kitHref,
+  BottlePrice, KitCompare, KitGuarantee, KitOffer, KitPrice, kitHref,
 } from '../../components/KitOffer';
 import {
   SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_KIT_HERO, SHOT_STEPS,
@@ -237,7 +240,8 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
         {isKit ? <KitPrice /> : <BottlePrice />}
 
         <button type="button" className="cta kitBtn kitHeroCta" onClick={toOffer}>
-          {isKit ? HERO_CTA : BOTTLE_CTA} &nbsp;&rarr;
+          {/* THIS ONE SCROLLS, IT DOES NOT BUY. See KIT_SEE_CTA. */}
+          {isKit ? KIT_SEE_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </button>
         <p className="kitHeroRisk">{HERO_RISK}</p>
 
@@ -246,12 +250,11 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
             and put the button 57px under the fold on every in-app viewport.
             Here they are still by the call to action, and the four things
             that have to be on the first screen still are. */}
-        {isKit && (
-          <>
-            <p className="kitPriceAnchor">{kitLessThanOne()}</p>
-            <p className="kitPriceAnchor isWhy">{kitReasonWhy()}</p>
-          </>
-        )}
+        {/* THE STEAL, AS TWO CARDS. Two sentences said this and read as
+            small print; side by side the prices make the argument without
+            being read. Under the button for the same reason the lines were:
+            above it they push the call to action off the first screen. */}
+        {isKit && <KitCompare />}
       </section>
 
       {/* -------------------------------------- 2. proof, straight away ----
@@ -497,7 +500,7 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
               decide for her from a bar she half-read. The buy events still
               come from the cards themselves, so nothing double-counts. */}
           <button type="button" className="cta kitBtn" data-sticky onClick={toOffer}>
-            {isKit ? STICKY_CTA : BOTTLE_CTA}
+            {isKit ? KIT_SEE_CTA : BOTTLE_CTA}
           </button>
         </div>
       ), document.body)}

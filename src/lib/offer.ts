@@ -299,6 +299,13 @@ const QUIZ_KIT_VALUE_NUM =
 
 export const QUIZ_KIT_VALUE_TOTAL = money(QUIZ_KIT_VALUE_NUM);
 
+/** The two thumbs the one-bottle-versus-kit comparison sets side by side. */
+export const SHOT_BOTTLE_THUMB = '/img/kit-bottle-thumb.webp';
+export const SHOT_KIT_THUMB = '/img/kit-two-bottles-thumb.webp';
+
+/** The same total as a number, for the copy that subtracts from it. */
+export const QUIZ_KIT_VALUE_NUM_TOTAL = QUIZ_KIT_VALUE_NUM;
+
 /**
  * What the price block says she keeps: $101.99.
  *

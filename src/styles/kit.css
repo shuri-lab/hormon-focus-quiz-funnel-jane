@@ -956,9 +956,14 @@
    an in-app browser hands this page 560-600px of height, the hero gained a
    label and a price line, and the button above the fold is the thing that
    must not give. Specificity carries these over the media queries above. */
-.kitHeroShot.isKit { max-width: 460px; max-height: 232px; }
-@media (max-height: 720px) { .kitHeroShot.isKit { max-height: 16vh; } }
-@media (max-height: 520px) { .kitHeroShot.isKit { max-height: 12vh; } }
+/* BIGGER, 6 November. The composite carries two bottles and three guides,
+   which at 232px was four products in a strip you had to lean in to read.
+   The caps below are the fold's, not the picture's: it takes what it can
+   get on a short screen and a lot more where there is room. */
+.kitHeroShot.isKit { max-width: 520px; max-height: 300px; }
+@media (max-height: 760px) { .kitHeroShot.isKit { max-height: 22vh; } }
+@media (max-height: 640px) { .kitHeroShot.isKit { max-height: 15vh; } }
+@media (max-height: 520px) { .kitHeroShot.isKit { max-height: 13vh; } }
 
 /* -- who JJ is, now a section of its own ---------------------------------
    It opened the review teaser until the proof moved under the hero. */
@@ -1787,10 +1792,17 @@
   .kitHero .kitPrice.isWelcome .kitPriceSave { display: none; }
 }
 
-/* The Okendo mark under the hero rating was hidden here for an hour on
-   5 November to pay for the bordered price card. The card is gone and the
-   room came back with it: measured at all five in-app viewports, the button
-   clears the fold with the mark showing. */
+/* THE OKENDO MARK UNDER THE HERO RATING gives way on a short screen. It is
+   the second line of the badge and costs about 20px; the rating itself, the
+   number and the count, stays. The mark appears twice more down the page, on
+   the review teaser and on the wall, so what is lost is a repetition.
+
+   It was hidden on 5 November, restored when the price card came out, and
+   is back on 6 November: the kit's hero now carries a bigger composite and
+   the same price block as the bottle page, and something has to give. */
+@media (max-height: 720px) {
+  .kitHero .pfRatingBy { display: none; }
+}
 
 /* The kit's two anchors under its price: what $47 sits next to, and why she
    has it. Secondary by design, the two prices above are the block. */
@@ -1802,3 +1814,80 @@
 
 /* The guarantee closes the stack, so it needs the gap the bonuses have. */
 .kitVsPromises { margin-top: 9px; }
+
+/* ========================================================================
+   THE STEAL, AS TWO CARDS                                 6 November 2026
+   ========================================================================
+
+   Two sentences used to say this under the button and read as small print.
+   Side by side, $49.99 against $47 makes the argument without being read.
+
+   THE $49.99 IS NOT STRUCK, deliberately: it is what one bottle costs
+   today, not a "was". Striking it would turn a fair comparison into a fake
+   discount. The weight of the two cards is what carries it.
+   ------------------------------------------------------------------------ */
+
+.kitCompare {
+  margin: 18px auto 0; max-width: 380px;
+  display: grid; grid-template-columns: 1fr 1.25fr; gap: 10px;
+}
+
+.kitCmp {
+  position: relative; display: grid; justify-items: center; gap: 2px;
+  padding: 14px 10px 12px; border-radius: var(--radius);
+  border: 1.5px solid var(--line); background: var(--surface);
+  text-align: center;
+}
+/* The kit side is the selected state the rest of the page uses. */
+.kitCmp.isKit {
+  padding-top: 20px;
+  border: 2px solid var(--plum);
+  background: linear-gradient(165deg, #fff, #f7ecfb);
+}
+.kitCmpRibbon {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  background: var(--plum); color: #fff;
+  font-size: 10px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 18px -10px rgba(91, 42, 128, .7);
+}
+
+.kitCmpLabel {
+  margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.kitCmp.isKit .kitCmpLabel { color: var(--plum); }
+
+.kitCmpShot {
+  width: auto; height: 58px; object-fit: contain; margin: 4px 0 2px;
+  mix-blend-mode: multiply;
+}
+.kitCmp.isKit .kitCmpShot { height: 64px; }
+
+.kitCmpPrice {
+  margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em;
+  line-height: 1.1; color: var(--ink-2);
+}
+.kitCmp.isKit .kitCmpPrice { font-size: 26px; color: var(--plum); }
+/* The word under the number, not beside it: see compareKitPrice. */
+.kitCmpToday {
+  display: block; margin-top: 1px;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--ink-3);
+}
+
+.kitCmpSub {
+  margin: 2px 0 0; font-size: 11.5px; line-height: 1.35; color: var(--ink-3);
+}
+
+/* The caption spans both cards: it is what they add up to. */
+.kitCmpCaption {
+  grid-column: 1 / -1; margin: 12px 0 0; text-align: center;
+  font-size: var(--t-small); font-weight: 700; line-height: 1.4;
+  color: var(--ink);
+}
+.kitCmpWhy {
+  grid-column: 1 / -1; margin: 4px 0 0; text-align: center;
+  font-size: 11.5px; color: var(--ink-3);
+}

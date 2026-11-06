@@ -18,7 +18,8 @@
  */
 import {
   BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, ONE_MONTH_PRICE,
-  PLAN_NAME, QUIZ_KIT_AFTER_DISCOUNT, SINGLE_AFTER_DISCOUNT,
+  PLAN_NAME, QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_VALUE_NUM_TOTAL,
+  SINGLE_AFTER_DISCOUNT,
   SINGLE_DISCOUNT_PERCENT, SUBSCRIBE_PRICE, batchCount, dailyPrice, money,
 } from './offer';
 import { MG_HEADLINE } from './offerCopy';
@@ -662,12 +663,53 @@ export const KIT_CLOSE_HEAD = 'Your kit can be on its way today.';
  *
  * DRAFT FOR JANE, both.
  */
-export const kitLessThanOne = (): string =>
-  `That is less than one bottle of Hormone Focus on its own (${money(ONE_MONTH_PRICE)}).`;
+/* THE TWO LINES BECAME TWO CARDS, 6 November. They said the right thing and
+   read as small print under a button; the comparison is the argument, so it
+   is shown rather than described. kitLessThanOne and kitReasonWhy are gone;
+   what follows is what replaced them. */
 
-export const kitReasonWhy = (): string =>
-  'Because you finished your Hormone Check, you get the full 60-day kit for '
-  + `${money(QUIZ_KIT_AFTER_DISCOUNT)}.`;
+/** The pill over the price, mirroring the bottle page's WELCOME OFFER. */
+export const KIT_OFFER_PILL = 'Your Hormone Check offer';
+
+/**
+ * THE BUTTONS THAT SCROLL, NOT THE ONES THAT BUY. 6 November.
+ *
+ * The hero button and the sticky bar do not go to checkout: they move her
+ * down to the offer. Both read "Get my Kit", which asks her to buy before
+ * she has seen what is in it. At that moment she wants to look, so the ask
+ * is to look.
+ *
+ * The two that DO go to Shopify, the deal box and the closer, keep "Get my
+ * Kit": there the ask is the right one.
+ */
+export const KIT_SEE_CTA = 'See everything included';
+
+/** Under the kit's price, in money rather than in percent. */
+export const kitSaving = (): string =>
+  `You save ${money(QUIZ_KIT_VALUE_NUM_TOTAL - QUIZ_KIT_AFTER_DISCOUNT)} today`;
+
+/* -- the steal, as two cards -------------------------------------------- */
+
+export const COMPARE_ONE_LABEL = 'One bottle';
+export const COMPARE_ONE_SUB = 'the usual price';
+export const COMPARE_KIT_LABEL = 'Your kit';
+export const COMPARE_KIT_SUB = '2 bottles + plan, recipes & tracker';
+export const COMPARE_RIBBON = 'Less than one bottle';
+/* "$47.00 today" on one line wrapped on a 320px phone, which left the two
+   cards' prices on different baselines and read as a mistake. The word is a
+   caption under the number now, so the break is the one we chose. */
+export const compareKitPrice = (): string => money(QUIZ_KIT_AFTER_DISCOUNT);
+export const COMPARE_KIT_TODAY = 'today';
+
+/**
+ * The caption that says what the two cards show.
+ *
+ * THE BRIEF'S EM DASH IS A COMMA. House style has had none since 29 October
+ * and the gate fails the build over one.
+ */
+export const COMPARE_CAPTION =
+  'Two bottles and the whole plan, for less than the price of one bottle.';
+export const COMPARE_WHY = 'Your Hormone Check price.';
 
 /**
  * The kit shot's alt text.

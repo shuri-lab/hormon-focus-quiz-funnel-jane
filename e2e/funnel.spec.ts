@@ -1526,21 +1526,28 @@ test.describe('the two offers', () => {
 
       /* THE TWO OFFERS NO LONGER SHARE A CART, since 6 November: the kit
          buys the two-bottle bundle and the bottle offer buys one bottle,
-         which is the difference between them. */
-      expect(links.map((l) => l.offer), `${slug}: the two deal boxes`)
-        .toEqual([slug === 'offer-kit' ? 'protocol' : 'single', 'subscribe']);
+         which is the difference between them.
 
+         AND THE KIT IS A ONE TIME BUY, since 6 November. Asking a woman to
+         choose between sixty days of capsules and a subscription, on the
+         screen whose whole argument is that the kit is the better deal, was
+         a second decision in the way of the first. The subscription stays on
+         /quiz/kit, where one bottle a month is the thing being sold. */
       if (slug === 'offer-kit') {
+        expect(links.map((l) => l.offer), 'the kit offers one thing')
+          .toEqual(['protocol']);
         expect(links[0].href, 'the kit buys the bundle with its own code')
           .toMatch(/cart\/54330638663791:1.*discount=KIT47/);
-      } else {
-        expect(links[0].href, 'the bottle carries the welcome code')
-          .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
+        continue;
       }
 
-      expect(links[1].href, `${slug}: the subscription carries its plan`)
+      expect(links.map((l) => l.offer), 'the bottle page still offers both')
+        .toEqual(['single', 'subscribe']);
+      expect(links[0].href, 'the bottle carries the welcome code')
+        .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
+      expect(links[1].href, 'the subscription carries its plan')
         .toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
-      expect(links[1].href, `${slug}: no code may ride the subscription`)
+      expect(links[1].href, 'no code may ride the subscription')
         .not.toMatch(/HORMONE25OFF|KIT47/);
     }
   });
@@ -1663,18 +1670,23 @@ test('both deal boxes strike the old price the same way, and legibly',
       const was = await page.locator('#kit-offer .kitWas').evaluateAll(
         (els) => els.map((e) => ({
           text: e.textContent,
-          inDeal: e.closest('.kitDeal') !== null,
           px: Math.round(parseFloat(getComputedStyle(e).fontSize)),
           /* The red diagonal is a pseudo-element, so its presence is the
              honest check that the strike is the deliberate one. */
           ruled: getComputedStyle(e, '::after').content !== 'none',
         })),
       );
-      expect(was.length, `${slug}: both boxes show what she is not paying`).toBe(2);
+      /* ONE BOX ON THE KIT PAGE, TWO ON THE BOTTLE PAGE, since 6 November:
+         the kit dropped its subscription, so it has one price to strike. */
+      expect(was.length, `${slug}: the wrong number of struck prices`)
+        .toBe(slug === 'offer-kit' ? 1 : 2);
       for (const w of was) {
-        /* The kit strikes TWO bottles, the bottle offer strikes one. */
+        /* THE KIT STRIKES WHAT THE KIT IS WORTH, not one bottle and not two:
+           the badge above it adds the three guides to the two bottles, so
+           striking $99.99 beside a $196.99 badge was two numbers for the
+           same thing. The bottle offer strikes one bottle. */
         expect(w.text, `${slug}: the old price`)
-          .toBe(slug === 'offer-kit' && w.inDeal ? '$99.99' : '$49.99');
+          .toBe(slug === 'offer-kit' ? '$196.99' : '$49.99');
         expect(w.px, `${slug}: ${w.px}px is too small to read`).toBeGreaterThanOrEqual(20);
         expect(w.ruled, `${slug}: no rule through the old price`).toBe(true);
       }
