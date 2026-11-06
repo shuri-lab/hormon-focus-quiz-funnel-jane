@@ -1659,6 +1659,56 @@ test.describe('the nurture artwork, reused on the offer page', () => {
     });
 });
 
+test('the steal is its own section, and carries no second price', async ({ page }) => {
+  /* It was the last thing inside the hero, under the guarantee line, which
+     is where small print goes. David, 6 November: make it a section and put
+     the framing above the cards, because she was meeting two prices and
+     working out what they were for afterwards. */
+  await page.goto('/quiz/offer-kit');
+
+  const band = page.locator('.kitCmpBand');
+  await expect(band, 'the comparison has no band of its own').toHaveCount(1);
+  expect(await band.evaluate((el) => el.closest('.kitHero') !== null),
+    'the comparison is still inside the hero').toBe(false);
+
+  /* A tint of its own, and room around it: a band that looks like the one
+     above it is not a section, whatever the markup says. */
+  const look = await band.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return {
+      bg: cs.backgroundColor,
+      page: getComputedStyle(document.body).backgroundColor,
+      padTop: parseFloat(cs.paddingTop),
+      padBottom: parseFloat(cs.paddingBottom),
+    };
+  });
+  expect(look.bg, 'the band is the same colour as the page').not.toBe(look.page);
+  expect(look.padTop, 'no air above the section').toBeGreaterThanOrEqual(24);
+  expect(look.padBottom, 'no air below the section').toBeGreaterThanOrEqual(24);
+
+  /* The argument first, the evidence second. */
+  const order = await page.evaluate(() => ({
+    head: document.querySelector('.kitCmpTitle')!.getBoundingClientRect().top,
+    cards: document.querySelector('.kitCmpCards')!.getBoundingClientRect().top,
+    why: document.querySelector('.kitCmpWhy')!.getBoundingClientRect().top,
+  }));
+  expect(order.head, 'the framing is not above the cards').toBeLessThan(order.cards);
+  expect(order.why, 'the small line is not under the cards').toBeGreaterThan(order.cards);
+
+  /* NO ARTWORK WITH A PRICE PRINTED INTO IT. kit-2bottle-hero.webp carries a
+     starburst reading "$74.99 VALUE / $196.99". Beside a card that says
+     $47.00 that is three prices for one thing, and it is baked into the
+     pixels where no test of the text would ever see it. */
+  const shot = await page.locator('.kitCmp.isKit .kitCmpShot').getAttribute('src');
+  expect(shot, 'the kit card shows the whole kit').toBe('/img/kit-full-thumb.webp');
+  expect(shot, 'the card is using the composite with the price burst on it')
+    .not.toContain('kit-2bottle-hero');
+
+  /* And the kit page says nothing about a batch, as of 6 November. */
+  await expect(page.locator('.kitBatch'), 'the kit batch line is back')
+    .toHaveCount(0);
+});
+
 test('both deal boxes strike the old price the same way, and legibly',
   async ({ page }) => {
     /* The struck price lived in the main box's badge at 12.5px on a purple

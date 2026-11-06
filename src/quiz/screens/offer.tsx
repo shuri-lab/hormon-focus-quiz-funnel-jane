@@ -245,17 +245,24 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
         </button>
         <p className="kitHeroRisk">{HERO_RISK}</p>
 
-        {/* THE KIT'S TWO ANCHORS, UNDER THE BUTTON rather than above it.
-            They belong by the price, and in the price block they cost 102px
-            and put the button 57px under the fold on every in-app viewport.
-            Here they are still by the call to action, and the four things
-            that have to be on the first screen still are. */}
-        {/* THE STEAL, AS TWO CARDS. Two sentences said this and read as
-            small print; side by side the prices make the argument without
-            being read. Under the button for the same reason the lines were:
-            above it they push the call to action off the first screen. */}
-        {isKit && <KitCompare />}
       </section>
+
+      {/* -------------------------------------------- 1b. the steal ------
+          A BAND OF ITS OWN, 6 November. It was the last thing inside the
+          hero, directly under the guarantee line, which is where small
+          print goes: two cards and a price comparison read as a footnote to
+          the hero rather than as the argument they are. It has the page's
+          own section tint now, with the band's padding above and below, so
+          it is plainly a section and not the end of the one before it.
+
+          It stays BELOW the hero button for the reason the two anchor
+          sentences it replaced did: above it, it pushes the call to action
+          off the first screen on every in-app viewport. */}
+      {isKit && (
+        <section className="kitBand kitCmpBand">
+          <KitCompare />
+        </section>
+      )}
 
       {/* -------------------------------------- 2. proof, straight away ----
           The brief's order inside this zone: the women, then two of them in

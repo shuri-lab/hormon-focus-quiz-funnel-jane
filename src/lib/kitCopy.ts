@@ -633,12 +633,13 @@ export const subLockLine = (): string =>
  * NOT SHOW_BATCH_LINE, which is the global switch and is off at David's
  * request. Flipping it would turn this on for /offer, /offer/:slug, /live
  * and /plan as well, which this brief does not ask for. It is rendered
- * locally instead, and says "kits" where offerCopy's batchLine says
- * "bottles", because that is what this page is selling.
+ * locally instead, on the bottle page only.
+ *
+ * THE KIT'S OWN LINE IS GONE, 6 November, at David's instruction. It read
+ * "This batch: 2,280 kits on the shelf. The next batch lands in December."
+ * and kitBatchLine went with it; bottleBatchLine, which is the one still
+ * rendered, is further down this file.
  */
-export const kitBatchLine = (): string =>
-  `This batch: ${batchCount()} kits on the shelf. `
-  + `The next batch lands in ${NEXT_BATCH}.`;
 
 /** Guards the line against a count that would read as a going-out-of-stock. */
 export const KIT_BATCH_SHOWN = BATCH_ON_SHELF > 0;
@@ -702,13 +703,31 @@ export const compareKitPrice = (): string => money(QUIZ_KIT_AFTER_DISCOUNT);
 export const COMPARE_KIT_TODAY = 'today';
 
 /**
- * The caption that says what the two cards show.
+ * THE FRAMING, ABOVE THE CARDS. 6 November.
  *
- * THE BRIEF'S EM DASH IS A COMMA. House style has had none since 29 October
- * and the gate fails the build over one.
+ * It was one line under them, which meant she met two prices and worked out
+ * what they were for afterwards. David asked for the argument first and the
+ * evidence second, which is the order it would be made in out loud.
+ *
+ * THE BRIEF'S EM DASHES ARE COMMAS. House style has had none since 29
+ * October and the gate fails the build over one.
  */
-export const COMPARE_CAPTION =
-  'Two bottles and the whole plan, for less than the price of one bottle.';
+export const COMPARE_HEAD =
+  'Two bottles and the whole plan, for less than one bottle.';
+
+/**
+ * Both prices are read off the constants rather than typed.
+ *
+ * The brief wrote "$47 today" and the card under it says "$47.00". One of
+ * them had to give, and it is the prose: two spellings of the same number,
+ * four lines apart, read as two numbers.
+ */
+export const compareSub = (): string =>
+  `One bottle of ${HF_NAME} usually costs ${money(ONE_MONTH_PRICE)}. `
+  + 'Your kit, two bottles plus the plan, recipes, and tracker, '
+  + `is ${money(QUIZ_KIT_AFTER_DISCOUNT)} today.`;
+
+/** Still under the cards: the small line that says why she sees this price. */
 export const COMPARE_WHY = 'Your Hormone Check price.';
 
 /**

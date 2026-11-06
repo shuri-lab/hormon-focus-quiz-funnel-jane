@@ -303,6 +303,22 @@ export const QUIZ_KIT_VALUE_TOTAL = money(QUIZ_KIT_VALUE_NUM);
 export const SHOT_BOTTLE_THUMB = '/img/kit-bottle-thumb.webp';
 export const SHOT_KIT_THUMB = '/img/kit-two-bottles-thumb.webp';
 
+/**
+ * THE WHOLE KIT, WITH NO PRICE PRINTED ON IT. 6 November.
+ *
+ * The comparison card showed two bottles, which is not what the card is
+ * arguing: the kit is two bottles AND the plan, the recipes and the tracker,
+ * and that is the half the price is being compared against.
+ *
+ * The composite that shows all five is kit-2bottle-hero.webp, and it has a
+ * starburst reading "$74.99 VALUE / $196.99" printed into the artwork. Two
+ * more prices beside a card that says $47.00 is three prices for one thing,
+ * so this file is that composite with the starburst and the headline painted
+ * out and the rest trimmed to the products. It is a stopgap: when Janey
+ * re-exports the burst at $47.00 this can go back to being a crop of it.
+ */
+export const SHOT_KIT_FULL = '/img/kit-full-thumb.webp';
+
 /** The same total as a number, for the copy that subtracts from it. */
 export const QUIZ_KIT_VALUE_NUM_TOTAL = QUIZ_KIT_VALUE_NUM;
 

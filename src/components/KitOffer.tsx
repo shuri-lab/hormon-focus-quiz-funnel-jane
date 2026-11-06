@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { shopUrl, track } from '../lib/analytics';
 import {
   KIT_BUY_CTA, KIT_DISCOUNT_CODE, MONEY_BACK_BADGE, ONE_MONTH_PRICE,
-  SHOT_BOTTLE_THUMB, SHOT_KIT_THUMB,
+  SHOT_BOTTLE_THUMB, SHOT_KIT_FULL,
   QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE, SHOT_KIT_HERO,
   SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money,
   singleDailyPrice,
@@ -18,15 +18,15 @@ import {
   BOTTLE_CTA, BOTTLE_FULL_LABEL, BOTTLE_HERO_HEAD, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
   BOTTLE_WHATYOUGET, FREE_SHIPPING, HF_NAME,
   KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD,
-  COMPARE_CAPTION, COMPARE_KIT_LABEL, COMPARE_KIT_SUB, COMPARE_KIT_TODAY,
+  COMPARE_HEAD, COMPARE_KIT_LABEL, COMPARE_KIT_SUB, COMPARE_KIT_TODAY,
   COMPARE_ONE_LABEL, COMPARE_ONE_SUB, COMPARE_RIBBON, COMPARE_WHY,
   KIT_OFFER_PILL, KIT_ONCE_NOTE, KIT_SHOT_ALT, KIT_STACK_HEAD, KIT_SUB_NOTE,
   KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
   TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
-  bottleBatchLine, compareKitPrice, kitSaving, subLockLine,
-  kitBatchLine, welcomeSaving,
+  bottleBatchLine, compareKitPrice, compareSub, kitSaving, subLockLine,
+  welcomeSaving,
 } from '../lib/kitCopy';
 
 /* THE OFFER, AS IT IS ON JJ'S OWN PAGE.
@@ -182,27 +182,38 @@ export function KitPrice() {
 export function KitCompare() {
   return (
     <div className="kitCompare">
-      <div className="kitCmp">
-        <p className="kitCmpLabel">{COMPARE_ONE_LABEL}</p>
-        <img className="kitCmpShot" src={SHOT_BOTTLE_THUMB} alt=""
-          width={180} height={180} loading="lazy" decoding="async" />
-        <p className="kitCmpPrice">{money(ONE_MONTH_PRICE)}</p>
-        <p className="kitCmpSub">{COMPARE_ONE_SUB}</p>
+      {/* THE ARGUMENT FIRST, THE EVIDENCE SECOND. This was one line under
+          the cards, which left her to work out what the two prices were for
+          after she had already read them. */}
+      <header className="kitCmpHead">
+        <h2 className="kitCmpTitle">{COMPARE_HEAD}</h2>
+        <p className="kitCmpLead">{compareSub()}</p>
+      </header>
+
+      <div className="kitCmpCards">
+        <div className="kitCmp">
+          <p className="kitCmpLabel">{COMPARE_ONE_LABEL}</p>
+          <img className="kitCmpShot" src={SHOT_BOTTLE_THUMB} alt=""
+            width={180} height={180} loading="lazy" decoding="async" />
+          <p className="kitCmpPrice">{money(ONE_MONTH_PRICE)}</p>
+          <p className="kitCmpSub">{COMPARE_ONE_SUB}</p>
+        </div>
+
+        <div className="kitCmp isKit">
+          <span className="kitCmpRibbon">{COMPARE_RIBBON}</span>
+          <p className="kitCmpLabel">{COMPARE_KIT_LABEL}</p>
+          {/* THE WHOLE KIT, not two bottles: the card's price is being
+              compared against all five things. See SHOT_KIT_FULL. */}
+          <img className="kitCmpShot isFull" src={SHOT_KIT_FULL} alt=""
+            width={600} height={267} loading="lazy" decoding="async" />
+          <p className="kitCmpPrice">
+            {compareKitPrice()}
+            <small className="kitCmpToday">{COMPARE_KIT_TODAY}</small>
+          </p>
+          <p className="kitCmpSub">{COMPARE_KIT_SUB}</p>
+        </div>
       </div>
 
-      <div className="kitCmp isKit">
-        <span className="kitCmpRibbon">{COMPARE_RIBBON}</span>
-        <p className="kitCmpLabel">{COMPARE_KIT_LABEL}</p>
-        <img className="kitCmpShot" src={SHOT_KIT_THUMB} alt=""
-          width={180} height={135} loading="lazy" decoding="async" />
-        <p className="kitCmpPrice">
-          {compareKitPrice()}
-          <small className="kitCmpToday">{COMPARE_KIT_TODAY}</small>
-        </p>
-        <p className="kitCmpSub">{COMPARE_KIT_SUB}</p>
-      </div>
-
-      <p className="kitCmpCaption">{COMPARE_CAPTION}</p>
       <p className="kitCmpWhy">{COMPARE_WHY}</p>
     </div>
   );
@@ -484,11 +495,13 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
 
         {/* TRUE, SAID ONCE, NO TIMER. Rendered here rather than through
             SHOW_BATCH_LINE, which is the global switch and is off for the
-            offer pages at David's request. */}
-        {KIT_BATCH_SHOWN && (
-          <p className="buyBatch kitBatch">
-            {isKit ? kitBatchLine() : bottleBatchLine()}
-          </p>
+            offer pages at David's request.
+
+            THE BOTTLE PAGE ONLY, since 6 November: David asked for the
+            kit's line, which counted kits rather than bottles, to come off
+            the page. */}
+        {!isKit && KIT_BATCH_SHOWN && (
+          <p className="buyBatch kitBatch">{bottleBatchLine()}</p>
         )}
 
         <div className="kitTrust">
