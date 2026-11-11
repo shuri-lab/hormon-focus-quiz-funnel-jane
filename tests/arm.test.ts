@@ -5,7 +5,7 @@ import {
 import { shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE, createState, type QuizState } from '../src/lib/logic';
 import { kitCode, kitToday } from '../src/lib/offer';
-import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_TURN } from '../src/lib/resultCopy';
+import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_HEAD, PLAN_BOTTLE_TURN } from '../src/lib/resultCopy';
 
 /* A tiny in-memory storage, since the tests run in node. */
 function memStore() {
@@ -21,10 +21,11 @@ beforeEach(() => {
   resetArmForTests();
 });
 
-test('live now: one active offer, the 25% bottle, and everyone gets it', () => {
-  expect(ACTIVE_OFFERS).toEqual(['bottle25']);
-  for (const r of [0, 0.3, 0.6, 0.9999]) expect(pickArm(['bottle25'], () => r)).toBe('bottle25');
-  expect(getArm()).toBe('bottle25');
+test('live now: the $47 Kit and the 25% bottle, split evenly', () => {
+  expect(ACTIVE_OFFERS).toEqual(['kit47', 'bottle25']);
+  expect(pickArm(ACTIVE_OFFERS, () => 0.2)).toBe('kit47');
+  expect(pickArm(ACTIVE_OFFERS, () => 0.7)).toBe('bottle25');
+  expect(ACTIVE_OFFERS).toContain(getArm());
 });
 
 test('with two active offers the split is even, half and half', () => {
@@ -77,7 +78,8 @@ test('the Kit price and code follow the arm: $74.99 with free shipping, or $47 w
 });
 
 test('the plan ending per arm: the one-bottle arm ends on Hormone Focus', () => {
-  expect(PLAN_BOTTLE_TURN).toBe('You can do all four on your own. Hormone Focus makes step 3 easier: two capsules a day with a meal.');
+  expect(PLAN_BOTTLE_HEAD).toBe('Start your plan with Hormone Focus.');
+  expect(PLAN_BOTTLE_TURN).toBe('It does step 3 for you. Two capsules a day with a meal give your body steady support while your hormones change.');
   expect(PLAN_BOTTLE_CTA).toBe('Start my plan with Hormone Focus');
   const S: QuizState = createState();
   expect(S).toBeTruthy();

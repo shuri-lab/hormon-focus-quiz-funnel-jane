@@ -8,8 +8,7 @@
  *  - kit74     the Kit at its live price, $74.99 with free shipping
  *              (HF60FREESHIP on the two-bottle variant)
  *  - bottle25  one bottle at 25% off, $37.50 with HORMONE25OFF
- *  - kit47     David's proposed Kit at $47 (KIT47). Off by default: KIT47
- *              does not exist in Shopify yet.
+ *  - kit47     David's Kit at $47 (KIT47), approved by TJ and JJ 12 Nov.
  *
  * TO CHANGE THE TEST, change ACTIVE_OFFERS and nothing else.
  *   Live now:             ['bottle25']
@@ -27,8 +26,10 @@ export type OfferArm = 'kit74' | 'bottle25' | 'kit47';
 export const ALL_OFFERS: readonly OfferArm[] = ['kit74', 'bottle25', 'kit47'];
 
 /** The offers the quiz splits between, evenly. One offer means no split:
- * every visitor gets it. Live now: the one bottle at 25% off (Jane, 11 Nov). */
-export const ACTIVE_OFFERS: readonly OfferArm[] = ['bottle25'];
+ * every visitor gets it. 12 Nov: TJ and JJ approved David's $47 Kit, so the
+ * quiz splits evenly between the $47 Kit and one bottle at 25% off. The $47
+ * arm needs the KIT47 code live in Shopify (Kit $74.99 -> $47.00). */
+export const ACTIVE_OFFERS: readonly OfferArm[] = ['kit47', 'bottle25'];
 
 export const ARM_KEY = 'hf_offer_arm';
 
