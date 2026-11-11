@@ -21,10 +21,10 @@ beforeEach(() => {
   resetArmForTests();
 });
 
-test('live now: one active offer, the 25% bottle, and everyone gets it', () => {
-  expect(ACTIVE_OFFERS).toEqual(['bottle25']);
-  for (const r of [0, 0.3, 0.6, 0.9999]) expect(pickArm(['bottle25'], () => r)).toBe('bottle25');
-  expect(getArm()).toBe('bottle25');
+test('this branch: one active offer, the $47 Kit, and everyone gets it', () => {
+  expect(ACTIVE_OFFERS).toEqual(['kit47']);
+  for (const r of [0, 0.3, 0.6, 0.9999]) expect(pickArm(['kit47'], () => r)).toBe('kit47');
+  expect(getArm()).toBe('kit47');
 });
 
 test('after KIT47 is live: the $47 Kit and the 25% bottle split evenly', () => {
