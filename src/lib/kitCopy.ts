@@ -18,7 +18,7 @@
  */
 import {
   BATCH_ON_SHELF, KIT_BUY_CTA, KIT_DISCOUNT_NOTE, NEXT_BATCH, ONE_MONTH_PRICE,
-  PLAN_NAME, QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_VALUE_NUM_TOTAL,
+  PLAN_NAME, QUIZ_KIT_VALUE_NUM_TOTAL, kitToday, isKit47,
   SINGLE_AFTER_DISCOUNT,
   SINGLE_DISCOUNT_PERCENT, SUBSCRIBE_PRICE, batchCount, dailyPrice, money,
 } from './offer';
@@ -688,7 +688,7 @@ export const KIT_SEE_CTA = 'See everything included';
 
 /** Under the kit's price, in money rather than in percent. */
 export const kitSaving = (): string =>
-  `You save ${money(QUIZ_KIT_VALUE_NUM_TOTAL - QUIZ_KIT_AFTER_DISCOUNT)} today`;
+  `You save ${money(QUIZ_KIT_VALUE_NUM_TOTAL - kitToday())} today`;
 
 /* -- the steal, as two cards -------------------------------------------- */
 
@@ -700,7 +700,7 @@ export const COMPARE_RIBBON = 'Less than one bottle';
 /* "$47.00 today" on one line wrapped on a 320px phone, which left the two
    cards' prices on different baselines and read as a mistake. The word is a
    caption under the number now, so the break is the one we chose. */
-export const compareKitPrice = (): string => money(QUIZ_KIT_AFTER_DISCOUNT);
+export const compareKitPrice = (): string => money(kitToday());
 export const COMPARE_KIT_TODAY = 'today';
 
 /**
@@ -715,6 +715,13 @@ export const COMPARE_KIT_TODAY = 'today';
  */
 export const COMPARE_HEAD =
   'Two bottles and the whole plan, for less than one bottle.';
+/* The offer switch: at $74.99 the Kit is compared with two bottles. */
+export const COMPARE_HEAD_74 =
+  'Two bottles and the whole plan, for less than two bottles on their own.';
+export const compareHead = (): string => (isKit47() ? COMPARE_HEAD : COMPARE_HEAD_74);
+export const compareRibbon = (): string => (isKit47() ? COMPARE_RIBBON : 'Less than two bottles');
+export const compareOneLabel = (): string => (isKit47() ? COMPARE_ONE_LABEL : 'Two bottles');
+export const compareOnePrice = (): number => (isKit47() ? ONE_MONTH_PRICE : ONE_MONTH_PRICE * 2);
 
 /**
  * Both prices are read off the constants rather than typed.
@@ -724,9 +731,11 @@ export const COMPARE_HEAD =
  * four lines apart, read as two numbers.
  */
 export const compareSub = (): string =>
-  `One bottle of ${HF_NAME} usually costs ${money(ONE_MONTH_PRICE)}. `
+  (isKit47()
+    ? `One bottle of ${HF_NAME} usually costs ${money(ONE_MONTH_PRICE)}. `
+    : `Two bottles of ${HF_NAME} usually cost ${money(ONE_MONTH_PRICE * 2)}. `)
   + 'Your kit, two bottles plus the plan, recipes, and tracker, '
-  + `is ${money(QUIZ_KIT_AFTER_DISCOUNT)} today.`;
+  + `is ${money(kitToday())} today.`;
 
 /** Still under the cards: the small line that says why she sees this price. */
 export const COMPARE_WHY = 'Your Hormone Check price.';

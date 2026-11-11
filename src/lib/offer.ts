@@ -1,3 +1,4 @@
+import { getArm } from './arm';
 /* The commercial numbers, in one place, because some of them are not
    confirmed yet and somebody will have to change them.
  *
@@ -811,3 +812,10 @@ export function cartPath(kind: OfferKind, discount: string | null = null): strin
   return `/cart/${SINGLE_VARIANT_ID}:1?storefront=true${code}`;
 }
 
+
+/* THE OFFER SWITCH (see arm.ts). The Kit page's price and code follow her
+   arm: the live $74.99 with free shipping (kit74), or David's proposed $47
+   (kit47). bottle25 never reaches the Kit page. */
+export const kitToday = (): number => (getArm() === 'kit47' ? QUIZ_KIT_AFTER_DISCOUNT : PROTOCOL_PRICE);
+export const kitCode = (): string | null => (getArm() === 'kit47' ? KIT_DISCOUNT_CODE : KIT_SHIPPING_CODE);
+export const isKit47 = (): boolean => getArm() === 'kit47';

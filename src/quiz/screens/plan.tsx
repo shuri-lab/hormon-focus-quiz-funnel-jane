@@ -13,6 +13,8 @@ import {
   PLAN_TO_KIT_CTA, PLAN_WHY_KIT, PLAN_PUSH, REVIEW_FOR, planHeading, planSteps,
 } from '../../lib/resultCopy';
 import { reviewByName } from '../../lib/reviews';
+import { getArm } from '../../lib/arm';
+import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_TURN } from '../../lib/resultCopy';
 import { Quote } from '../../components/Proof';
 import {
   SHOT_KIT_FULL, SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK,
@@ -28,6 +30,8 @@ const KIT_THUMBS = [
 export function YourPlan() {
   const { S, next } = useQuiz();
   const outcome = stateKey(S);
+  /* The offer switch: the one-bottle arm is not shown the Kit here. */
+  const bottleArm = getArm() === 'bottle25';
   const main = mainConcern(S);
   /* Live, non-product pictures: her own symptom photo, then the cut plan
      screen's step icons (plate, capsule, notebook). */
@@ -56,6 +60,10 @@ export function YourPlan() {
         ))}
       </ol>
 
+      {bottleArm
+        ? <p className="bridge">{PLAN_BOTTLE_TURN}</p>
+        : (
+          <>
       <p className="bridge">{PLAN_LOT}</p>
       <p className="bridge"><strong>{PLAN_WHY_KIT}</strong></p>
       <p className="bridge">{PLAN_JJ_STORY}</p>
@@ -77,7 +85,9 @@ export function YourPlan() {
         ))}
       </ul>
 
-      <p className="bridge"><strong>{PLAN_PUSH}</strong></p>
+            <p className="bridge"><strong>{PLAN_PUSH}</strong></p>
+          </>
+        )}
       {review && (
         <div className="kitRevs">
           <Quote review={review} />
@@ -89,7 +99,7 @@ export function YourPlan() {
 
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
-          {PLAN_TO_KIT_CTA} &rarr;
+          {bottleArm ? PLAN_BOTTLE_CTA : PLAN_TO_KIT_CTA} &rarr;
         </button>
       </ActionBar>
     </Screen>

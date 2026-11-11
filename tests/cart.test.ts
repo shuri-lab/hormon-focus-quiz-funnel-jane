@@ -157,7 +157,7 @@ test('traffic with no attribution gets a clean link, not invented values', () =>
   /* What Shopify needs, the funnel mark and the door — and nothing standing
      in for an acquisition she did not arrive with. No empty utm_*. */
   expect([...u.searchParams.keys()].sort()).toEqual([
-    'attributes[hf_funnel]', 'attributes[hf_quiz_landing]',
+    'attributes[hf_funnel]', 'attributes[hf_offer]', 'attributes[hf_quiz_landing]',
     'hf_funnel', 'hf_quiz_landing', 'utm_campaign',
   ]);
   expect(u.searchParams.get('hf_funnel')).toBe('quiz');

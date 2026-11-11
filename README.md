@@ -116,3 +116,7 @@ The browser suite is heavy. If it times out, run one width at a time:
 `npx playwright test --project=phone-390`.
 
 See [`docs/DEPLOY.md`](docs/DEPLOY.md) to publish.
+
+## Offer switch (src/lib/arm.ts)
+One quiz, three offers: `kit74` (Kit $74.99, free shipping), `bottle25` (one bottle, 25% off, $37.50) and `kit47` (Kit $47 with KIT47, proposed; KIT47 is not in Shopify yet). Each visitor gets one at random among `ACTIVE_OFFERS`, kept in localStorage and sessionStorage, tagged on every cart link as `attributes[hf_offer]` and on every event as `hf_offer`.
+Live now: ['bottle25']. Start the A/B test: ['kit74','bottle25']. After $47 approval: ['kit47','bottle25'].

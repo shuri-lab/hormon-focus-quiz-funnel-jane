@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import {
   BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useParams,
 } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { ANGLES, OFFER_ANGLES } from './lib/angles';
 import { initClarity, initMeta, pageView } from './lib/analytics';
 import { FIRST_STEP, STEP_SLUG } from './quiz/steps';
 import { REVIEW } from './review/flag';
+import { forceArm, getArm, subscribeArm, type OfferArm } from './lib/arm';
 
 /* A shared review page has no address bar of its own to route on, so it keeps
    its place in memory instead. */
@@ -63,6 +64,20 @@ function KnownAngle({ children }: { children: React.JSX.Element }) {
    and every Shopify link opened in a new tab so the real checkout is seen
    outside the preview frame. */
 const PREVIEW_LABEL = (import.meta.env.VITE_PREVIEW_LABEL as string | undefined) ?? '';
+/* Review build only: force an arm, so reviewers can see each offer. */
+const ARM_LABELS: [OfferArm, string][] = [
+  ['kit74', 'Kit $74.99'], ['bottle25', 'One bottle $37.50'], ['kit47', 'Kit $47 proposed'],
+];
+function ArmPicker() {
+  const arm = useSyncExternalStore(subscribeArm, () => getArm());
+  return (
+    <select aria-label="Offer to preview" value={arm}
+      onChange={(e) => forceArm(e.target.value as OfferArm)}
+      style={{ marginLeft: 8, font: 'inherit', fontSize: 12, padding: '1px 4px', borderRadius: 6 }}>
+      {ARM_LABELS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+    </select>
+  );
+}
 function PreviewBanner() {
   return (
     <div role="note" style={{
@@ -71,11 +86,14 @@ function PreviewBanner() {
       textAlign: 'center',
     }}>
       {PREVIEW_LABEL ? `${PREVIEW_LABEL}. ` : ''}Preview for review. Not live. Nothing you enter is sent.
+      <ArmPicker />
     </div>
   );
 }
 
 export default function App() {
+  /* A forced arm (review build) re-renders the whole app with that offer. */
+  useSyncExternalStore(subscribeArm, () => getArm());
   useEffect(() => {
     if (!REVIEW) return;
     const onClick = (e: MouseEvent) => {

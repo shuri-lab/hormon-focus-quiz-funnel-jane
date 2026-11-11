@@ -36,3 +36,4 @@ dist-ssr
 
 # the shareable review copy, rebuilt on demand
 dist-review
+dist-artifact

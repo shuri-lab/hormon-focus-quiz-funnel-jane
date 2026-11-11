@@ -14,6 +14,7 @@ import { NotJustYou } from './screens/transition';
 import { YourPlan } from './screens/plan';
 import { R1, RDoc } from './screens/reveal';
 import { R2 } from './screens/offer';
+import { getArm } from '../lib/arm';
 
 /* THE SAME SCREEN, TWO OFFERS. The main walk ends on the bottle, which is what
    Shopify can deliver today; the kit page is preserved whole at its own
@@ -21,7 +22,11 @@ import { R2 } from './screens/offer';
    fulfilled. See the note on R2 and on ScreenId.offerKit. */
 /* DIRECTION 2: your-kit is David's Kit page; /quiz/kit is the one-bottle
    page, kept for a separate test. */
-const R2Kit = () => <R2 variant="kit" screen="r2" />;
+/* THE OFFER SWITCH: the step after her plan shows her arm's offer. The
+   one-bottle arm sees the one-bottle page; both Kit arms see the Kit page. */
+const R2Kit = () => (getArm() === 'bottle25'
+  ? <R2 variant="bottle" screen="r2" />
+  : <R2 variant="kit" screen="r2" />);
 const R2OneBottle = () => <R2 variant="bottle" screen="offerKit" />;
 import { RCause, RMeet } from './screens/nurture';
 

@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 import { REVIEW } from '../review/flag';
 import { shopUrl, track } from '../lib/analytics';
 import {
-  KIT_BUY_CTA, KIT_DISCOUNT_CODE, MONEY_BACK_BADGE, ONE_MONTH_PRICE,
+  KIT_BUY_CTA, MONEY_BACK_BADGE, ONE_MONTH_PRICE, kitCode, kitToday, isKit47, SHOT_KIT_THUMB,
   SHOT_BOTTLE_THUMB, SHOT_KIT_FULL,
-  QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE,
+  QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE,
   SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money,
   singleDailyPrice,
 } from '../lib/offer';
@@ -19,14 +19,15 @@ import {
   BOTTLE_CTA, BOTTLE_FULL_LABEL, BOTTLE_HERO_HEAD, BOTTLE_SAVE, BOTTLE_SHOT_ALT,
   BOTTLE_WHATYOUGET, FREE_SHIPPING, HF_NAME,
   KIT_BATCH_SHOWN, KIT_EYEBROW, KIT_INCLUDED_HEAD,
-  COMPARE_HEAD, COMPARE_KIT_LABEL, COMPARE_KIT_SUB, COMPARE_KIT_TODAY,
-  COMPARE_ONE_LABEL, COMPARE_ONE_SUB, COMPARE_RIBBON, COMPARE_WHY,
+  COMPARE_KIT_LABEL, COMPARE_KIT_SUB, COMPARE_KIT_TODAY,
+  COMPARE_ONE_SUB, COMPARE_WHY,
   KIT_OFFER_PILL, KIT_ONCE_NOTE, KIT_SHOT_ALT, KIT_STACK_HEAD, KIT_SUB_NOTE,
   KIT_SUB_PER, KIT_TODAY_LABEL, KIT_TOTAL_LABEL,
   OFFER_CARD_HEAD, OFFER_CARD_SUB, OFFER_ONCE_NOTE, PROMISE_BODY,
   PROMISE_EYEBROW, PROMISE_FINE, PROMISE_HEAD, SUB_BEST_VALUE, SUB_LABEL,
   TRUST_ITEMS, WELCOME_DETAIL, WELCOME_LABEL, WELCOME_WHY_SHORT,
   bottleBatchLine, compareKitPrice, compareSub, kitSaving, subLockLine,
+  compareHead, compareRibbon, compareOneLabel, compareOnePrice,
   welcomeSaving,
 } from '../lib/kitCopy';
 
@@ -120,7 +121,7 @@ export function kitHref(
      "60-day" true, so its button carries PROTOCOL_VARIANT_ID with KIT47.
      The one-bottle offer is untouched: single variant, HORMONE25OFF. */
   return variant === 'kit'
-    ? shopUrl(SHOP_BASE, outcome, angle, 'protocol', KIT_DISCOUNT_CODE)
+    ? shopUrl(SHOP_BASE, outcome, angle, 'protocol', kitCode())
     : shopUrl(SHOP_BASE, outcome, angle, 'single', SINGLE_DISCOUNT_CODE);
 }
 
@@ -159,13 +160,13 @@ export function KitPrice() {
         </span>
         <span className="kitPriceToday">
           <small>{KIT_TODAY_LABEL}</small>
-          <b>{money(QUIZ_KIT_AFTER_DISCOUNT)}</b>
+          <b>{money(kitToday())}</b>
         </span>
       </p>
 
       <p className="kitPriceSave">{kitSaving()}</p>
       {/* Review build only (Jane, 11 Nov): $47 is David's proposal, not agreed. */}
-      {REVIEW && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
+      {REVIEW && isKit47() && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
     </div>
   );
 }
@@ -189,21 +190,21 @@ export function KitCompare() {
           the cards, which left her to work out what the two prices were for
           after she had already read them. */}
       <header className="kitCmpHead">
-        <h2 className="kitCmpTitle">{COMPARE_HEAD}</h2>
+        <h2 className="kitCmpTitle">{compareHead()}</h2>
         <p className="kitCmpLead">{compareSub()}</p>
       </header>
 
       <div className="kitCmpCards">
         <div className="kitCmp">
-          <p className="kitCmpLabel">{COMPARE_ONE_LABEL}</p>
-          <img className="kitCmpShot" src={SHOT_BOTTLE_THUMB} alt=""
+          <p className="kitCmpLabel">{compareOneLabel()}</p>
+          <img className="kitCmpShot" src={isKit47() ? SHOT_BOTTLE_THUMB : SHOT_KIT_THUMB} alt=""
             width={180} height={180} loading="lazy" decoding="async" />
-          <p className="kitCmpPrice">{money(ONE_MONTH_PRICE)}</p>
+          <p className="kitCmpPrice">{money(compareOnePrice())}</p>
           <p className="kitCmpSub">{COMPARE_ONE_SUB}</p>
         </div>
 
         <div className="kitCmp isKit">
-          <span className="kitCmpRibbon">{COMPARE_RIBBON}</span>
+          <span className="kitCmpRibbon">{compareRibbon()}</span>
           <p className="kitCmpLabel">{COMPARE_KIT_LABEL}</p>
           {/* THE WHOLE KIT, not two bottles: the card's price is being
               compared against all five things. See SHOT_KIT_FULL. */}
@@ -439,10 +440,10 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
               {isKit ? QUIZ_KIT_VALUE_TOTAL : money(ONE_MONTH_PRICE)}
             </s>
             <span className="kitDealNum">
-              {money(isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT)}
+              {money(isKit ? kitToday() : SINGLE_AFTER_DISCOUNT)}
             </span>
           </div>
-          {REVIEW && isKit && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
+          {REVIEW && isKit && isKit47() && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
           <p className="kitDealNote">
             {KIT_ONCE_NOTE}
             {!isKit && <> &middot; {singleDailyPrice()} a day</>}
@@ -451,7 +452,7 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
             className="cta kitBtn" href={once} data-offer={isKit ? 'protocol' : 'single'}
             onClick={() => track.checkout(
               outcome,
-              isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT,
+              isKit ? kitToday() : SINGLE_AFTER_DISCOUNT,
               isKit ? 'protocol' : 'single',
               'kit-main',
             )}

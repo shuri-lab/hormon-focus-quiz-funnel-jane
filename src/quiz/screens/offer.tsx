@@ -20,7 +20,7 @@ import {
 import { kitProof } from '../../lib/reviews';
 import { REVIEW_COUNT } from '../../lib/reviews';
 import {
-  QUIZ_KIT_AFTER_DISCOUNT, SINGLE_AFTER_DISCOUNT, money, singleDailyPrice,
+  SINGLE_AFTER_DISCOUNT, kitToday, money, singleDailyPrice,
 } from '../../lib/offer';
 import { INGREDIENTS } from '../../lib/offerCopy';
 /* HERO_HEAD, HERO_HEAD_DEFAULT and HERO_SUB_BY_STAGE are no longer imported:
@@ -480,7 +480,7 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
           className="cta kitBtn" href={href} data-offer={isKit ? 'protocol' : 'single'} data-close
           onClick={() => track.checkout(
             outcome,
-            isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT,
+            isKit ? kitToday() : SINGLE_AFTER_DISCOUNT,
             isKit ? 'protocol' : 'single',
             'quiz-kit-close',
           )}
@@ -489,7 +489,7 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
         </a>
         <p className="kitNote">
           {isKit
-            ? `${money(QUIZ_KIT_AFTER_DISCOUNT)} · two bottles plus the plan · 60-day money-back guarantee`
+            ? `${money(kitToday())} · two bottles plus the plan · 60-day money-back guarantee`
             : `${money(SINGLE_AFTER_DISCOUNT)} · ${SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee`}
         </p>
       </section>

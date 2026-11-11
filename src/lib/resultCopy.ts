@@ -1080,3 +1080,8 @@ export function planTriedLine(S: QuizState): string {
   const l = triedLine(S).replace(/^You told us you have already tried/, 'You have already tried');
   return l ? `${l} This plan brings it together.` : '';
 }
+
+/* The offer switch, one-bottle arm: the plan ends on Hormone Focus. */
+export const PLAN_BOTTLE_TURN =
+  'You can do all four on your own. Hormone Focus makes step 3 easier: two capsules a day with a meal.';
+export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';
