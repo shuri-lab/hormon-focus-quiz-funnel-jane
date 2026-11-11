@@ -1082,6 +1082,7 @@ export function planTriedLine(S: QuizState): string {
 }
 
 /* The offer switch, one-bottle arm: the plan ends on Hormone Focus. */
+export const PLAN_BOTTLE_HEAD = 'Start your plan with Hormone Focus.';
 export const PLAN_BOTTLE_TURN =
-  'You can do all four on your own. Hormone Focus makes step 3 easier: two capsules a day with a meal.';
+  'It does step 3 for you. Two capsules a day with a meal give your body steady support while your hormones change.';
 export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';

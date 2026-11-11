@@ -14,7 +14,7 @@ import {
 } from '../../lib/resultCopy';
 import { reviewByName } from '../../lib/reviews';
 import { getArm } from '../../lib/arm';
-import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_TURN } from '../../lib/resultCopy';
+import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_HEAD, PLAN_BOTTLE_TURN } from '../../lib/resultCopy';
 import { Quote } from '../../components/Proof';
 import {
   SHOT_KIT_FULL, SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK,
@@ -61,7 +61,7 @@ export function YourPlan() {
       </ol>
 
       {bottleArm
-        ? <p className="bridge">{PLAN_BOTTLE_TURN}</p>
+        ? <p className="bridge"><strong>{PLAN_BOTTLE_HEAD}</strong> {PLAN_BOTTLE_TURN}</p>
         : (
           <>
       <p className="bridge">{PLAN_LOT}</p>
