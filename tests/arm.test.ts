@@ -21,11 +21,16 @@ beforeEach(() => {
   resetArmForTests();
 });
 
-test('live now: the $47 Kit and the 25% bottle, split evenly', () => {
-  expect(ACTIVE_OFFERS).toEqual(['kit47', 'bottle25']);
-  expect(pickArm(ACTIVE_OFFERS, () => 0.2)).toBe('kit47');
-  expect(pickArm(ACTIVE_OFFERS, () => 0.7)).toBe('bottle25');
-  expect(ACTIVE_OFFERS).toContain(getArm());
+test('live now: one active offer, the 25% bottle, and everyone gets it', () => {
+  expect(ACTIVE_OFFERS).toEqual(['bottle25']);
+  for (const r of [0, 0.3, 0.6, 0.9999]) expect(pickArm(['bottle25'], () => r)).toBe('bottle25');
+  expect(getArm()).toBe('bottle25');
+});
+
+test('after KIT47 is live: the $47 Kit and the 25% bottle split evenly', () => {
+  const next: OfferArm[] = ['kit47', 'bottle25'];
+  expect(pickArm(next, () => 0.2)).toBe('kit47');
+  expect(pickArm(next, () => 0.7)).toBe('bottle25');
 });
 
 test('with two active offers the split is even, half and half', () => {

@@ -26,10 +26,10 @@ export type OfferArm = 'kit74' | 'bottle25' | 'kit47';
 export const ALL_OFFERS: readonly OfferArm[] = ['kit74', 'bottle25', 'kit47'];
 
 /** The offers the quiz splits between, evenly. One offer means no split:
- * every visitor gets it. 12 Nov: TJ and JJ approved David's $47 Kit, so the
- * quiz splits evenly between the $47 Kit and one bottle at 25% off. The $47
- * arm needs the KIT47 code live in Shopify (Kit $74.99 -> $47.00). */
-export const ACTIVE_OFFERS: readonly OfferArm[] = ['kit47', 'bottle25'];
+ * every visitor gets it. 12 Nov: TJ and JJ approved David's $47 Kit, but
+ * Jane's call is the 25% bottle alone until KIT47 is live in Shopify
+ * (Kit $74.99 -> $47.00). Then switch to ['kit47', 'bottle25']. */
+export const ACTIVE_OFFERS: readonly OfferArm[] = ['bottle25'];
 
 export const ARM_KEY = 'hf_offer_arm';
 
