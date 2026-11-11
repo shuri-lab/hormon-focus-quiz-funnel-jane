@@ -23,26 +23,41 @@ export const STEP_SLUG: Record<ScreenId, string> = {
   q4b: 'how-long-ago',
   q5: 'when-you-notice-it',
   q6: 'what-you-have-tried',
-  q7: 'what-you-want',
+  q7: 'what-you-want-back',
+  stat: 'not-just-you',
   load: 'reading-your-answers',
   gate: 'your-result',
   r1: 'result',
   cause: 'whats-happening',
   plan: 'your-plan',
   meet: 'meet-hormone-focus',
-  r2: 'kit',
+  r2: 'your-kit',
   /* The kit offer, off the flow and at its own address. See ScreenId. */
-  offerKit: 'offer-kit',
+  offerKit: 'kit',
   rDoc: 'speak-to-your-doctor',
 };
 
 const BY_SLUG = Object.fromEntries(
   Object.entries(STEP_SLUG).map(([id, slug]) => [slug, id as ScreenId]),
 ) as Record<string, ScreenId>;
+/* The goal question's old address still opens it. */
+BY_SLUG['what-you-want'] = 'q7';
+/* The review screen was removed (Jane, 11 Nov). */
+BY_SLUG['women-like-you'] = 'load';
+/* The old off-flow address still opens the one-bottle page. */
+BY_SLUG['offer-kit'] = 'offerKit';
 
 /** The screen a path segment names, or null when it names nothing. */
-export const screenFromSlug = (slug: string | undefined): ScreenId | null =>
-  (slug && BY_SLUG[slug]) || null;
+/* DIRECTION 2: A CUT SCREEN'S ADDRESS GOES FORWARD. A shared or stale link
+   to a screen that no longer exists lands on the screen that replaced it. */
+const FORWARD: Partial<Record<ScreenId, ScreenId>> = {
+  q5: 'q6', q7: 'load', cause: 'plan', meet: 'plan',
+};
+
+export const screenFromSlug = (slug: string | undefined): ScreenId | null => {
+  const id = (slug && BY_SLUG[slug]) || null;
+  return id ? FORWARD[id] ?? id : null;
+};
 
 /** The first screen, which is where an unaddressed /quiz lands. */
 export const FIRST_STEP: ScreenId = 'q1';

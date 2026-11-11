@@ -12,7 +12,7 @@ import { test, expect } from 'vitest';
 
 import {
   createState, stateKey, periScore, path, shouldSkip, mainConcern, otherConcerns, masked,
-  docReason, seesOffer, nextId, prevId, FLOW, REVEAL,
+  docReason, seesOffer, nextId, prevId, FLOW, REVEAL, kindExit, CUT,
   OFFER_OUTCOMES, QUESTION_NUMBER, QUESTION_TOTAL,
   type QuizState, type Age, type Cycle, type Twelve, type ScreenId, type Outcome,
 } from '../src/lib/logic';
@@ -253,6 +253,15 @@ test('the doctor route stops at the cycle question and never reaches the email g
 test('everyone else sees her result and then the kit, and never the doctor screen', () => {
   for (const S of combinations()) {
     if (stateKey(S) === 'D') continue;
+    /* Direction 2: sixty and over gets the kind result instead. */
+    if (kindExit(S)) {
+      const seen = path(S);
+      expect(seen[seen.length - 1], label(S)).toBe('rDoc');
+      for (const id of ['q6', 'load', 'gate', 'r1', 'r2'] as ScreenId[]) {
+        expect(seen, `60+ never sees ${id}: ${label(S)}`).not.toContain(id);
+      }
+      continue;
+    }
     const seen = path(S);
     expect(seen, label(S)).not.toContain('rDoc');
     expect(seen, label(S)).toContain('gate');
@@ -294,11 +303,12 @@ test('shouldSkip and path agree', () => {
 
 /* ---------------------------------------------- 3. the seven questions --- */
 
-test('seven questions, numbered so the count never goes backwards', () => {
-  expect(QUESTION_TOTAL).toBe(7);
-  const order: ScreenId[] = ['q1', 'q2', 'q3', 'q4', 'q4b', 'q5', 'q6', 'q7'];
+test('five questions, numbered so the count never goes backwards (Direction 2)', () => {
+  expect(QUESTION_TOTAL).toBe(5);
+  const order: ScreenId[] = ['q1', 'q2', 'q3', 'q4', 'q4b', 'q6', 'stat'];
   const numbers = order.map((id) => QUESTION_NUMBER[id] as number);
-  expect(numbers).toEqual([1, 2, 3, 4, 4, 5, 6, 7]);
+  expect(numbers).toEqual([1, 2, 3, 4, 4, 5, 5]);
+  for (const id of ['q5'] as ScreenId[]) expect(QUESTION_NUMBER[id], id).toBeUndefined();
   /* The loader, the gate and the result pages are not questions. */
   for (const id of ['load', 'gate', 'r1', 'r2', 'rDoc'] as ScreenId[]) {
     expect(QUESTION_NUMBER[id], id).toBeUndefined();
@@ -334,32 +344,11 @@ test('the pattern, what she tried and what she wants never change her result', (
 
 /* ----------------------------------- the three screens before the price -- */
 
-test('every result that is shown the offer walks the three screens first', () => {
-  /* ADDED WITH THEM, 29 October 2026. She finished the quiz problem-aware and
-     the next thing she saw was a price. `cause`, `plan` and `meet` are that
-     gap, so they belong to exactly the states that reach the offer, in that
-     order, every time. */
-  for (const [age, cycle, twelve] of [
-    ['40-44', 'unpredictable', 'no'],
-    ['45-49', 'stopped', 'yes'],
-    ['55-59', 'skipping', 'no'],
-    ['40-44', 'stopped', 'yes'],
-  ] as [Age, Cycle, Twelve][]) {
-    const S = make({ age, cycle, twelve });
+test('Direction 2: the cut screens are never walked, and the result goes straight to her plan', () => {
+  for (const S of combinations()) {
     const seen = path(S);
-    const label = `${stateKey(S)} ${age}/${cycle}/${twelve}`;
-
-    expect(seesOffer(S), label).toBe(true);
-    for (const id of ['cause', 'plan', 'meet'] as ScreenId[]) {
-      expect(seen, `${label} never reaches ${id}`).toContain(id);
-      expect(shouldSkip(S, id), `${label} skips ${id}`).toBe(false);
-    }
-    /* In order, and between her result and the price: she is told what is
-       behind it, then what to do, then what does the first part. */
-    const order = (['r1', 'cause', 'plan', 'meet', 'r2'] as ScreenId[])
-      .map((id) => seen.indexOf(id));
-    const ascending = order.slice().sort((a, b) => a - b);
-    expect(order, `${label} walks them out of order`).toEqual(ascending);
+    for (const id of CUT) expect(seen, `${label(S)} walks cut ${id}`).not.toContain(id);
+    if (seen.includes('r1')) expect(seen[seen.indexOf('r1') + 1], label(S)).toBe('plan');
   }
 });
 
@@ -418,6 +407,17 @@ test('forward and back from an off-flow screen go nowhere, not to question one',
   expect(nextId(S, 'offerKit'), 'forward from the kit page').toBeUndefined();
   expect(prevId(S, 'offerKit'), 'back from the kit page').toBeUndefined();
   /* And the screens that ARE in the flow still move. */
-  expect(nextId(S, 'meet')).toBe('r2');
-  expect(prevId(S, 'r2')).toBe('meet');
+  expect(nextId(S, 'r1')).toBe('plan');
+  expect(prevId(S, 'plan')).toBe('r1');
+});
+
+test('Direction 2: the stat screen, then load; result, plan, then the Kit page', () => {
+  const S = make({ age: '45-49', cycle: 'unpredictable' });
+  const seen = path(S);
+  const at = (id: ScreenId) => seen.indexOf(id);
+  expect(at('q6')).toBeLessThan(at('stat'));
+  expect(at('q7')).toBe(-1);
+  expect(at('stat')).toBeLessThan(at('load'));
+  expect(at('r1')).toBeLessThan(at('plan'));
+  expect(at('plan')).toBeLessThan(at('r2'));
 });

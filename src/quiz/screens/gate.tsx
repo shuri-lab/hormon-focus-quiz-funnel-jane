@@ -1,27 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuiz } from '../context';
+import { REVIEW } from '../../review/flag';
 import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { stateKey } from '../../lib/logic';
 import { isEmail, submitLead } from '../../lib/leads';
 import { track } from '../../lib/analytics';
-import { GATE_LINE } from '../../lib/resultCopy';
+import { GATE_LINE, LOAD_CARDS } from '../../lib/resultCopy';
 
 /* -------------------------------------------------------------- load ---- */
 
 /* A short pause, and only what actually happens. Nothing is matched against
    other women and nothing is measured, so neither is claimed. */
 const LOAD_STEPS = [
-  'Looking at your symptoms',
-  'Checking the pattern',
-  'Preparing your Hormone Check',
+  'Analyzing your answers',
+  'Checking your pattern',
+  'Building your plan',
 ];
 
+/* Direction 2: the title moves with the steps, and swaps when the third
+   step starts. Live component; only the words change. */
+const loadTitle = (k: number): string => (k >= 2 ? 'Building your plan…' : 'Getting your results…');
+
 /** About two and a half seconds, end to end. */
-const LOAD_MS = 2400;
+/* Direction 2: about 5.6 s, so four cards can each show for about 1.4 s.
+   Jane asked to keep it under about 6 s. */
+/* Jane, 11 Nov: no review here, and slower: three cards, 2.5 s each. */
+const LOAD_MS = 7500;
+const CARD_MS = LOAD_MS / 3;
 
 export function Load() {
   const { next } = useQuiz();
   const [k, setK] = useState(0);
+  const [card, setCard] = useState(0);
   const done = useRef(false);
 
   useEffect(() => {
@@ -29,6 +39,7 @@ export function Load() {
     const total = reduced ? 600 : LOAD_MS;
     const step = total / LOAD_STEPS.length;
 
+    const cards = reduced ? [] : [1, 2].map((i) => setTimeout(() => setCard(i), CARD_MS * i));
     const timers = LOAD_STEPS.map((_, i) => setTimeout(() => setK(i + 1), step * (i + 1)));
     const finish = setTimeout(() => {
       if (done.current) return;
@@ -38,14 +49,14 @@ export function Load() {
       next({ replace: true });
     }, total + 250);
 
-    return () => { timers.forEach(clearTimeout); clearTimeout(finish); };
+    return () => { timers.forEach(clearTimeout); cards.forEach(clearTimeout); clearTimeout(finish); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Screen id="load">
       <div className="loadWrap">
-        <ScreenTitle className="q">Putting your answers together…</ScreenTitle>
+        <ScreenTitle className="q">{loadTitle(k)}</ScreenTitle>
         <div className="loadSpin" aria-hidden="true" />
         <ul className="loadList">
           {LOAD_STEPS.map((label, i) => (
@@ -54,7 +65,13 @@ export function Load() {
             </li>
           ))}
         </ul>
-        <p className="srOnly" role="status" aria-live="polite">Putting your answers together</p>
+        {/* Direction 2: one card at a time under the steps. A woman like
+            her first (the offer page's review card), then the three things
+            her plan covers (the live list card). */}
+        <div className="nextPieces">
+          <div><b>{LOAD_CARDS[card]}</b></div>
+        </div>
+        <p className="srOnly" role="status" aria-live="polite">{loadTitle(k)}</p>
       </div>
     </Screen>
   );
@@ -71,9 +88,12 @@ export function Gate() {
 
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
-  const valid = isEmail(S.email);
-  /* Consent is a separate gate from a valid address. Both must pass. */
-  const ready = valid && S.consent;
+  const valid = REVIEW ? S.email.trim().length > 0 : isEmail(S.email);
+  /* Direction 2 (the V3.5 fix): her result does not wait on the marketing
+     box. A valid address opens it; submitLead still sends nothing unless
+     the box is ticked. */
+  /* Preview: any email moves on; nothing is sent. */
+  const ready = REVIEW ? S.email.trim().length > 0 : valid;
 
   async function submit() {
     setTouched(true);
@@ -117,8 +137,6 @@ export function Gate() {
           <input
             className="consentBox" id="cf" type="checkbox"
             checked={S.consent}
-            aria-invalid={touched && !S.consent}
-            aria-describedby={touched && !S.consent ? 'cf-err' : undefined}
             onChange={(e) => set({ consent: e.target.checked })}
           />
           <span>
@@ -126,11 +144,6 @@ export function Gate() {
             at any time.
           </span>
         </label>
-        {touched && !S.consent && (
-          <p className="fieldErr" id="cf-err">
-            Please tick the box so we know it is alright to email you.
-          </p>
-        )}
 
         <ActionBar>
           <button type="submit" className="cta" disabled={busy || !ready}>
@@ -139,7 +152,7 @@ export function Gate() {
         </ActionBar>
       </form>
 
-      <p className="gateNow">Your results will appear immediately.</p>
+      <p className="gateNow">We never share your email.</p>
     </Screen>
   );
 }

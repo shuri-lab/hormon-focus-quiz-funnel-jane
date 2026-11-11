@@ -300,14 +300,14 @@ test('the customer never reads the word we use among ourselves', () => {
 
 test('the Plan is named the same way everywhere she sees it', () => {
   /* RENAMED 30 October 2026, David: the kit lost its 60-Day wording and is
-     "The Feel Like YOU Again Kit".
+     "The 60-Day Feel Like You Again Kit".
 
      PLAN_SHORT KEPT ITS SIXTY DAYS, and the two now differ on purpose. It
      names the TWO-bottle pack on /offer, /live and /plan, which is sixty
      days of supply and is a different thing from the one-bottle kit the quiz
      sells. Both are asserted here so a later decision to align them is a
      decision and not a drift. */
-  expect(offer.PLAN_NAME).toBe('The Feel Like YOU Again Kit');
+  expect(offer.PLAN_NAME).toBe('The 60-Day Feel Like You Again Kit');
   expect(offer.PLAN_SHORT).toBe('The 60-Day Kit');
   expect(offer.optionFor('protocol').title).toContain(offer.PLAN_SHORT);
   expect(offer.optionFor('single').title).toBe('1 bottle \u00b7 30 days');
@@ -379,7 +379,7 @@ const CLOCK_EXEMPT = new Set([
      heuristic misfiring on one word, so the string is exempted in full rather
      than the rule being widened to let the real case through. Jane's Kit
      opening, 8 October 2026. */
-  "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+  "I put the 60-Day Feel Like You Again Kit together so you don't have to piece all of "
   + 'this together on your own. It gives you 60 days to stay with the same simple '
   + 'plan instead of changing things every few days.',
 
@@ -390,7 +390,7 @@ const CLOCK_EXEMPT = new Set([
      thing this rule exists to catch.
 
      It is here because David asked for it by name on 6 November and because
-     the kit is called The Feel Like YOU Again Kit, so the sentence is the
+     the kit is called The 60-Day Feel Like You Again Kit, so the sentence is the
      product's name with a date added. It is NOT here because the rule is
      wrong.
 

@@ -46,7 +46,7 @@ import {
   BottlePrice, KitCompare, KitGuarantee, KitOffer, KitPrice, kitHref,
 } from '../../components/KitOffer';
 import {
-  SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_KIT_HERO, SHOT_STEPS,
+  SHOT_HOW_IT_WORKS, SHOT_KIT_BOTTLE, SHOT_KIT_FULL, SHOT_STEPS,
 } from '../../lib/offer';
 import { MEET_HOW_ALT, PLAN_STEP_ALTS } from '../../lib/nurtureCopy';
 import { track } from '../../lib/analytics';
@@ -217,8 +217,8 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
         {isKit
           ? (
             <img
-              className="kitHeroShot isKit" src={SHOT_KIT_HERO} alt={KIT_SHOT_ALT}
-              width={768} height={576} decoding="async" fetchPriority="high"
+              className="kitHeroShot isKit" src={SHOT_KIT_FULL} alt={KIT_SHOT_ALT}
+              width={600} height={267} decoding="async" fetchPriority="high"
             />
           )
           : (
@@ -488,7 +488,9 @@ export function R2({ variant = 'kit', screen = 'r2' }: {
           {isKit ? CLOSE_CTA : BOTTLE_CTA} &nbsp;&rarr;
         </a>
         <p className="kitNote">
-          {money(SINGLE_AFTER_DISCOUNT)} · {SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee
+          {isKit
+            ? `${money(QUIZ_KIT_AFTER_DISCOUNT)} · two bottles plus the plan · 60-day money-back guarantee`
+            : `${money(SINGLE_AFTER_DISCOUNT)} · ${SINGLE_DISCOUNT_NOTE} · 60-day money-back guarantee`}
         </p>
       </section>
 

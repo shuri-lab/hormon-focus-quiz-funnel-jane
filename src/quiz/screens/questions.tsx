@@ -4,8 +4,8 @@ import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { TileGrid } from '../../components/TileGrid';
 import { SingleChoice, MultiChoice } from '../../components/controls';
 import {
-  AGE_OPTIONS, CYCLE_OPTIONS, PATTERN_OPTIONS, TRIED_OPTIONS, TWELVE_OPTIONS,
-  WANT_OPTIONS, mentioned,
+  AGE_OPTIONS, CYCLE_OPTIONS, GOAL_OPTIONS, PATTERN_OPTIONS, TRIED_OPTIONS,
+  TWELVE_OPTIONS, mentioned,
 } from '../../lib/content';
 import { TILES, has } from '../../lib/logic';
 import type { Age, Cycle, Pattern, SymptomId, Twelve, WantId } from '../../lib/logic';
@@ -169,13 +169,14 @@ export function Q7() {
   const pick = useAutoAdvance(next);
   return (
     <Screen id="q7">
-      <ScreenTitle>What do you want most right now?</ScreenTitle>
+      <ScreenTitle>What do you want back first?</ScreenTitle>
       <SingleChoice
-        name="What you would choose"
-        options={WANT_OPTIONS}
+        name="What you want back first"
+        options={GOAL_OPTIONS}
         value={S.want}
         onPick={(v: WantId) => pick(() => set({ want: v }))}
       />
     </Screen>
   );
 }
+

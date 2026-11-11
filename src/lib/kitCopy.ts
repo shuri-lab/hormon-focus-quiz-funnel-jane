@@ -254,7 +254,7 @@ export const HERO_HEAD: Record<SymptomId, string> = {
 };
 
 /** When she named nothing, which is every woman who opens this page cold. */
-export const HERO_HEAD_DEFAULT = 'Feel like YOU again.';
+export const HERO_HEAD_DEFAULT = 'Feel like you again.';
 
 /**
  * How it works, and how little it asks of her.
@@ -533,7 +533,8 @@ export const KIT_HERO_LABEL = PLAN_NAME;
  * this is that name as a sentence, which is the argument for it. A product
  * name is not a claim; a sentence promising a result by a date is.
  */
-export const KIT_HERO_HEAD = 'Feel like YOU again in 60 days.';
+/* Direction 2 (Jane, 11 Nov): no timeframe in the headline. */
+export const KIT_HERO_HEAD = 'Feel like you again.';
 
 /**
  * The same line with her name on the front.
@@ -558,7 +559,7 @@ export function kitHeroHead(raw: string): string {
   const first = name.split(/\s+/)[0];
   const body = first === first.toUpperCase() ? first.toLowerCase() : first;
   const shown = body.charAt(0).toUpperCase() + body.slice(1);
-  return `${shown}, feel like YOU again in 60 days.`;
+  return `${shown}, feel like you again.`;
 }
 /* "No crash diets, no willpower, no guessing" came off on 6 November. The
    sentence ends on what the kit gives her rather than on three things it is
@@ -739,7 +740,7 @@ export const COMPARE_WHY = 'Your Hormone Check price.';
  * it loads.
  */
 export const KIT_SHOT_ALT =
-  'The Feel Like YOU Again Kit: two bottles of Hormone Focus, '
+  'The 60-Day Feel Like You Again Kit: two bottles of Hormone Focus, '
   + 'The 60-Day Hormone Fix, Hormone Healthy Recipes and the Daily Symptom Tracker';
 
 /* ------------------------------------- the one-bottle offer, variant B -- */

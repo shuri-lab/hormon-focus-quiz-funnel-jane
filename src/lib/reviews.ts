@@ -234,3 +234,6 @@ export function kitProof(_mainConcern: string): KitProof {
     closing: BY_NAME.get('Adrienne') as Review,
   };
 }
+
+/** Direction 2: one published review by name, or undefined. */
+export const reviewByName = (name: string): Review | undefined => BY_NAME.get(name);

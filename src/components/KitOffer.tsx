@@ -1,11 +1,12 @@
 import { SHOP_BASE } from '../lib/logic';
 import { useHydrated } from '../lib/useHydrated';
 import { useMemo } from 'react';
+import { REVIEW } from '../review/flag';
 import { shopUrl, track } from '../lib/analytics';
 import {
   KIT_BUY_CTA, KIT_DISCOUNT_CODE, MONEY_BACK_BADGE, ONE_MONTH_PRICE,
   SHOT_BOTTLE_THUMB, SHOT_KIT_FULL,
-  QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE, SHOT_KIT_HERO,
+  QUIZ_KIT_AFTER_DISCOUNT, QUIZ_KIT_ROWS, QUIZ_KIT_VALUE_TOTAL, SHOT_KIT_BOTTLE,
   SINGLE_AFTER_DISCOUNT, SINGLE_DISCOUNT_CODE, SUBSCRIBE_PRICE, money,
   singleDailyPrice,
 } from '../lib/offer';
@@ -163,6 +164,8 @@ export function KitPrice() {
       </p>
 
       <p className="kitPriceSave">{kitSaving()}</p>
+      {/* Review build only (Jane, 11 Nov): $47 is David's proposal, not agreed. */}
+      {REVIEW && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
     </div>
   );
 }
@@ -397,7 +400,7 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
       <div className="kitCard kitLead">
         <div className="kitBottleHead">
           {isKit
-            ? <img src={SHOT_KIT_HERO} alt={KIT_SHOT_ALT} width={768} height={576}
+            ? <img src={SHOT_KIT_FULL} alt={KIT_SHOT_ALT} width={600} height={267}
                 decoding="async" />
             : <img src={SHOT_KIT_BOTTLE} alt={BOTTLE_SHOT_ALT} width={800} height={800}
                 decoding="async" />}
@@ -439,6 +442,7 @@ export function KitOffer({ outcome, angle, variant = 'kit' }: Props) {
               {money(isKit ? QUIZ_KIT_AFTER_DISCOUNT : SINGLE_AFTER_DISCOUNT)}
             </span>
           </div>
+          {REVIEW && isKit && <p className="fieldErr">Proposed price for review. Not agreed yet.</p>}
           <p className="kitDealNote">
             {KIT_ONCE_NOTE}
             {!isKit && <> &middot; {singleDailyPrice()} a day</>}

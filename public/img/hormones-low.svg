@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" role="img" aria-label="Estrogen and progesterone drop after periods stop and stay low">
+  <rect width="600" height="300" rx="20" fill="#FAF6FD"/>
+  <!-- after periods stop: a soft band where levels stay low -->
+  <rect x="380" y="30" width="180" height="200" rx="12" fill="#F3ECFA"/>
+  <line x1="40" y1="230" x2="560" y2="230" stroke="#D2C3E6" stroke-width="2"/>
+  <line x1="380" y1="40" x2="380" y2="230" stroke="#B98FD6" stroke-width="2" stroke-dasharray="6 6"/>
+  <!-- estrogen: steady, swings, then drops and stays low -->
+  <path d="M40 100 C 90 92, 130 110, 180 100
+           C 210 80, 230 120, 260 95 S 300 140, 330 115
+           C 350 110, 365 150, 380 175
+           C 400 200, 430 205, 470 207 S 540 208, 560 208"
+        fill="none" stroke="#7B3E9D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- progesterone: falls first, then stays low -->
+  <path d="M40 140 C 90 134, 130 150, 180 142
+           C 220 150, 250 175, 290 172 S 340 190, 380 200
+           C 420 212, 470 214, 560 214"
+        fill="none" stroke="#D4589A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g font-family="Poppins, system-ui, sans-serif" font-weight="700" font-size="17">
+    <text x="44" y="82" fill="#7B3E9D">Estrogen</text>
+    <text x="44" y="174" fill="#D4589A">Progesterone</text>
+  </g>
+  <g font-family="Poppins, system-ui, sans-serif" font-weight="600" font-size="16" fill="#57516A" text-anchor="middle">
+    <text x="110" y="262">Your 30s</text>
+    <text x="270" y="262">Your 40s</text>
+    <text x="380" y="262">Periods stop</text>
+    <text x="490" y="262">After</text>
+  </g>
+</svg>

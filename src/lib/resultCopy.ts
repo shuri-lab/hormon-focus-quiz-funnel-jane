@@ -17,11 +17,16 @@
  */
 import { TILES, has, mainConcern, otherConcerns } from './logic';
 import type { Outcome, Pattern, QuizState, SymptomId, TriedId, WantId } from './logic';
+import { triedLine } from './content';
 
 /* ---------------------------------------------------------------- gate -- */
 
 export const GATE_LINE =
   'Enter your first name and email to see what your answers suggest, and the first three things to do.';
+
+/** Under the button. What her answers are used for, and nothing more. */
+export const GATE_PRIVACY =
+  'We use your answers only to show your plan and send what you ask for.';
 
 /* ------------------------------------------------- what this means ------ */
 
@@ -426,13 +431,13 @@ export function underCardAcks(S: QuizState): string[] {
 export const BRIDGE =
   "These are the first three things I'd work on. None of them are complicated, "
   + 'but doing them consistently when life gets busy is where it gets harder. '
-  + 'This is why I built the Feel Like YOU Again Kit.';
+  + 'This is why I built the 60-Day Feel Like You Again Kit.';
 
-export const KIT_TITLE = 'The Feel Like YOU Again Kit';
+export const KIT_TITLE = 'The 60-Day Feel Like You Again Kit';
 
 /** Two paragraphs, so the screen can breathe between them. */
 export const KIT_INTRO: string[] = [
-  "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+  "I put the 60-Day Feel Like You Again Kit together so you don't have to piece all of "
   + 'this together on your own. It gives you 60 days to stay with the same simple '
   + 'plan instead of changing things every few days.',
   'Hormones change slowly, and so do habits, so I want you looking at more than '
@@ -507,3 +512,571 @@ export const KIT_CLOSE =
 
 /** Tile order, for any test that wants to walk every symptom. */
 export const SYMPTOM_IDS: SymptomId[] = TILES.map(([id]) => id);
+
+/* ======================================================= DIRECTION 2 ======
+ * 11 November 2026, local mock. The result page carries her 60-day plan: her
+ * headline (Jane's line), her moment, the four parts of JJ's Kit each named
+ * for the answer it serves, one honest line on why, the doctor line, and the
+ * button to the Kit. The three screens that used to sit between the result
+ * and the offer are cut; what they did is said here in a line each.
+ */
+
+/** Her symptom, as Jane's headline names it. */
+const D2_HEAD: Record<SymptomId, string> = {
+  weight: 'Weight that will not move',
+  sleep: 'Waking at 3 AM',
+  energy: 'Running out of steam by 2 PM',
+  sweats: 'Night sweats',
+  bloat: 'Bloating by dinner',
+  mood: 'Snapping or losing your words',
+};
+const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
+
+/** "[Her top two] are common in perimenopause." Jane, 11 Nov. */
+export function d2Headline(S: QuizState, outcome: Outcome): string {
+  const main = mainConcern(S);
+  if (!main) return 'What you are feeling is common at your stage.';
+  const second = otherConcerns(S)[0];
+  const what = second ? `${D2_HEAD[main]} and ${lower(D2_HEAD[second])} are` : `${D2_HEAD[main]} is`;
+  const where = outcome === 'C' || outcome === 'E' ? 'after periods stop' : 'in perimenopause';
+  return outcome === 'A'
+    ? `${what} common when hormones start to shift.`
+    : `${what} common ${where}.`;
+}
+
+/** Her moment, under the headline. */
+export const D2_MOMENT: Record<SymptomId, string> = {
+  sweats: 'The room is cool. You are still waking up drenched.',
+  sleep: 'You are tired all day. Then at 3 AM you are wide awake.',
+  weight: 'You are not eating more. Your jeans still got tight.',
+  energy: 'You slept all night. You still run out of steam by 2 PM.',
+  bloat: 'Your food stayed the same. Your stomach did not.',
+  mood: 'Nothing went wrong today. You still snapped, or lost the word.',
+};
+
+/** Why it all shows up at once. One line per stage. Never "too much estrogen". */
+export const D2_WHY: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'Your hormones rise and fall all month. When that rhythm shifts, sleep, mood, energy and appetite can all shift with it.',
+  B: 'In the years before periods stop, hormones go up and down unevenly. Sleep, body heat, mood and weight all feel it at once.',
+  C: 'After periods stop, the body makes less estrogen. Sleep, body heat, mood and weight all feel it at once.',
+  E: 'When periods stop early, the body makes less estrogen sooner than most. Sleep, body heat, mood and weight all feel it at once.',
+};
+
+export const D2_DOCTOR: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'Talk to your doctor if your periods get very heavy, come much closer together, or if anything worries you.',
+  B: 'Talk to your doctor if your bleeding gets very heavy, comes between periods, or if anything worries you.',
+  C: 'Talk to your doctor if you bleed after 12 months without a period, or if anything worries you.',
+  E: 'Take this result to your doctor soon. A blood test can show where you stand.',
+};
+
+export type KitPart = 'hf' | 'recipes' | 'tracker' | 'guide';
+
+export const KIT_PART_NAME: Record<KitPart, string> = {
+  hf: 'Hormone Focus',
+  recipes: 'Hormone Healthy Recipes',
+  tracker: 'The Daily Symptom Tracker',
+  guide: 'The 60-Day Hormone Fix guide',
+};
+
+/** What each part is, in one line, the same for everyone. */
+const KIT_PART_WHAT: Record<KitPart, string> = {
+  hf: 'Two capsules a day with a meal. DIM and calcium D-glucarate support healthy estrogen metabolism.*',
+  recipes: 'Real meals, not eating less. Start with breakfast.',
+  tracker: 'A few minutes a day, so you can see what changes.',
+  guide: 'JJ’s five steps for 60 days, and what to do on Day 1.',
+};
+
+/** The part made for what she told us. Her worst symptom first; three or more things tried points to the tracker; nothing tried, with no clear lead, points to the guide. */
+export function leadPart(S: QuizState): KitPart {
+  const tried = S.tried.filter((t) => t !== 'nothing');
+  if (tried.length >= 3) return 'tracker';
+  const main = mainConcern(S);
+  if (main === 'weight' || main === 'bloat') return 'recipes';
+  if (main === 'sleep' || main === 'sweats' || main === 'mood') return 'hf';
+  if (S.tried.includes('food')) return 'recipes';
+  if (S.tried.includes('supps') || S.tried.includes('sleep')) return 'hf';
+  return 'guide';
+}
+
+/** Which answer each part serves, said back to her. */
+export function partFor(S: QuizState, part: KitPart): string {
+  const tried = S.tried.filter((t) => t !== 'nothing');
+  switch (part) {
+    case 'hf':
+      if (has(S, 'sweats')) return 'For the night sweats';
+      if (has(S, 'sleep')) return 'For waking at 3 AM';
+      if (has(S, 'mood')) return 'For the snapping and the lost words';
+      return 'For the hormone side of what you feel';
+    case 'recipes':
+      if (S.tried.includes('food')) return 'You already changed how you eat. This is what to eat instead';
+      if (has(S, 'weight')) return 'For the weight that will not move';
+      if (has(S, 'bloat')) return 'For bloating by dinner';
+      return 'For what you eat each day';
+    case 'tracker':
+      if (tried.length >= 3) return `You have tried ${tried.length} things. This shows what is working`;
+      return 'To see what changes, day by day';
+    case 'guide':
+      if (S.tried.includes('nothing')) return 'For knowing where to start';
+      return 'For putting it all together';
+  }
+}
+
+export const KIT_ORDER: KitPart[] = ['hf', 'recipes', 'tracker', 'guide'];
+
+export function planParts(S: QuizState): { part: KitPart; lead: boolean; name: string; for: string; what: string }[] {
+  const first = leadPart(S);
+  return [first, ...KIT_ORDER.filter((p) => p !== first)].map((part) => ({
+    part, lead: part === first, name: KIT_PART_NAME[part], for: partFor(S, part), what: KIT_PART_WHAT[part],
+  }));
+}
+
+/** "You told us you have already tried ..." or, when she tried nothing, the plan's own opening. */
+export function planLead(S: QuizState): string {
+  return triedLine(S) || 'Here is where to start, in the order that fits your answers.';
+}
+
+export const D2_PLAN_LABEL = 'Your 60-day plan';
+export const D2_CTA = 'GET MY 60-DAY PLAN';
+
+/* ------------------------------------------- Direction 2: transitions -- */
+
+/** Which published review she meets, by the symptom that bothers her most. Verbatim, from reviews.ts. */
+export const REVIEW_FOR: Record<SymptomId, string> = {
+  sweats: 'Roslind',
+  sleep: 'Katina S.',
+  weight: 'Mara',
+  bloat: 'Toya H.',
+  mood: 'Lisa',
+  energy: 'Shauna H.',
+};
+
+/* ------------------------------------- Direction 2: goal and time -------- */
+
+/** "Your 60-day plan to ..." by what she wants back first. */
+export const GOAL_PHRASE: Partial<Record<WantId, string>> = {
+  sleep: 'sleep through the night',
+  body: 'feel good in your jeans again',
+  clear: 'feel calm again',
+  energy: 'have energy all day',
+  cool: 'sleep cool through the night',
+};
+
+/* Jane, 11 Nov: the plan is named for her symptoms, not a goal. */
+const PLAN_FOR: Record<SymptomId, string> = {
+  sweats: 'night sweats',
+  sleep: 'poor sleep',
+  weight: 'stubborn weight',
+  bloat: 'bloating',
+  mood: 'mood swings',
+  energy: 'low energy',
+};
+export function planHeading(S: QuizState): string {
+  const main = mainConcern(S);
+  if (!main) return 'Your 60-day plan';
+  const second = otherConcerns(S)[0];
+  return `Your 60-day plan for ${PLAN_FOR[main]}${second ? ` and ${PLAN_FOR[second]}` : ''}`;
+}
+
+/** Her first day. One fixed set (Jane, 11 Nov). No promised result. */
+export const DAY_ONE =
+  "Day 1: two capsules with dinner, one breakfast from JJ's recipes and one line in your tracker.";
+
+/** The bridge from her result to her plan. */
+export const PLAN_BRIDGE = 'That is what your answers point to. Here is what to do about it.';
+
+/* ------------------------------------------- Direction 2: the stat screen -- */
+export const STAT_EYEBROW = 'You are not imagining it';
+export const STAT_TITLE = 'Nearly 3 in 4 women who see a doctor for these symptoms are left untreated.';
+export const STAT_BODY =
+  'Most doctors get very little training on this stage. One quick answer for one problem is not enough.';
+export const STAT_LINE = 'That is why your plan looks at all of it.';
+export const STAT_SOURCE =
+  'Sources: Yale review of insurance claims, reported by AARP; APGO survey of OB-GYN program directors, 2022.';
+
+/* ---------------------- Direction 2: the result explains, it does not sell -- */
+
+export const CHANGED_TITLE = 'What has changed';
+export const NOW_TITLE = 'What you can do now';
+export const RESULT_TO_PLAN = 'SHOW ME MY PLAN';
+
+/** From V3.5. One line for her stage. */
+const D2_STAGE_LINE: Record<'A' | 'B' | 'C' | 'E', string> = {
+  A: 'Your hormones rise and fall all month. When that rhythm shifts, sleep, mood, energy and appetite can all shift with it.',
+  B: 'In the years before periods stop, hormones go up and down unevenly. Sleep, body heat, mood and weight all feel it at once.',
+  C: 'After periods stop, the body makes less estrogen. Estrogen helped steady sleep, body heat, mood and weight, so they all feel it at once.',
+  E: 'When periods stop early, the body makes less estrogen sooner than most. Sleep, body heat, mood and weight all feel it at once.',
+};
+/** From V3.5. In place of the stage line when hot flashes are one of her top two. */
+const D2_STAGE_LINE_SWEATS: Partial<Record<'A' | 'B' | 'C' | 'E', string>> = {
+  B: 'As estrogen swings, the part of your brain that sets your body heat gets jumpy. A tiny rise in heat sets off a flush, even in a cool room.',
+  C: 'With less estrogen, the part of your brain that sets your body heat gets jumpy. A tiny rise in heat sets off a flush, even in a cool room.',
+  E: 'With less estrogen, the part of your brain that sets your body heat gets jumpy. A tiny rise in heat sets off a flush, even in a cool room.',
+};
+/** From V3.5. Why her top two go together, where one of them is sleep. */
+const PAIR_WITH_SLEEP: Partial<Record<SymptomId, string>> = {
+  sweats: 'Heat at night wakes you, which is why your sleep suffers too.',
+  energy: 'A broken night turns into a low day, so the two feed each other.',
+  mood: 'A short night makes mood swings and brain fog worse the next day.',
+  weight: 'Short nights make you hungrier the next day, which makes weight harder to shift.',
+};
+
+export function whatChanged(S: QuizState, outcome: Outcome): string[] {
+  const o: 'A' | 'B' | 'C' | 'E' = (outcome === 'B' || outcome === 'C' || outcome === 'E' ? outcome : 'A');
+  const main = mainConcern(S);
+  const two = main ? [main, ...otherConcerns(S).slice(0, 1)] : [];
+  const out = [(two.includes('sweats') && D2_STAGE_LINE_SWEATS[o]) || D2_STAGE_LINE[o]];
+  if (two.length === 2 && two.includes('sleep')) {
+    const pair = PAIR_WITH_SLEEP[two[0] === 'sleep' ? two[1] : two[0]];
+    if (pair) out.push(pair);
+  }
+  return out;
+}
+
+/** Three plain, free things, by what bothers her most. From V3.5's tonight lines, with Jane's examples. */
+export const DO_NOW: Record<SymptomId, [string, string, string]> = {
+  sweats: [
+    'Keep your bedroom cool, with a fan by the bed.',
+    'Sleep under light covers you can kick off.',
+    'Skip caffeine after lunch and wine in the evening.',
+  ],
+  sleep: [
+    'Go to bed and get up at the same time every day.',
+    'Keep your bedroom cool and dark.',
+    'Put your phone away 30 minutes before bed.',
+  ],
+  weight: [
+    'Start the day with protein at breakfast.',
+    'Take a 10 minute walk after a meal.',
+    'Go to bed on time. Short nights make you hungrier.',
+  ],
+  energy: [
+    'Eat protein at breakfast, so you are not running on empty.',
+    'Take a 10 minute walk after lunch.',
+    'Go to bed 30 minutes earlier than last night.',
+  ],
+  bloat: [
+    'Eat slowly, and stop when you are just full.',
+    'Take a 10 minute walk after a meal.',
+    'Write down what you ate and when the bloating started.',
+  ],
+  mood: [
+    'Take a 10 minute walk outside each day.',
+    'Put your phone away 30 minutes before bed.',
+    'Write down one thing that set you off today, and when.',
+  ],
+};
+
+/* ================== Direction 2, result page v3 (Jane, 11 Nov): deeper ===== */
+
+type D2Stage = 'A' | 'B' | 'C' | 'E';
+const d2StageOf = (o: Outcome): D2Stage => (o === 'B' || o === 'C' || o === 'E' ? o : 'A');
+const afterStop = (o: Outcome): boolean => o === 'C' || o === 'E';
+
+export function whatItIs(o: Outcome): { title: string; body: string } {
+  const s = d2StageOf(o);
+  if (s === 'C' || s === 'E') return {
+    title: 'What menopause is',
+    body: 'Menopause is when your periods have stopped for 12 months. The changes can keep going for years after.',
+  };
+  if (s === 'A') return {
+    title: 'What hormone shifts are',
+    body: 'Your hormones rise and fall every month. Stress, sleep and age can shift that rhythm, and when it shifts, your body feels it. It is common, not a sickness.',
+  };
+  return {
+    title: 'What perimenopause is',
+    body: 'Perimenopause is the years before your periods stop for good. For most women it starts in their 40s and lasts about 4 to 8 years. It is a normal stage, not a sickness.',
+  };
+}
+
+export const LOOK_TITLE = 'What it can look like';
+export const SIGN_HERS = 'You told us';
+
+/** Common signs, and which of her answers each one matches. */
+export function signs(S: QuizState, o: Outcome): { text: string; hers: boolean }[] {
+  const cycleHers = S.cycle === 'unpredictable' || S.cycle === 'skipping';
+  return [
+    { text: 'Hot flashes or night sweats', hers: has(S, 'sweats') },
+    { text: 'Waking at 3 AM', hers: has(S, 'sleep') },
+    { text: 'A softer middle, even when you eat the same', hers: has(S, 'weight') },
+    { text: 'Mood swings or losing your words', hers: has(S, 'mood') },
+    afterStop(o)
+      ? { text: 'Periods that have stopped', hers: S.cycle === 'stopped' }
+      : { text: 'Periods that come early or late', hers: cycleHers },
+    { text: 'Feeling tired after a full night', hers: has(S, 'energy') },
+    { text: 'Bloating by dinner', hers: has(S, 'bloat') },
+  ];
+}
+
+export const NOT_ALONE_TITLE = 'You are not the only one';
+export const NOT_ALONE: string[] = [
+  'As many as 3 in 4 women get hot flashes.',
+  'About half of women in this stage have trouble sleeping.',
+];
+export const NOT_ALONE_SOURCE =
+  'Sources: The Menopause Society (70 to 80 percent of women have hot flashes or night sweats); Sleep Foundation and The Menopause Society (40 to 60 percent have trouble sleeping).';
+
+export const WHY_TITLE = 'Why it happens';
+export function whyItHappens(o: Outcome): string {
+  if (afterStop(o)) return 'After periods stop, the body makes less estrogen. Estrogen helps run your body heat, your sleep and where your body stores fat. With less of it, you feel it: hot at night, awake at 3 AM, a softer middle, a shorter fuse.';
+  return 'Two hormones, estrogen and progesterone, start to go up and down in an uneven way. Estrogen helps run your body heat, your sleep and where your body stores fat. When it swings, you feel it: hot at night, awake at 3 AM, a softer middle, a shorter fuse.';
+}
+
+const PAIR_LINE: Partial<Record<SymptomId, string>> = {
+  sweats: 'Heat at night wakes you, which is why your sleep suffers too.',
+  energy: 'A broken night turns into a low day, so the two feed each other.',
+  mood: 'A short night makes mood swings and brain fog worse the next day.',
+  weight: 'Short nights make you hungrier the next day, which makes weight harder to shift.',
+};
+/** The pair line, when sleep is one of her top two. */
+export function pairLine(S: QuizState): string {
+  const main = mainConcern(S);
+  const two = main ? [main, ...otherConcerns(S).slice(0, 1)] : [];
+  if (two.length < 2 || !two.includes('sleep')) return '';
+  return PAIR_LINE[two[0] === 'sleep' ? two[1] : two[0]] ?? '';
+}
+
+export const FEEL_TITLE = 'How it can feel';
+export const FEEL_BODY =
+  'It can feel like your body is not yours anymore. These changes are not a sign that something is wrong with you. They are right on time for this stage.';
+
+export const RESULT_CLOSE = 'Your body at this stage needs different support.';
+
+/* ==================== Direction 2, plan page v3: what she needs ============ */
+
+export type NeedPart = 'guide' | 'recipes' | 'hf' | 'tracker';
+export const NEEDS: { part: NeedPart; title: string; body: string }[] = [
+  { part: 'guide', title: 'A clear plan for this stage',
+    body: 'JJ’s 60-Day Hormone Fix guide walks you through five steps: what to eat, how to move, what to change, how to rest and how to track. It tells you what to do on Day 1 and every day after, so you are not guessing.' },
+  { part: 'recipes', title: 'Meals made for this stage',
+    body: 'At this stage, eating less is not the answer. Your body needs protein at every meal, more fiber and real food that keeps you full. JJ’s Hormone Healthy Recipes gives you 31 recipes: breakfasts, lunches, dinners, snacks and smoothies.' },
+  { part: 'hf', title: 'Support for your changing hormones',
+    body: 'Because your hormones are changing, Hormone Focus has DIM and calcium D-glucarate to support healthy estrogen metabolism. Two capsules a day with a meal.*' },
+  { part: 'tracker', title: 'A way to see what changes',
+    body: 'A few minutes a day to note your sleep, energy, mood and cravings, with check-ins on Day 14, 28, 42 and 60. JJ’s Daily Symptom Tracker shows you what is working for you.' },
+];
+
+/** One short line tied to her answers, where one fits. */
+export function needFor(S: QuizState, part: NeedPart): string {
+  const tried = S.tried.filter((t) => t !== 'nothing');
+  switch (part) {
+    case 'guide':
+      if (S.tried.includes('nothing')) return 'You told us you have not tried anything yet. This is where to start.';
+      if (tried.length >= 3) return `You told us you have tried ${tried.length} things. This puts them in one plan.`;
+      return '';
+    case 'recipes':
+      if (S.tried.includes('food')) return 'You told us you have tried eating differently.';
+      if (has(S, 'weight')) return 'For the weight you told us about.';
+      if (has(S, 'bloat')) return 'For the bloating you told us about.';
+      return '';
+    case 'hf':
+      if (has(S, 'sweats')) return 'For the night sweats you told us about.';
+      if (has(S, 'sleep')) return 'For the 3 AM waking you told us about.';
+      if (has(S, 'mood')) return 'For the mood swings you told us about.';
+      if (S.tried.includes('supps')) return 'You told us you have tried supplements.';
+      return '';
+    case 'tracker':
+      if (tried.length >= 3) return 'With this many things tried, it shows you what is working.';
+      if (has(S, 'energy')) return 'For the tired days you told us about.';
+      return '';
+  }
+}
+
+export const PLAN_BRIDGE_DIY =
+  'You can put this together yourself: find a plan, plan your meals, choose a supplement and track every day. Or get it all ready made, in one box.';
+export const KIT_READY_HEAD = 'Ready made: the 60-Day Feel Like You Again Kit by JJ Smith';
+
+/* ============ Direction 2, plan page v5 (Jane's final wording, 11 Nov) =====
+ * Four steps her body needs, with no product names; step 1 is keyed to what
+ * bothers her most. The ready-made Kit comes only after the four steps.
+ */
+export const PLAN_EYEBROW_D2 = 'Built from your answers';
+export const PLAN_INTRO_D2 = 'Here is what your body needs now.';
+
+
+
+/* After periods stop (C, E) estrogen is lower, not swinging: these lines
+   say so, so the plan never contradicts the result (Jane, 11 Nov). */
+
+/* Steps 2 and 4 by what bothers her most (Jane, 11 Nov). */
+
+/* Direction 2, plan v9 (Jane, 11 Nov): back to the four-step breakdown.
+   The day-phase copy lives in outputs/copy for the phase emails. */
+const STEP1: Record<SymptomId, [string, string]> = {
+  sweats: ['Know what is behind your night sweats',
+    'Night sweats start in the part of your brain that sets your body heat. As estrogen swings, it gets jumpy. Know what sets it off for you: a warm room, wine, spicy food or stress.'],
+  sleep: ['Know what is behind your 3 AM wake-ups',
+    'Waking at 3 AM is common when progesterone, your calming hormone, drops. Know what keeps you up: late caffeine, a warm room, screens in bed or worry.'],
+  weight: ['Know what is behind your belly weight',
+    'As estrogen drops, your body stores more fat around your middle, even when you eat the same. Know why, and what helps: protein, strength and sleep.'],
+  bloat: ['Know what is behind your bloating',
+    'Changing hormones can slow digestion and make you hold water. Know which foods and habits make it worse for you.'],
+  energy: ['Know what is draining your energy',
+    'Broken sleep and changing hormones wear you down. Know what drains you and what gives your energy back.'],
+  mood: ['Know what is behind your mood swings',
+    'Estrogen helps keep your mood steady. When it swings, so do you. Know your triggers so you can plan around them.'],
+};
+/* After periods stop (C, E) estrogen is lower, not swinging. */
+const STEP1_AFTER: Partial<Record<SymptomId, [string, string]>> = {
+  sweats: ['Know what is behind your night sweats',
+    'Night sweats start in the part of your brain that sets your body heat. With less estrogen, it gets jumpy. Know what sets it off for you: a warm room, wine, spicy food or stress.'],
+  mood: ['Know what is behind your mood swings',
+    'Estrogen helps keep your mood steady. With less of it, your mood can dip and flare. Know your triggers so you can plan around them.'],
+};
+const STEP2: Record<SymptomId, string> = {
+  sweats: 'Skip caffeine after lunch, and wine and spicy food in the evening. Build each meal around protein and fiber so your body is not riding a sugar rollercoaster at night.',
+  sleep: 'Eat dinner earlier and lighter, with protein. No caffeine after lunch and no wine close to bed.',
+  weight: 'Eating less backfires now. Start every day with protein, like eggs or Greek yogurt, and build meals around protein and fiber so you stay full.',
+  bloat: 'Eat slowly, add fiber a little at a time, and notice which foods leave you bloated by dinner.',
+  energy: 'Do not skip meals. Eat protein every 4 to 5 hours so your energy does not crash in the afternoon.',
+  mood: 'Pair carbs with protein so your blood sugar, and your mood, do not crash.',
+};
+const STEP4: Record<SymptomId, string> = {
+  sweats: 'Note each night sweat: the time, what you ate and drank, and how warm the room was. Your pattern starts to show.',
+  sleep: 'Note when you wake, and what you ate, drank and did the evening before. Your pattern starts to show.',
+  weight: 'Track your energy, your cravings and how your clothes fit, not just the scale.',
+  bloat: 'Note what you ate and when the bloating starts, so your trigger foods stand out.',
+  energy: 'Note your sleep and your energy each day to see what lifts you and what drains you.',
+  mood: 'Note your mood, your sleep and where you are in your cycle, so your triggers become clear.',
+};
+
+export function planSteps(S: QuizState, outcome: Outcome = 'B'): { title: string; body: string; mine: string }[] {
+  const main = mainConcern(S);
+  const afterStop = outcome === 'C' || outcome === 'E';
+  const [t1, b1] = main
+    ? ((afterStop && STEP1_AFTER[main]) || STEP1[main])
+    : ['Know what you are going through',
+      'Learn what is behind your symptoms, what makes them worse, and what to change first.'];
+  return [
+    { title: t1, body: b1, mine: '' },
+    { title: 'Eat for this stage',
+      body: main ? STEP2[main] : 'Eating less is not the answer now. Eat protein at every meal, more fiber and real food that keeps you full.',
+      mine: '' },
+    { title: 'Support your changing hormones',
+      body: 'Your hormones are changing, so your body needs steady daily support, not one quick answer.',
+      mine: main ? `For the ${PLAN_FOR[main]} you told us about.` : '' },
+    { title: 'Track how you feel',
+      body: main
+        ? (afterStop && main === 'mood'
+          ? 'Note your mood and your sleep each day, so your triggers become clear.'
+          : STEP4[main])
+        : 'Note your sleep, energy, mood and cravings each day to see what is changing.',
+      mine: '' },
+  ];
+}
+
+export const PLAN_TURN_D2 =
+  'You can do all four on your own. It means finding a plan you trust, working out your meals, choosing the right nutrients and tracking every day.';
+export const PLAN_EASY_HEAD = 'Or let JJ do it for you.';
+export const PLAN_TURN_JJ =
+  'JJ went through this stage herself. She put everything you need for all four steps into one kit, so you can start today:';
+export const PLAN_KIT_LIST: string[] = [
+  'Step 1: JJ’s 60-Day Hormone Fix guide',
+  'Step 2: Her Hormone Healthy Recipes',
+  'Step 3: Hormone Focus, two bottles',
+  'Step 4: Her Daily Symptom Tracker',
+];
+export const KIT_READY_HEAD_D2 = 'Get the 60-Day Feel Like You Again Kit. It gives you all of the above.';
+export const RESULTS_VARY = 'Individual results vary.';
+
+/* Direction 2: the three cards that follow her review on the load screen. */
+export const LOAD_CARDS: string[] = [
+  'Real meals, not eating less',
+  'Support for your changing hormones',
+  'A tracker to see what changes',
+];
+
+/* Direction 2: JJ's four phases, from her 60-Day Hormone Fix guide. */
+export const PLAN_PHASES: string[] = [
+  'Days 1 to 14: Build your base',
+  'Days 15 to 30: Keep it going',
+  'Days 31 to 45: Adjust what you need',
+  'Days 46 to 60: Keep your momentum',
+];
+
+export const PLAN_TO_KIT_CTA = 'GET JJ’S KIT NOW';
+
+/* Direction 2, plan page closing: the four Kit items as her four steps. */
+export const KIT_STEPS_D2: string[] = [
+  'Step 1: The 60-Day Hormone Fix guide',
+  'Step 2: Hormone Healthy Recipes',
+  'Step 3: Hormone Focus, two bottles',
+  'Step 4: The Daily Symptom Tracker',
+];
+
+/* Direction 2, result page v4 (David, 11 Nov call: tighter, fewer boxes).
+   ONE stage block: what this stage is and why, in two or three short lines. */
+export function stageBlock(o: Outcome): { title: string; lines: string[]; img: string; caption: string } {
+  if (o === 'C' || o === 'E') return {
+    title: 'What menopause is',
+    lines: [
+      'Menopause is when your periods have stopped for a full year.',
+      'Your body makes hormones that help run your sleep, mood, body heat and weight.',
+      'After periods stop, your body makes much less of them. That is why so many things change at once.',
+    ],
+    img: '/img/hormones-low.svg',
+    caption: 'An example: after periods stop, the body makes much less of them',
+  };
+  if (o === 'A') return {
+    title: 'What is going on',
+    lines: [
+      'Your body makes hormones that help run your sleep, mood, body heat and weight.',
+      'They rise and fall every month. When that rhythm shifts, many things can change at once.',
+    ],
+    img: '/img/hormones-wave.svg',
+    caption: 'Your hormones rise and fall',
+  };
+  return {
+    title: 'What perimenopause is',
+    lines: [
+      'Perimenopause is the time before your periods stop for good.',
+      'Your body makes hormones that help run your sleep, mood, body heat and weight.',
+      'In these years, those hormones go up and down like a wave. That is why so many things change at once.',
+    ],
+    img: '/img/hormones-wave.svg',
+    caption: 'An example: hormones go up and down in these years',
+  };
+}
+
+export const FEEL_SHORT =
+  'It can feel like your body is not yours anymore. That is common at this stage, not a sign that something is wrong with you.';
+
+/* Direction 2, result v5 (Jane, 11 Nov). */
+export const RESULT_PILL = '\u2713 Your 60-day plan is ready';
+export const RESULT_CASE =
+  'It can feel like your body belongs to a stranger. That is common at this stage, and it does not mean something is wrong with you. Your body now needs different support, so we built your plan around it.';
+export const RESULT_TO_PLAN_V5 = 'SEE MY PLAN';
+export const RESULT_FINE =
+  'This check is not a diagnosis. Talk to your doctor if your bleeding is very heavy, comes between periods, comes back after 12 months without a period, or if anything worries you.';
+/** B's stat card (Cleveland Clinic). C and E keep their live facts. */
+export const PERI_STAT = {
+  big: '4 to 8 years',
+  label: 'is how long perimenopause usually lasts. It often starts in your 40s.',
+  source: 'Cleveland Clinic',
+};
+
+/* Direction 2, plan closing v5. JJ is not described as a nutritionist. */
+export const PLAN_LOT =
+  'Finding a plan you trust, making meals that support your hormones at this stage, and tracking how you feel every day is a lot to do on your own.';
+export const PLAN_WHY_KIT = 'That is why JJ made the 60-Day Feel Like You Again Kit.';
+export const PLAN_JJ_STORY =
+  'JJ started perimenopause at 38. She researched it like her life depended on it, and put what she learned into one kit.';
+export const PLAN_INSIDE = 'What is inside';
+export const PLAN_INSIDE_ITEMS: [string, string][] = [
+  ['The 60-Day Hormone Fix guide', 'what to do each day, for 60 days.'],
+  ['Hormone Healthy Recipes', '31 easy meals for this stage.'],
+  ['Hormone Focus, two bottles', 'JJ\u2019s daily supplement for this stage, made to support healthy estrogen metabolism. Two capsules a day with a meal.*'],
+  ['Daily Symptom Tracker', 'see what changes, day by day.'],
+];
+
+/* Jane, 11 Nov: one line after "What is inside" to move her to the button,
+   then a review from a woman with her main symptom for any doubt left. */
+export const PLAN_PUSH =
+  'Everything you need for the next 60 days, in one box, from a woman who has been where you are.';
+
+/* ChatGPT review, 11 Nov (Jane: yes): use her "what have you tried" answer on her plan. */
+export function planTriedLine(S: QuizState): string {
+  /* "You have already tried X. This plan brings it together." triedLine
+     itself is unchanged for any other screen that uses it. */
+  const l = triedLine(S).replace(/^You told us you have already tried/, 'You have already tried');
+  return l ? `${l} This plan brings it together.` : '';
+}

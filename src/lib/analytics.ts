@@ -606,9 +606,10 @@ export function shopUrl(
   const url = new URL(cartPath(offer, discount), base);
   const ad = readAttribution();
 
-  /* The cart, not the checkout. Asserted rather than assumed from the base,
-     because losing it sends her straight to payment. */
-  if (url.pathname.includes(':')) url.searchParams.set('storefront', 'true');
+  /* DIRECTION 2, 11 November 2026 (local mock): STRAIGHT TO CHECKOUT.
+     storefront=true is taken off every cart permalink, so Shopify opens the
+     checkout, with the discount code (KIT47 on the Kit) and the quiz tags. */
+  if (url.pathname.includes(':')) url.searchParams.delete('storefront');
 
   for (const key of PASS_THROUGH) {
     const value = ad[key];

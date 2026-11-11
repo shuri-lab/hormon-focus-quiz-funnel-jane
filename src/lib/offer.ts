@@ -61,7 +61,7 @@ export const PROTOCOL_PER_BOTTLE = PROTOCOL_PRICE / 2;
    60-Day Guarantee is the refund window and a policy term, The
    60-Day Hormone Fix is the ebook's own title, and PLAN_SHORT below still
    names the TWO-bottle pack on /offer, which really is sixty days of it. */
-export const PLAN_NAME = 'The Feel Like YOU Again Kit';
+export const PLAN_NAME = 'The 60-Day Feel Like You Again Kit';
 export const PLAN_SHORT = 'The 60-Day Kit';
 
 /** The three digital pieces, as one line for a card. */

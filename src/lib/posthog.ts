@@ -26,6 +26,7 @@
  * $pageview happens on the same tick as init.
  */
 import type { PostHog } from 'posthog-js';
+import { REVIEW } from '../review/flag';
 
 /**
  * The publishable project key, committed for the same reason the Clarity
@@ -73,7 +74,7 @@ function queue(fn: (p: PostHog) => void) {
 export function initPostHog(): void {
   try {
     if (started || typeof window === 'undefined') return;
-    if (!KEY || BLOCKED.test(window.location.hostname)) return;
+    if (REVIEW || !KEY || BLOCKED.test(window.location.hostname)) return;
     started = true;
 
     void import('posthog-js').then(({ default: posthog }) => {

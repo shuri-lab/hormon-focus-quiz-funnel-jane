@@ -335,16 +335,16 @@ test('the new paragraphs are the strings Jane sent, to the character', () => {
   expect(BRIDGE).toBe(
     "These are the first three things I'd work on. None of them are complicated, "
     + 'but doing them consistently when life gets busy is where it gets harder. '
-    + 'This is why I built the Feel Like YOU Again Kit.',
+    + 'This is why I built the 60-Day Feel Like You Again Kit.',
   );
 
   /* Renamed 30 October: the kit's 60-Day wording came off its name. */
-  expect(KIT_TITLE).toBe('The Feel Like YOU Again Kit');
+  expect(KIT_TITLE).toBe('The 60-Day Feel Like You Again Kit');
 
   /* Two paragraphs, in order, so the screen can put air between them. */
   expect(KIT_INTRO).toHaveLength(2);
   expect(KIT_INTRO[0]).toBe(
-    "I put the Feel Like YOU Again Kit together so you don't have to piece all of "
+    "I put the 60-Day Feel Like You Again Kit together so you don't have to piece all of "
     + 'this together on your own. It gives you 60 days to stay with the same simple '
     + 'plan instead of changing things every few days.',
   );

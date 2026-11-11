@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" role="img" aria-label="Estrogen and progesterone rise and fall unevenly from your 30s through your 40s until periods stop">
+  <rect width="600" height="300" rx="20" fill="#FAF6FD"/>
+  <!-- the years: a soft band for the 40s, where the swings are -->
+  <rect x="230" y="30" width="300" height="200" rx="12" fill="#F3ECFA"/>
+  <line x1="40" y1="230" x2="560" y2="230" stroke="#D2C3E6" stroke-width="2"/>
+  <line x1="530" y1="40" x2="530" y2="230" stroke="#B98FD6" stroke-width="2" stroke-dasharray="6 6"/>
+  <!-- estrogen: steady, then up and down unevenly -->
+  <path d="M40 110 C 90 100, 130 120, 180 108 S 220 100, 240 110
+           C 262 60, 280 60, 296 120 S 320 190, 340 150
+           C 356 80, 372 70, 392 140 S 420 205, 440 165
+           C 452 120, 470 95, 486 150 S 515 200, 530 190"
+        fill="none" stroke="#7B3E9D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- progesterone: steady, then dipping and falling -->
+  <path d="M40 150 C 90 142, 130 158, 180 148 S 220 142, 240 152
+           C 262 130, 282 175, 300 165 S 330 120, 350 180
+           C 368 205, 386 150, 404 185 S 440 215, 460 200
+           C 478 190, 500 215, 530 215"
+        fill="none" stroke="#D4589A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g font-family="Poppins, system-ui, sans-serif" font-weight="700" font-size="17">
+    <text x="44" y="92" fill="#7B3E9D">Estrogen</text>
+    <text x="44" y="182" fill="#D4589A">Progesterone</text>
+  </g>
+  <g font-family="Poppins, system-ui, sans-serif" font-weight="600" font-size="16" fill="#57516A" text-anchor="middle">
+    <text x="120" y="262">Your 30s</text>
+    <text x="380" y="262">Your 40s</text>
+    <text x="530" y="262">Periods stop</text>
+  </g>
+</svg>

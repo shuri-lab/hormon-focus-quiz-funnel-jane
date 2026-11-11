@@ -216,6 +216,7 @@ export function stateKey(S: QuizState): Outcome {
 
 export type ScreenId =
   | 'q1' | 'q2' | 'q3' | 'q4' | 'q4b' | 'q5' | 'q6' | 'q7'
+  | 'stat'
   | 'load' | 'gate'
   | 'r1' | 'cause' | 'plan' | 'meet' | 'r2' | 'rDoc'
   /**
@@ -242,14 +243,24 @@ export type ScreenId =
  *
  * THEY ARE REVEAL STEPS, so the segmented bar keeps filling across all five
  * rather than stopping at the result. */
+/* DIRECTION 2, 11 November 2026 (local mock). A question stays only if its
+   answer changes what she sees or where she goes. q5 (when she notices it)
+   never changed the outcome and q7 (what she wants) repeated q2, so both are
+   out. cause, plan and meet are out too: their jobs moved onto the result
+   page, which now carries her 60-day plan. */
+export const CUT: ScreenId[] = ['q5', 'q7', 'cause', 'meet'];
+
 export const FLOW: ScreenId[] = [
-  'q1', 'q2', 'q3', 'q4', 'q4b', 'q5', 'q6', 'q7',
+  'q1', 'q2', 'q3', 'q4', 'q4b', 'q6',
+  /* One transition screen (Jane, 11 Nov): why it has been hard to get help. */
+  'stat',
   'load', 'gate',
-  'r1', 'cause', 'plan', 'meet', 'r2', 'rDoc',
+  /* The result explains; the plan page sells (Jane, 11 Nov). */
+  'r1', 'plan', 'r2', 'rDoc',
 ];
 
 /** The seven she is told about. */
-export const QUESTION_TOTAL = 7;
+export const QUESTION_TOTAL = 5;
 
 /**
  * Where each question sits in "2 of 7".
@@ -259,16 +270,29 @@ export const QUESTION_TOTAL = 7;
  * its parent's number; a skipped question is a step she simply does not see.
  */
 export const QUESTION_NUMBER: Partial<Record<ScreenId, number>> = {
-  q1: 1, q2: 2, q3: 3, q4: 4, q4b: 4, q5: 5, q6: 6, q7: 7,
+  /* The stat screen shares q6's number so the count never goes backwards.
+     q7 is the goal question now (Direction 2). */
+  q1: 1, q2: 2, q3: 3, q4: 4, q4b: 4, q6: 5, stat: 5,
 };
 
 /** The five result pages: her result, the three that earn the offer, the offer. */
-export const REVEAL: ScreenId[] = ['r1', 'cause', 'plan', 'meet', 'r2'];
+export const REVEAL: ScreenId[] = ['r1', 'plan', 'r2'];
 
 /** Everything between the cycle questions and rDoc. A doctor-route state sees none of it. */
 const AFTER_CYCLE: ScreenId[] = [
-  'q5', 'q6', 'q7', 'load', 'gate', 'r1', 'cause', 'plan', 'meet', 'r2',
+  'q6', 'stat', 'load', 'gate', 'r1', 'plan', 'r2',
 ];
+
+/**
+ * SIXTY AND OVER, NOT ALREADY ON THE DOCTOR ROUTE. Direction 2: the plan is
+ * built for the woman in perimenopause, so a woman of sixty or over gets a
+ * short, kind result with the doctor line and no hard sell. Her outcome is
+ * unchanged (stateKey still reads her as she was read before); only what
+ * she is shown changes.
+ */
+export function kindExit(S: QuizState): boolean {
+  return docDecided(S) && S.age === '60-plus' && stateKey(S) !== 'D';
+}
 
 /**
  * Is docReason() settled yet? It needs her age and her cycle answer, and the
@@ -308,10 +332,11 @@ export function doctorExit(S: QuizState): boolean {
  */
 export function shouldSkip(S: QuizState, id: ScreenId): boolean {
   /* One symptom needs no ranking. */
+  if (CUT.includes(id)) return true;
   if (id === 'q2') return S.sym.length < 2;
   if (id === 'q4b') return S.cycle !== 'stopped';
-  if (doctorExit(S) && AFTER_CYCLE.includes(id)) return true;
-  if (id === 'rDoc') return stateKey(S) !== 'D';
+  if ((doctorExit(S) || kindExit(S)) && AFTER_CYCLE.includes(id)) return true;
+  if (id === 'rDoc') return stateKey(S) !== 'D' && !kindExit(S);
   if (id === 'r2') return !seesOffer(S);
   /* THE SAME RULE AS THE OFFER, because all three lead to it. A woman the
      quiz sends to her doctor must not be walked through "here is what to do

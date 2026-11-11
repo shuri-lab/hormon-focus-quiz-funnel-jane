@@ -49,7 +49,7 @@ export const HERO_IMG = '/img/symptom-sleep.jpg';
 /* The brief's words. The sub-line and the button are the same on every
    route; only the headline changes with the ad angle (angles.ts). */
 export const COVER_SUB =
-  "Find out what's really going on with your body. Take the free 1-minute quiz.";
+  'Take this 1-minute Hormone Check and get your personal 60-Day Feel Like You Again Plan.';
 export const COVER_CTA = 'Get my hormone check';
 
 /** Under the button: what it costs and what it takes. */
@@ -130,6 +130,16 @@ export const WANT_OPTIONS: [WantId, string][] = [
   ['clear', 'Feel clearer and more like myself'],
   ['understand', 'Understand what is happening to my body'],
 ];
+
+/* Direction 2, 11 November 2026: the two plan-building questions. */
+export const GOAL_OPTIONS: [WantId, string][] = [
+  ['sleep', 'Sleeping through the night'],
+  ['body', 'Jeans that fit again'],
+  ['clear', 'Feeling calm, not snapping'],
+  ['energy', 'Energy that lasts the day'],
+  ['cool', 'Feeling cool at night'],
+];
+
 
 /* ------------------------------------------- her answers, said back to her -- */
 
@@ -339,7 +349,7 @@ export const NEXT_STEPS: string[] = [
 /* The question she is already asking. */
 export const NEXT_HOW = 'The hard part is the how. What do you eat? How do you track it? How do you keep going for 60 days?';
 export const NEXT_BRIDGE =
-  'That is exactly why I created the Feel Like YOU Again Kit. It gives you the how, all in one place:';
+  'That is exactly why I created the 60-Day Feel Like You Again Kit. It gives you the how, all in one place:';
 
 /** Each piece of the kit, and which part of the 60 days it answers. */
 export const NEXT_HOW_PIECES: [string, string][] = [
@@ -353,11 +363,17 @@ export const NEXT_HOW_PIECES: [string, string][] = [
 
 export const DOC_TITLE = 'Talk to your healthcare professional first.';
 
-export const DOC: Record<Exclude<ReturnType<typeof docReason>, ''>, { deck: string; say: string; look: string }> = {
+export const DOC: Record<Exclude<ReturnType<typeof docReason>, ''> | 'sixty', { deck: string; say: string; look: string }> = {
   young: {
     deck: 'Periods stopping before forty has several possible causes, and most of them are worth knowing about rather than guessing at.',
     say: 'My periods have stopped and I am under forty. I would like it looked into.',
     look: 'A blood test is the usual next step. It can rule things in or out quickly, and several of the possible causes are very treatable once they are named.',
+  },
+  /* DIRECTION 2: sixty and over. Kind, short, no product. */
+  sixty: {
+    deck: 'What you are feeling is real, and it is common after sixty. The best next step is a talk with your doctor, who can look at your whole health with you.',
+    say: 'I am over sixty and these changes are bothering me. I would like to talk about what could help.',
+    look: 'They may ask about your sleep, your heart and your bones, and talk with you about what fits you now.',
   },
   late: {
     deck: 'Periods that are still coming and going at sixty or over are uncommon, and it is the kind of thing worth having looked at rather than explained away.',

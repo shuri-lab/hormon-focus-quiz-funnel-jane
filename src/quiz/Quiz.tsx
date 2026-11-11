@@ -10,6 +10,8 @@ import { FIRST_STEP, STEP_SLUG, screenFromSlug } from './steps';
 
 import { Q1, Q2, Q3, Q4, Q4b, Q5, Q6, Q7 } from './screens/questions';
 import { Load, Gate } from './screens/gate';
+import { NotJustYou } from './screens/transition';
+import { YourPlan } from './screens/plan';
 import { R1, RDoc } from './screens/reveal';
 import { R2 } from './screens/offer';
 
@@ -17,17 +19,20 @@ import { R2 } from './screens/offer';
    Shopify can deliver today; the kit page is preserved whole at its own
    address, ready to A/B once the kit has a variant and its guides are
    fulfilled. See the note on R2 and on ScreenId.offerKit. */
-const R2Bottle = () => <R2 variant="bottle" screen="r2" />;
-const R2Kit = () => <R2 variant="kit" screen="offerKit" />;
-import { RCause, RPlan, RMeet } from './screens/nurture';
+/* DIRECTION 2: your-kit is David's Kit page; /quiz/kit is the one-bottle
+   page, kept for a separate test. */
+const R2Kit = () => <R2 variant="kit" screen="r2" />;
+const R2OneBottle = () => <R2 variant="bottle" screen="offerKit" />;
+import { RCause, RMeet } from './screens/nurture';
 
 const SCREENS: Record<ScreenId, () => React.JSX.Element> = {
   q1: Q1, q2: Q2, q3: Q3, q4: Q4, q4b: Q4b, q5: Q5, q6: Q6, q7: Q7,
+  stat: NotJustYou,
   load: Load, gate: Gate,
   r1: R1,
   /* The three that earn the offer. See nurtureCopy.ts. */
-  cause: RCause, plan: RPlan, meet: RMeet,
-  r2: R2Bottle, offerKit: R2Kit, rDoc: RDoc,
+  cause: RCause, plan: YourPlan, meet: RMeet,
+  r2: R2Kit, offerKit: R2OneBottle, rDoc: RDoc,
 };
 
 function Stage() {
