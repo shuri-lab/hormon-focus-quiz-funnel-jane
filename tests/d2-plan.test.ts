@@ -42,16 +42,23 @@ test('Direction 2: the result explains and names no product or price', () => {
 });
 
 import { planSteps } from '../src/lib/resultCopy';
-test('Direction 2: the four plan steps name no product, and are shaped by her symptoms', () => {
-  const st = planSteps(S({ sym: ['sweats', 'sleep'], main: 'sweats' }));
+test('Plan v12: four timed steps, her stage named, foods listed, no product named', () => {
+  const st = planSteps(S({ sym: ['sweats', 'sleep'], main: 'sweats' }), 'B');
+  expect(st.map((s) => s.when)).toEqual(['Days 1 to 7', 'Days 8 to 30', 'Every day, Days 1 to 60', 'Days 31 to 60']);
   expect(st.map((s) => s.title)).toEqual([
-    'Know what is behind your night sweats', 'Eat for this stage',
-    'Support your changing hormones', 'Track how you feel',
+    'Cool your nights', 'Eat for perimenopause', 'Support your changing hormones', 'Build on what works',
   ]);
-  expect(st[0].body).toContain('a warm room, wine, spicy food or stress');
-  expect(st[2].body).toBe('Your hormones are changing, so your body needs steady daily support, not one quick answer.');
-  expect(st[2].mine).toBe('For the night sweats you told us about.');
-  for (const s of st) expect(`${s.title} ${s.body} ${s.mine}`).not.toMatch(/Hormone Focus|Kit|JJ|Recipes|Tracker/);
+  expect(st[0].body.startsWith('In perimenopause, your body reacts faster to heat.')).toBe(true);
+  expect(st[1].body).toBe('This also helps your night sweats and poor sleep.');
+  expect(st[1].eat).toBeTruthy();
+  expect(st[1].cut).toBeTruthy();
+  expect(st[2].body).toContain('broccoli, cabbage or cauliflower');
+  expect(st[3].body).toContain('By now you know your triggers: foods, sleep and your space.');
+  for (const s of st) expect(`${s.title} ${s.body} ${s.eat ?? ''} ${s.cut ?? ''}`).not.toMatch(/Hormone Focus|Kit|JJ|Recipes|Tracker/);
+  /* No stage named when the result names none. */
+  const a = planSteps(S({ sym: ['sleep'], main: 'sleep' }), 'A');
+  expect(a[0].body.startsWith('As your hormones shift, ')).toBe(true);
+  expect(a[1].title).toBe('Eat for this stage');
 });
 
 import { planTriedLine } from '../src/lib/resultCopy';
@@ -73,7 +80,7 @@ test('Direction 2: after periods stop (C, E), nothing says estrogen swings or go
       const lines = [
         STAGE_FACT[o].line, stageBlock(o).title, ...stageBlock(o).lines, FEEL_SHORT, whatItIs(o).title, whatItIs(o).body,
         ...signs(st, o).map((g) => g.text), ...NOT_ALONE, why2(o), pairLine(st), FEEL_BODY, RESULT_CLOSE,
-        ...planSteps(st, o).flatMap((p) => [p.title, p.body, p.mine]),
+        ...planSteps(st, o).flatMap((p) => [p.title, p.body, p.eat ?? '', p.cut ?? '']),
       ].filter(Boolean);
       dump[`${o}/${main}`] = lines;
       if (o === 'C' || o === 'E') {

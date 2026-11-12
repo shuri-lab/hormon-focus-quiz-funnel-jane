@@ -1092,6 +1092,11 @@
   align-self: end; font-size: var(--t-sub); line-height: 1.28;
   letter-spacing: -.01em; color: var(--ink);
 }
+.nStepWhen {
+  display: block; margin-bottom: 2px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--plum);
+}
 .nStepTakes {
   align-self: start; margin-top: 3px;
   font-family: var(--serif); font-size: var(--t-small); line-height: 1.4;

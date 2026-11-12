@@ -7,7 +7,9 @@
 import type { QuizState } from '../lib/logic';
 import { createState } from '../lib/logic';
 
-export const REVIEW = import.meta.env.MODE === 'review';
+/* `?.` because the end-to-end tests import this file outside Vite, where
+   import.meta.env does not exist. Inside Vite it is replaced as before. */
+export const REVIEW = import.meta.env?.MODE === 'review';
 
 /* The answers a jump wants the quiz to start from. Held here rather than in
    sessionStorage, which a shared page may not be allowed to use. */

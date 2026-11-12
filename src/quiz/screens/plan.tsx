@@ -9,12 +9,12 @@ import { Screen, ScreenTitle, ActionBar } from '../../components/Screen';
 import { IMG, OFFER_DISCLAIMER } from '../../lib/content';
 import { mainConcern, stateKey } from '../../lib/logic';
 import {
-  PLAN_EYEBROW_D2, PLAN_INSIDE, PLAN_INSIDE_ITEMS, PLAN_INTRO_D2, planTriedLine, PLAN_JJ_STORY, PLAN_LOT,
-  PLAN_TO_KIT_CTA, PLAN_WHY_KIT, PLAN_PUSH, REVIEW_FOR, planHeading, planSteps,
+  PLAN_EYEBROW_D2, PLAN_INSIDE, PLAN_INSIDE_ITEMS, PLAN_JJ_STORY, PLAN_LOT,
+  PLAN_TO_KIT_CTA, PLAN_WHY_KIT, PLAN_PUSH, REVIEW_FOR, planSteps,
 } from '../../lib/resultCopy';
 import { reviewByName } from '../../lib/reviews';
 import { getArm } from '../../lib/arm';
-import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_HEAD, PLAN_BOTTLE_TURN } from '../../lib/resultCopy';
+import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_LOT, PLAN_BOTTLE_WHY, PLAN_BOTTLE_STORY, PLAN_BOTTLE_PUSH, PLAN_INTRO_V10, planTitle } from '../../lib/resultCopy';
 import { Quote } from '../../components/Proof';
 import {
   SHOT_KIT_FULL, SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK,
@@ -36,14 +36,13 @@ export function YourPlan() {
   /* Live, non-product pictures: her own symptom photo, then the cut plan
      screen's step icons (plate, capsule, notebook). */
   const review = reviewByName(main ? REVIEW_FOR[main] : 'Roslind');
-  const stepImg = [main ? IMG[main] : SHOT_STEP_TRACK, SHOT_STEP_EAT, SHOT_STEP_TRACK, SHOT_STEP_CLEAR];
+  const stepImg = [main ? IMG[main] : SHOT_STEP_TRACK, SHOT_STEP_EAT, SHOT_STEP_CLEAR, SHOT_STEP_TRACK];
 
   return (
     <Screen id="plan">
       <p className="blabel">{PLAN_EYEBROW_D2}</p>
-      <ScreenTitle className="rTitle">{planHeading(S)}</ScreenTitle>
-      <p className="rDeck">{PLAN_INTRO_D2}</p>
-      {planTriedLine(S) && <p className="rDeck"><strong>{planTriedLine(S)}</strong></p>}
+      <ScreenTitle className="rTitle">{planTitle(S)}</ScreenTitle>
+      <p className="rDeck">{PLAN_INTRO_V10}</p>
 
       <ol className="nSteps">
         {planSteps(S, outcome).map((st, i) => (
@@ -51,17 +50,25 @@ export function YourPlan() {
             <span className="nStepNum" aria-hidden="true">{i + 1}</span>
             <img className="nStepIcon" src={stepImg[i]} alt="" width={192} height={192}
               decoding="async" />
-            <b className="nStepWhat">{st.title}</b>
+            <b className="nStepWhat"><span className="nStepWhen">{st.when}</span>{st.title}</b>
             <span className="nStepTakes">
               {st.body}
-              {st.mine && <><br /><strong>{st.mine}</strong></>}
+              {st.eat && <><br /><strong>Eat more:</strong> {st.eat}</>}
+              {st.cut && <><br /><strong>Cut back:</strong> {st.cut}</>}
             </span>
           </li>
         ))}
       </ol>
 
       {bottleArm
-        ? <p className="bridge"><strong>{PLAN_BOTTLE_HEAD}</strong> {PLAN_BOTTLE_TURN}</p>
+        ? (
+          <>
+            <p className="bridge">{PLAN_BOTTLE_LOT}</p>
+            <p className="bridge"><strong>{PLAN_BOTTLE_WHY}</strong></p>
+            <p className="bridge">{PLAN_BOTTLE_STORY}</p>
+            <p className="bridge"><strong>{PLAN_BOTTLE_PUSH}</strong></p>
+          </>
+        )
         : (
           <>
       <p className="bridge">{PLAN_LOT}</p>

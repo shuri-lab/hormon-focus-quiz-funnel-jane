@@ -901,68 +901,70 @@ export const PLAN_INTRO_D2 = 'Here is what your body needs now.';
 
 /* Direction 2, plan v9 (Jane, 11 Nov): back to the four-step breakdown.
    The day-phase copy lives in outputs/copy for the phase emails. */
-const STEP1: Record<SymptomId, [string, string]> = {
-  sweats: ['Know what is behind your night sweats',
-    'Night sweats start in the part of your brain that sets your body heat. As estrogen swings, it gets jumpy. Know what sets it off for you: a warm room, wine, spicy food or stress.'],
-  sleep: ['Know what is behind your 3 AM wake-ups',
-    'Waking at 3 AM is common when progesterone, your calming hormone, drops. Know what keeps you up: late caffeine, a warm room, screens in bed or worry.'],
-  weight: ['Know what is behind your belly weight',
-    'As estrogen drops, your body stores more fat around your middle, even when you eat the same. Know why, and what helps: protein, strength and sleep.'],
-  bloat: ['Know what is behind your bloating',
-    'Changing hormones can slow digestion and make you hold water. Know which foods and habits make it worse for you.'],
-  energy: ['Know what is draining your energy',
-    'Broken sleep and changing hormones wear you down. Know what drains you and what gives your energy back.'],
-  mood: ['Know what is behind your mood swings',
-    'Estrogen helps keep your mood steady. When it swings, so do you. Know your triggers so you can plan around them.'],
+/* PLAN v10, Jane 12 Nov: a real 60-day plan, not a checklist. Same four
+   steps; each has a "when", one line on what her body is doing, and what to
+   do. Step 2 names the foods. Step 3 names no product: the product comes
+   after the plan. Days 31 to 60 add something new; nothing is promised. */
+export type PlanStep = { when: string; title: string; body: string; eat?: string; cut?: string };
+/* Plan v12, Jane 12 Nov: same content as v11, cut to about half. */
+const P1: Record<SymptomId, [string, string]> = {
+  sweats: ['Cool your nights', 'your body reacts faster to heat. Keep the bedroom cool, a fan on and cold water by the bed. Note what you ate and drank before each sweat.'],
+  sleep: ['Set up your nights', 'your body wakes more easily. Keep the same bedtime, a cool dark room, and the phone out of the bedroom. Note when you wake.'],
+  weight: ['Start every day with protein', 'your body stores more around your middle. Start each day with protein, like eggs or Greek yogurt, and have water before meals.'],
+  bloat: ['Slow down your meals', 'your digestion slows down. Sit down to eat, eat slowly and sip water through the day. Note which meals bloat you.'],
+  energy: ['Steady your mornings', 'your energy dips faster. Eat protein within an hour of waking and get 10 minutes of morning daylight.'],
+  mood: ['Find your calm moments', 'your mood can flip faster. Take 5 quiet minutes a day and note what comes before a dip.'],
 };
-/* After periods stop (C, E) estrogen is lower, not swinging. */
-const STEP1_AFTER: Partial<Record<SymptomId, [string, string]>> = {
-  sweats: ['Know what is behind your night sweats',
-    'Night sweats start in the part of your brain that sets your body heat. With less estrogen, it gets jumpy. Know what sets it off for you: a warm room, wine, spicy food or stress.'],
-  mood: ['Know what is behind your mood swings',
-    'Estrogen helps keep your mood steady. With less of it, your mood can dip and flare. Know your triggers so you can plan around them.'],
+const P2: Record<SymptomId, [string, string]> = {
+  sweats: ['eggs, salmon, chicken, oats, beans, leafy greens.', 'wine, sweets and spicy food at night, caffeine after lunch.'],
+  sleep: ['eggs, salmon, chicken, oats, sweet potato, pumpkin seeds.', 'caffeine after lunch, wine, sweets and late big meals.'],
+  weight: ['eggs, Greek yogurt, chicken, fish, beans, vegetables.', 'sugary drinks, white bread, late-night snacks.'],
+  bloat: ['cooked vegetables, oats, ginger tea, yogurt, smaller portions.', 'fizzy drinks, gum, salty snacks, late big meals.'],
+  energy: ['protein every 4 to 5 hours, whole grains, nuts, fruit.', 'skipped meals, sugary snacks, more than 2 coffees.'],
+  mood: ['protein at every meal, salmon, walnuts, leafy greens, oats.', 'sugar on its own, skipped meals, late wine or caffeine.'],
 };
-const STEP2: Record<SymptomId, string> = {
-  sweats: 'Skip caffeine after lunch, and wine and spicy food in the evening. Build each meal around protein and fiber so your body is not riding a sugar rollercoaster at night.',
-  sleep: 'Eat dinner earlier and lighter, with protein. No caffeine after lunch and no wine close to bed.',
-  weight: 'Eating less backfires now. Start every day with protein, like eggs or Greek yogurt, and build meals around protein and fiber so you stay full.',
-  bloat: 'Eat slowly, add fiber a little at a time, and notice which foods leave you bloated by dinner.',
-  energy: 'Do not skip meals. Eat protein every 4 to 5 hours so your energy does not crash in the afternoon.',
-  mood: 'Pair carbs with protein so your blood sugar, and your mood, do not crash.',
+const P4: Record<SymptomId, string> = {
+  sweats: 'add a walk after dinner and slow breathing before bed.',
+  sleep: 'add a daylight walk and morning light soon after you wake.',
+  weight: 'add strength exercises twice a week and a walk after dinner.',
+  bloat: 'add a 10-minute walk after meals.',
+  energy: 'add a 20-minute walk most days and strength exercises twice a week.',
+  mood: 'add a daily walk outside and one thing you enjoy each week.',
 };
-const STEP4: Record<SymptomId, string> = {
-  sweats: 'Note each night sweat: the time, what you ate and drank, and how warm the room was. Your pattern starts to show.',
-  sleep: 'Note when you wake, and what you ate, drank and did the evening before. Your pattern starts to show.',
-  weight: 'Track your energy, your cravings and how your clothes fit, not just the scale.',
-  bloat: 'Note what you ate and when the bloating starts, so your trigger foods stand out.',
-  energy: 'Note your sleep and your energy each day to see what lifts you and what drains you.',
-  mood: 'Note your mood, your sleep and where you are in your cycle, so your triggers become clear.',
+const STAGE_NAME: Partial<Record<Outcome, string>> = { B: 'perimenopause', C: 'menopause', E: 'early menopause' };
+const STAGE_BODY: Record<Outcome, string> = {
+  A: 'your hormones are shifting',
+  B: 'your hormones go up and down',
+  C: 'your body runs on less estrogen',
+  D: 'your hormones are shifting',
+  E: 'your body runs on less estrogen',
 };
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-export function planSteps(S: QuizState, outcome: Outcome = 'B'): { title: string; body: string; mine: string }[] {
-  const main = mainConcern(S);
-  const afterStop = outcome === 'C' || outcome === 'E';
-  const [t1, b1] = main
-    ? ((afterStop && STEP1_AFTER[main]) || STEP1[main])
-    : ['Know what you are going through',
-      'Learn what is behind your symptoms, what makes them worse, and what to change first.'];
+export function planSteps(S: QuizState, outcome: Outcome = 'B'): PlanStep[] {
+  const main = mainConcern(S) || 'sleep';
+  const second = otherConcerns(S)[0];
+  const stage = STAGE_NAME[outcome];
+  const inStage = stage ? `In ${stage}, ` : 'As your hormones shift, ';
+  const symptoms = `your ${PLAN_FOR[main]}${second ? ` and ${PLAN_FOR[second]}` : ''}`;
+  const [t1, b1] = P1[main];
+  const [eat, cut] = P2[main];
   return [
-    { title: t1, body: b1, mine: '' },
-    { title: 'Eat for this stage',
-      body: main ? STEP2[main] : 'Eating less is not the answer now. Eat protein at every meal, more fiber and real food that keeps you full.',
-      mine: '' },
-    { title: 'Support your changing hormones',
-      body: 'Your hormones are changing, so your body needs steady daily support, not one quick answer.',
-      mine: main ? `For the ${PLAN_FOR[main]} you told us about.` : '' },
-    { title: 'Track how you feel',
-      body: main
-        ? (afterStop && main === 'mood'
-          ? 'Note your mood and your sleep each day, so your triggers become clear.'
-          : STEP4[main])
-        : 'Note your sleep, energy, mood and cravings each day to see what is changing.',
-      mine: '' },
+    { when: 'Days 1 to 7', title: t1, body: inStage + b1 },
+    { when: 'Days 8 to 30', title: stage ? `Eat for ${stage}` : 'Eat for this stage',
+      body: `This also helps ${symptoms}.`, eat, cut },
+    { when: 'Every day, Days 1 to 60', title: 'Support your changing hormones',
+      body: `${cap(stage ? `in ${stage}, ${STAGE_BODY[outcome]}` : STAGE_BODY[outcome])}, so your body needs steady support. Eat broccoli, cabbage or cauliflower most days, go easy on alcohol and sugar, and get enough sleep: that is when your body restores itself.` },
+    { when: 'Days 31 to 60', title: 'Build on what works',
+      body: `By now you know your triggers: foods, sleep and your space. Keep what helped and ${P4[main]} On Day 60, look back at your notes.` },
   ];
 }
+export function planTitle(S: QuizState): string {
+  const name = S.name.trim();
+  const h = planHeading(S).replace(/^Your 60-day plan/, 'your personal 60-day plan');
+  return name ? `${name.charAt(0).toUpperCase()}${name.slice(1)}, ${h}` : h.charAt(0).toUpperCase() + h.slice(1);
+}
+export const PLAN_INTRO_V10 = 'Here is what to put in place over the next 60 days.';
 
 export const PLAN_TURN_D2 =
   'You can do all four on your own. It means finding a plan you trust, working out your meals, choosing the right nutrients and tracking every day.';
@@ -1082,7 +1084,11 @@ export function planTriedLine(S: QuizState): string {
 }
 
 /* The offer switch, one-bottle arm: the plan ends on Hormone Focus. */
-export const PLAN_BOTTLE_HEAD = 'Start your plan with Hormone Focus.';
-export const PLAN_BOTTLE_TURN =
-  'It does step 3 for you. Two capsules a day with a meal give your body steady support while your hormones change.';
+/* Jane 12 Nov: the one-bottle ending, in JJ's voice like the Kit's. */
+export const PLAN_BOTTLE_LOT =
+  'Getting this support from food alone, every day, is hard to keep up.';
+export const PLAN_BOTTLE_WHY = 'That is why JJ made Hormone Focus.';
+export const PLAN_BOTTLE_STORY =
+  'JJ started perimenopause at 38. As a nutritionist, she researched it like her life depended on it, and made Hormone Focus for this exact purpose. It has DIM, the compound found in broccoli and cabbage, to support healthy estrogen metabolism.*';
+export const PLAN_BOTTLE_PUSH = 'Two capsules a day, from a woman who has been where you are.';
 export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';

@@ -5,7 +5,7 @@ import {
 import { shopUrl } from '../src/lib/analytics';
 import { SHOP_BASE, createState, type QuizState } from '../src/lib/logic';
 import { kitCode, kitToday } from '../src/lib/offer';
-import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_HEAD, PLAN_BOTTLE_TURN } from '../src/lib/resultCopy';
+import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_LOT, PLAN_BOTTLE_PUSH, PLAN_BOTTLE_STORY, PLAN_BOTTLE_WHY } from '../src/lib/resultCopy';
 
 /* A tiny in-memory storage, since the tests run in node. */
 function memStore() {
@@ -82,9 +82,12 @@ test('the Kit price and code follow the arm: $74.99 with free shipping, or $47 w
   expect(kitCode()).toBe('KIT47');
 });
 
-test('the plan ending per arm: the one-bottle arm ends on Hormone Focus', () => {
-  expect(PLAN_BOTTLE_HEAD).toBe('Start your plan with Hormone Focus.');
-  expect(PLAN_BOTTLE_TURN).toBe('It does step 3 for you. Two capsules a day with a meal give your body steady support while your hormones change.');
+test('the plan ending per arm: the one-bottle arm ends on JJ and Hormone Focus', () => {
+  expect(PLAN_BOTTLE_LOT).toBe('Getting this support from food alone, every day, is hard to keep up.');
+  expect(PLAN_BOTTLE_WHY).toBe('That is why JJ made Hormone Focus.');
+  expect(PLAN_BOTTLE_STORY).toContain('As a nutritionist, she researched it');
+  expect(PLAN_BOTTLE_STORY).toContain('to support healthy estrogen metabolism.*');
+  expect(PLAN_BOTTLE_PUSH).toBe('Two capsules a day, from a woman who has been where you are.');
   expect(PLAN_BOTTLE_CTA).toBe('Start my plan with Hormone Focus');
   const S: QuizState = createState();
   expect(S).toBeTruthy();
