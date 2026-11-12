@@ -952,11 +952,11 @@ export function planSteps(S: QuizState, outcome: Outcome = 'B'): PlanStep[] {
   return [
     { when: 'Days 1 to 7', title: t1, body: inStage + b1 },
     { when: 'Days 8 to 30', title: stage ? `Eat for ${stage}` : 'Eat for this stage',
-      body: `This also helps ${symptoms}.`, eat, cut },
+      body: `Small food changes to try for ${symptoms}.`, eat, cut },
     { when: 'Every day, Days 1 to 60', title: 'Support your changing hormones',
       body: `${cap(stage ? `in ${stage}, ${STAGE_BODY[outcome]}` : STAGE_BODY[outcome])}, so your body needs steady support. Eat broccoli, cabbage or cauliflower most days, go easy on alcohol and sugar, and get enough sleep: that is when your body restores itself.` },
     { when: 'Days 31 to 60', title: 'Build on what works',
-      body: `By now you know your triggers: foods, sleep and your space. Keep what helped and ${P4[main]} On Day 60, look back at your notes.` },
+      body: `By now you know your triggers: foods, sleep and your space. Keep what helped and ${P4[main]} On Day 60, look back at your notes. If anything still bothers you, talk to your doctor about your options.` },
   ];
 }
 export function planTitle(S: QuizState): string {
@@ -1061,7 +1061,7 @@ export const PLAN_LOT =
   'Finding a plan you trust, making meals that support your hormones at this stage, and tracking how you feel every day is a lot to do on your own.';
 export const PLAN_WHY_KIT = 'That is why JJ made the 60-Day Feel Like You Again Kit.';
 export const PLAN_JJ_STORY =
-  'JJ started perimenopause at 38. She researched it like her life depended on it, and put what she learned into one kit.';
+  'JJ started perimenopause at 38. As a nutritionist, she researched it like her life depended on it, and put what she learned into one kit.';
 export const PLAN_INSIDE = 'What is inside';
 export const PLAN_INSIDE_ITEMS: [string, string][] = [
   ['The 60-Day Hormone Fix guide', 'what to do each day, for 60 days.'],
@@ -1089,6 +1089,14 @@ export const PLAN_BOTTLE_LOT =
   'Getting this support from food alone, every day, is hard to keep up.';
 export const PLAN_BOTTLE_WHY = 'That is why JJ made Hormone Focus.';
 export const PLAN_BOTTLE_STORY =
-  'JJ started perimenopause at 38. As a nutritionist, she researched it like her life depended on it, and made Hormone Focus for this exact purpose. It has DIM, the compound found in broccoli and cabbage, to support healthy estrogen metabolism.*';
-export const PLAN_BOTTLE_PUSH = 'Two capsules a day, from a woman who has been where you are.';
+  'JJ started perimenopause at 38. As a nutritionist, she researched it like her life depended on it, and made Hormone Focus for this exact purpose. It has DIM, from the same family of compounds found in broccoli and cabbage, to support healthy estrogen metabolism.*';
+export const PLAN_BOTTLE_PUSH = 'Two capsules a day, from a woman who has been where you are. One bottle covers your first 30 days.';
 export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';
+
+/* Jane 12 Nov: one small line above the plan button so she knows an offer
+   waits. The price itself stays on the offer page. */
+export const PLAN_OFFER_TEASE: Record<'kit74' | 'bottle25' | 'kit47', string> = {
+  bottle25: 'Your Hormone Check offer: 25% off your first bottle.',
+  kit47: 'Your Hormone Check offer: two bottles and the whole plan, for less than one bottle.',
+  kit74: 'Your Hormone Check offer: the full 60-day kit, with free shipping.',
+};

@@ -87,7 +87,7 @@ test('the plan ending per arm: the one-bottle arm ends on JJ and Hormone Focus',
   expect(PLAN_BOTTLE_WHY).toBe('That is why JJ made Hormone Focus.');
   expect(PLAN_BOTTLE_STORY).toContain('As a nutritionist, she researched it');
   expect(PLAN_BOTTLE_STORY).toContain('to support healthy estrogen metabolism.*');
-  expect(PLAN_BOTTLE_PUSH).toBe('Two capsules a day, from a woman who has been where you are.');
+  expect(PLAN_BOTTLE_PUSH).toBe('Two capsules a day, from a woman who has been where you are. One bottle covers your first 30 days.');
   expect(PLAN_BOTTLE_CTA).toBe('Start my plan with Hormone Focus');
   const S: QuizState = createState();
   expect(S).toBeTruthy();

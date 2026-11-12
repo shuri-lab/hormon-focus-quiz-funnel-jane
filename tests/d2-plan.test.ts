@@ -49,11 +49,12 @@ test('Plan v12: four timed steps, her stage named, foods listed, no product name
     'Cool your nights', 'Eat for perimenopause', 'Support your changing hormones', 'Build on what works',
   ]);
   expect(st[0].body.startsWith('In perimenopause, your body reacts faster to heat.')).toBe(true);
-  expect(st[1].body).toBe('This also helps your night sweats and poor sleep.');
+  expect(st[1].body).toBe('Small food changes to try for your night sweats and poor sleep.');
   expect(st[1].eat).toBeTruthy();
   expect(st[1].cut).toBeTruthy();
   expect(st[2].body).toContain('broccoli, cabbage or cauliflower');
   expect(st[3].body).toContain('By now you know your triggers: foods, sleep and your space.');
+  expect(st[3].body).toContain('talk to your doctor about your options.');
   for (const s of st) expect(`${s.title} ${s.body} ${s.eat ?? ''} ${s.cut ?? ''}`).not.toMatch(/Hormone Focus|Kit|JJ|Recipes|Tracker/);
   /* No stage named when the result names none. */
   const a = planSteps(S({ sym: ['sleep'], main: 'sleep' }), 'A');

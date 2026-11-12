@@ -1933,3 +1933,6 @@
 .resHero.d2Reveal > :nth-child(3) { animation-delay: .24s; }
 .resHero.d2Reveal > :nth-child(4) { animation-delay: .4s; }
 @media (prefers-reduced-motion: reduce) { .resHero.d2Reveal > * { animation: none; } }
+
+/* Plan v13: the one-line offer teaser above the plan button. */
+.planTease { margin: 18px 0 0; text-align: center; color: var(--plum); font-size: var(--t-small); }

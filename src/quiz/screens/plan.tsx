@@ -14,7 +14,7 @@ import {
 } from '../../lib/resultCopy';
 import { reviewByName } from '../../lib/reviews';
 import { getArm } from '../../lib/arm';
-import { PLAN_BOTTLE_CTA, PLAN_BOTTLE_LOT, PLAN_BOTTLE_WHY, PLAN_BOTTLE_STORY, PLAN_BOTTLE_PUSH, PLAN_INTRO_V10, planTitle } from '../../lib/resultCopy';
+import { PLAN_OFFER_TEASE, PLAN_BOTTLE_CTA, PLAN_BOTTLE_LOT, PLAN_BOTTLE_WHY, PLAN_BOTTLE_STORY, PLAN_BOTTLE_PUSH, PLAN_INTRO_V10, planTitle } from '../../lib/resultCopy';
 import { Quote } from '../../components/Proof';
 import {
   SHOT_KIT_FULL, SHOT_STEP_CLEAR, SHOT_STEP_EAT, SHOT_STEP_TRACK,
@@ -104,6 +104,7 @@ export function YourPlan() {
 
       <p className="fine">*{OFFER_DISCLAIMER}</p>
 
+      <p className="planTease"><strong>{PLAN_OFFER_TEASE[getArm()]}</strong></p>
       <ActionBar>
         <button type="button" className="cta" onClick={() => next()}>
           {bottleArm ? PLAN_BOTTLE_CTA : PLAN_TO_KIT_CTA} &rarr;
