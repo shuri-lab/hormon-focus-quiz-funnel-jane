@@ -67,7 +67,8 @@ test('every cart link carries her arm as a cart attribute', () => {
     for (const kind of ['single', 'protocol'] as const) {
       const u = new URL(shopUrl(SHOP_BASE, 'B', '', kind));
       expect(u.searchParams.get('attributes[hf_offer]'), `${arm}/${kind}`).toBe(arm);
-      expect(u.searchParams.get('storefront')).toBeNull();
+      /* And it is still the cart, in every arm. */
+      expect(u.searchParams.get('storefront')).toBe('true');
     }
   }
 });

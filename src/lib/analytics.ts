@@ -609,10 +609,14 @@ export function shopUrl(
   const url = new URL(cartPath(offer, discount), base);
   const ad = readAttribution();
 
-  /* DIRECTION 2, 11 November 2026 (local mock): STRAIGHT TO CHECKOUT.
-     storefront=true is taken off every cart permalink, so Shopify opens the
-     checkout, with the discount code (KIT47 on the Kit) and the quiz tags. */
-  if (url.pathname.includes(':')) url.searchParams.delete('storefront');
+  /* The cart, not the checkout. Asserted rather than assumed from the base,
+     because losing it sends her straight to payment.
+
+     DIRECTION 2 TOOK IT OFF on 11 November and David put it back on 12
+     November: the funnel sends her to the cart, as it did before that
+     change and as main still does. Deleting it skips the cart page, which
+     is a different funnel and not the one we are running. */
+  if (url.pathname.includes(':')) url.searchParams.set('storefront', 'true');
 
   for (const key of PASS_THROUGH) {
     const value = ad[key];

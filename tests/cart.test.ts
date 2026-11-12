@@ -46,7 +46,7 @@ test('one bottle is the single variant, quantity 1, on the cart permalink', () =
   const u = new URL(shopUrl(SHOP_BASE, 'B', 'bloating', 'single'));
   expect(u.origin + u.pathname).toBe(
     `https://shop.jjsmithonline.com/cart/${SINGLE_VARIANT_ID}:1`);
-  expect(u.searchParams.get('storefront')).toBeNull();
+  expect(u.searchParams.get('storefront')).toBe('true');
 });
 
 test('the Plan is the two-bottle bundle variant, quantity 1, not two singles', () => {
@@ -54,7 +54,7 @@ test('the Plan is the two-bottle bundle variant, quantity 1, not two singles', (
   expect(PROTOCOL_VARIANT_ID).toBe('54330638663791');
   expect(u.origin + u.pathname).toBe(
     `https://shop.jjsmithonline.com/cart/${PROTOCOL_VARIANT_ID}:1`);
-  expect(u.searchParams.get('storefront')).toBeNull();
+  expect(u.searchParams.get('storefront')).toBe('true');
   /* The kit link is the one JJ's own page sends: the bundle variant plus the
      free-shipping code. One offer, from two doors. */
   expect(u.searchParams.get('discount')).toBe('HF60FREESHIP');
@@ -79,11 +79,12 @@ test('no row sends her to a product page', () => {
   }
 });
 
-test('Direction 2: the two permalinks drop storefront=true, so they open checkout', () => {
-  /* Without it Shopify skips the cart and goes straight to payment. */
+test('the two permalinks say storefront=true, which is what keeps them carts', () => {
+  /* Without it Shopify skips the cart and goes straight to payment.
+     Direction 2 dropped it on 11 November; David put it back on 12. */
   for (const kind of ['single', 'protocol'] as const) {
     expect(new URL(shopUrl(SHOP_BASE, 'B', '', kind)).searchParams.get('storefront'))
-      .toBeNull();
+      .toBe('true');
   }
 });
 
@@ -144,7 +145,7 @@ test('click ids keep their own names and survive', () => {
 test('carrying the attribution does not cost the required parameters', () => {
   arrivedWith(AD);
   expect(new URL(shopUrl(SHOP_BASE, 'B', '', 'protocol')).searchParams.get('storefront'))
-    .toBeNull();
+    .toBe('true');
   expect(new URL(shopUrl(SHOP_BASE, 'B', '', 'subscribe')).searchParams.get('selling_plan'))
     .toBe(SUBSCRIBE_SELLING_PLAN_ID);
 });
@@ -158,7 +159,7 @@ test('traffic with no attribution gets a clean link, not invented values', () =>
      in for an acquisition she did not arrive with. No empty utm_*. */
   expect([...u.searchParams.keys()].sort()).toEqual([
     'attributes[hf_funnel]', 'attributes[hf_offer]', 'attributes[hf_quiz_landing]',
-    'hf_funnel', 'hf_quiz_landing', 'utm_campaign',
+    'hf_funnel', 'hf_quiz_landing', 'storefront', 'utm_campaign',
   ]);
   expect(u.searchParams.get('hf_funnel')).toBe('quiz');
 });
