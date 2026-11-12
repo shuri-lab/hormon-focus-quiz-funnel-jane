@@ -177,7 +177,8 @@ export function QuizProvider({ angle, children }: { angle: Angle; children: Reac
     }
     /* BOTH OFFER ADDRESSES REPORT, so the A/B has two sides to compare. */
     if (here === 'r2') track.offerView(stateKey(latest.current), getArm() === 'bottle25' ? 'bottle' : 'kit');
-    if (here === 'offerKit') track.offerView(stateKey(latest.current), 'kit');
+    /* /quiz/kit renders the one-bottle page (R2OneBottle), so it reports the bottle. */
+    if (here === 'offerKit') track.offerView(stateKey(latest.current), 'bottle');
     if (here === 'rDoc') track.doctorRoute(docReason(latest.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here]);

@@ -79,41 +79,52 @@ export const pressPrimary = (page: Page) => () => page.locator('.actionBar .cta'
 export const pressSecondary = (page: Page) => () => page.locator('.actionBar .cta').nth(1).click();
 
 /**
- * The three screens between her result and the price, walked.
+ * Her plan, walked: the one screen between her result and the offer.
  *
- * ADDED 29 October 2026 with the screens themselves. Before them, one click on
- * the result page's button landed on the offer; now it lands on the first of
- * three. Every walk that ends at the offer calls this, so the day a fourth
- * screen is added or one is dropped, it is one edit here and not six.
+ * REPLACED 12 November 2026 (Quiz V1). Until then three screens sat between
+ * the result and the price (whats-happening, your-plan, meet-hormone-focus)
+ * and this helper was throughNurture. Two of them were cut and their
+ * addresses forward to the plan, so the walk is one screen now: the plan
+ * page, titled for her own symptoms, with four steps, then the offer.
  *
- * It starts on `cause`, which is where the result page's button leaves her,
- * and it leaves her on the offer page. Each heading is asserted on the way
- * through, so a screen that silently stops rendering fails here rather than
+ * It starts on `plan`, which is where the result page's button leaves her,
+ * and it leaves her on the offer. The heading is asserted on the way
+ * through, so a plan that silently stops rendering fails here rather than
  * surfacing as a confusing timeout on the offer page.
  */
-/**
- * The `cause` screen's headline, which depends on her stage.
- *
- * SPLIT 3 November 2026. A and B still make plenty of estrogen and read about
- * it not clearing; C and E run on less and read about it not being broken
- * down. Walks say which they are, so a walk that silently started reading the
- * wrong one fails here rather than passing on a half-match.
- */
-export const CAUSE_HEADS = {
-  clear: 'The real problem is estrogen that is not clearing.',
-  breakdown: 'Your body is not breaking estrogen down like it used to.',
-} as const;
+export async function throughPlan(page: Page, title: string) {
+  /* Plan v13: "Dana, your personal 60-day plan for ...". Callers pass the
+     old "Your 60-day plan for ..." form; match the part that is hers. */
+  await expect(heading(page), `the plan page reading "${title}"`)
+    .toContainText(title.replace(/^Your /, ''));
+  await expect(page.locator('.nStep'), 'the plan has four steps').toHaveCount(4);
+  await page.locator('.actionBar .cta').click();
+}
 
-export async function throughNurture(
-  page: Page,
-  group: keyof typeof CAUSE_HEADS = 'clear',
-) {
-  for (const h of [
-    CAUSE_HEADS[group],
-    'Three simple things. That is the whole plan.',
-    'Meet Hormone Focus.',
-  ]) {
-    await expect(heading(page), `the nurture screen reading "${h}"`).toHaveText(h);
-    await page.locator('.actionBar .cta').click();
-  }
+/**
+ * Switch the offer, the way arm.ts says to: ACTIVE_OFFERS and nothing else.
+ *
+ * THE KIT ARMS ARE BUILT AND OFF. arm.ts lives with ['bottle25'], so in the
+ * build these tests run against every visitor gets the one bottle, and a
+ * stored arm that is switched off is ignored. The review build can force an
+ * arm, but it routes in memory and has no addresses to test.
+ *
+ * So this rewrites the one literal in the served bundle, ACTIVE_OFFERS, to
+ * the arms given, before the app boots. It is the same edit Jane makes to
+ * switch the Kit on, applied to this page load only, and everything after it
+ * (the pick, the stored arm, the page, the cart link) is the real build. It
+ * fails loudly if the literal cannot be found, so a change to how the switch
+ * is written breaks here rather than silently testing the bottle.
+ */
+export async function switchOffers(page: Page, arms: string[]) {
+  await page.route(/\/assets\/index-[^/]*\.js$/, async (route) => {
+    const res = await route.fetch();
+    const src = await res.text();
+    const re = /\[(["'`])bottle25\1\](?=,\w+=(["'`])hf_offer_arm\2)/;
+    if (!re.test(src)) {
+      throw new Error('switchOffers: ACTIVE_OFFERS not found in the bundle');
+    }
+    const out = src.replace(re, `[${arms.map((a) => `"${a}"`).join(',')}]`);
+    await route.fulfill({ response: res, body: out });
+  });
 }

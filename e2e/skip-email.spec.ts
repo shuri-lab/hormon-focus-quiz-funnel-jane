@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { blockKlaviyo, heading, answerAndWait, pickOption, pressPrimary } from './helpers';
+import { STAT_TITLE } from '../src/lib/resultCopy';
 
 /* THE LINK FROM JJ'S OWN LIST, WALKED END TO END.
  *
@@ -38,20 +39,31 @@ async function arrive(page: import('@playwright/test').Page, url: string) {
 const stored = (page: import('@playwright/test').Page) =>
   page.evaluate(() => JSON.parse(sessionStorage.getItem('hf_list_link') || 'null'));
 
-/** q1 through q7, the same answers the main walk uses, stopping after q7. */
-async function answerAllSeven(page: import('@playwright/test').Page) {
+/**
+ * The last question and the statistic screen after it, the same answers the
+ * main walk uses. Leaves her on the loader, which hands off on its own.
+ *
+ * FIVE QUESTIONS SINCE QUIZ V1 (12 November 2026): "When do you notice these
+ * changes most" and "What do you want most right now" were cut, and a
+ * statistic screen now sits between the last question and the loader.
+ */
+async function finishFromTried(page: import('@playwright/test').Page) {
+  await page.locator('.opt').nth(0).click();
+  await page.locator('.opt').nth(1).click();
+  await answerAndWait(page, pressPrimary(page), new RegExp(STAT_TITLE.slice(0, 20)));
+  await page.locator('.actionBar .cta').click();
+}
+
+/** q1 through q6 (five questions), then the statistic screen. */
+async function answerAllFive(page: import('@playwright/test').Page) {
   await page.locator('.tile').nth(0).click();
   await page.locator('.tile').nth(1).click();
   await page.locator('.tile').nth(2).click();
   await answerAndWait(page, pressPrimary(page), /Which one bothers you the most/);
   await answerAndWait(page, pickOption(page, 1), /How old are you/);
   await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);
-  await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
-  await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
-  await page.locator('.opt').nth(0).click();
-  await page.locator('.opt').nth(1).click();
-  await answerAndWait(page, pressPrimary(page), /want most right now/);
-  await page.locator('.opt').nth(1).click();
+  await answerAndWait(page, pickOption(page, 1), /What have you already tried/);
+  await finishFromTried(page);
 }
 
 test.describe('skip_email', () => {
@@ -70,10 +82,11 @@ test.describe('skip_email', () => {
        page_location, Clarity as the recorded URL, or any Referer. */
     expect(new URL(page.url()).searchParams.has('skip_email'), 'stripped from the URL').toBe(false);
 
-    await answerAllSeven(page);
+    await answerAllFive(page);
 
     /* 3 and 4. The loader hands off straight to the result - the same screen
-       a successful submission reaches - and never to the gate. */
+       a successful submission reaches - and never to the gate. The loader
+       runs about 7.5 seconds since Quiz V1, so the wait is generous. */
     await expect(heading(page)).toHaveText(RESULT, { timeout: 15_000 });
     expect(new URL(page.url()).pathname).toBe('/quiz/result');
 
@@ -101,7 +114,7 @@ test.describe('skip_email', () => {
     });
     expect(page.url(), 'a profile id may never sit in the URL').not.toContain('01GDDKA');
 
-    await answerAllSeven(page);
+    await answerAllFive(page);
     await expect(heading(page)).toHaveText(RESULT, { timeout: 15_000 });
     await expect(page.getByText(GATE)).toHaveCount(0);
     expect(await stored(page)).toEqual({
@@ -116,7 +129,7 @@ test.describe('skip_email', () => {
     await arrive(page, '/quiz?skip_email=1&k_id=TfxMKk');
     expect(await stored(page)).toEqual({ skipEmail: true, profileId: 'TfxMKk' });
 
-    await answerAllSeven(page);
+    await answerAllFive(page);
     await expect(heading(page)).toHaveText(RESULT, { timeout: 15_000 });
     await expect(page.getByText(GATE)).toHaveCount(0);
   });
@@ -139,12 +152,8 @@ test.describe('skip_email', () => {
     await expect(heading(page)).toContainText('happening with your cycle');
     expect(await stored(page), 'survived the reload').toEqual({ skipEmail: true, profileId: null });
 
-    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
-    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
-    await page.locator('.opt').nth(0).click();
-    await page.locator('.opt').nth(1).click();
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
-    await page.locator('.opt').nth(1).click();
+    await answerAndWait(page, pickOption(page, 1), /What have you already tried/);
+    await finishFromTried(page);
 
     await expect(heading(page)).toHaveText(RESULT, { timeout: 15_000 });
     await expect(page.getByText(GATE)).toHaveCount(0);
@@ -168,7 +177,7 @@ test.describe('skip_email', () => {
     await page.locator('a.cta').first().click();
     await expect(heading(page)).toContainText('What has been bothering you lately');
 
-    await answerAllSeven(page);
+    await answerAllFive(page);
     await expect(heading(page)).toHaveText(RESULT, { timeout: 15_000 });
     await expect(page.locator('#ef')).toHaveCount(0);
     await expect(page.getByText(GATE)).toHaveCount(0);
@@ -180,7 +189,7 @@ test.describe('skip_email', () => {
     await arrive(page, '/quiz');
     expect(await stored(page), 'nothing stored without the parameter').toBe(null);
 
-    await answerAllSeven(page);
+    await answerAllFive(page);
     await expect(heading(page)).toHaveText(GATE, { timeout: 15_000 });
     await expect(page.locator('#ef')).toBeVisible();
     await expect(page.locator('.actionBar .cta')).toBeDisabled();

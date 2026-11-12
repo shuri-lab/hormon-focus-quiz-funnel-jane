@@ -217,9 +217,13 @@ test.describe('the cart link', () => {
 
     expect(url.host).toBe('shop.jjsmithonline.com');
     expect(url.pathname).toBe(expectedProtocolPath());
+    /* STRAIGHT TO CHECKOUT since Quiz V1 (11 November): shopUrl() takes
+       storefront=true off every cart permalink, so Shopify opens the
+       checkout rather than the cart page. */
     expect(url.searchParams.get('storefront')).toBe('true');
     /* The variant in the path names the offer, so nothing repeats it, and
-       nothing carries her result. */
+       nothing carries her result. Which offer she was shown rides as a cart
+       attribute, not as a query parameter of its own. */
     expect(url.searchParams.get('hf_offer')).toBeNull();
     expect(url.searchParams.get('hf_outcome')).toBeNull();
 
@@ -246,6 +250,7 @@ test.describe('the cart link', () => {
     const url = new URL((await single.getAttribute('href'))!);
     expect(url.pathname).toBe(`/cart/${SINGLE_VARIANT_ID}:1`);
     expect(url.searchParams.get('discount')).toBeNull();
+    /* Straight to checkout, like every cart permalink since Quiz V1. */
     expect(url.searchParams.get('storefront')).toBe('true');
 
     await expect(single).toContainText('Get 1 bottle');
@@ -449,6 +454,7 @@ test.describe('the plan page', () => {
 
     const url = new URL((await page.locator('.buyBtn').getAttribute('href'))!);
     expect(url.origin).toBe('https://shop.jjsmithonline.com');
+    /* Straight to checkout, like every cart permalink since Quiz V1. */
     expect(url.searchParams.get('storefront')).toBe('true');
     /* hf_outcome used to read "plan_perimenopause" here — the quiz result,
        in plain words, in an outbound advertising URL. It is gone. */

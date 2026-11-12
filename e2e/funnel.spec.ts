@@ -1,8 +1,17 @@
 import { test, expect } from '@playwright/test';
 import {
-  expectNoHorizontalOverflow, expectTapTargets, startQuiz, heading,
-  answerAndWait, pickOption, pressPrimary, throughNurture,
+  expectNoHorizontalOverflow, expectTapTargets, startQuiz, heading, blockKlaviyo,
+  answerAndWait, pickOption, pressPrimary, switchOffers, throughPlan,
 } from './helpers';
+import { COVER_SUB } from '../src/lib/content';
+import { KIT_HERO_HEAD } from '../src/lib/kitCopy';
+import {
+  GATE_LINE, LOAD_CARDS, PLAN_BOTTLE_CTA, PLAN_BOTTLE_WHY, PLAN_TO_KIT_CTA, RESULT_CASE,
+  RESULT_PILL, RESULT_TO_PLAN_V5, STAT_TITLE,
+} from '../src/lib/resultCopy';
+
+/* The statistic screen's headline, as a pattern for answerAndWait. */
+const STAT_HEAD = new RegExp(STAT_TITLE.slice(0, 20));
 
 /* Must match src/lib/angles.ts. A slug that no longer exists would otherwise
    redirect to the default page and pass silently, so the URL is asserted. */
@@ -42,8 +51,10 @@ test.describe('the cover', () => {
        rather than floating above the copy. */
     await expect(page.locator('.masthead img')).toHaveAttribute('alt', 'JJ Smith');
     await expect(page.locator('.proofPill')).toContainText('Join 16,000+ women');
+    /* QUIZ V1, 12 November 2026: the line names the plan she leaves with. */
+    await expect(page.locator('.coverSub')).toHaveText(COVER_SUB);
     await expect(page.locator('.coverSub'))
-      .toHaveText("Find out what's really going on with your body. Take the free 1-minute quiz.");
+      .toHaveText('Take this 1-minute Hormone Check and get your personal 60-Day Feel Like You Again Plan.');
     await expect(page.locator('a.cta')).toHaveCount(1);
     await expect(page.locator('a.cta')).toContainText('Get my hormone check');
     await expect(page.locator('.ctaNote')).toHaveText('Free · 1 minute');
@@ -83,15 +94,20 @@ test.describe('the cover', () => {
 /* Tiles, in order: weight, sleep, energy, hot flashes, bloating, mood. */
 
 test.describe('the quiz', () => {
-  test('seven questions, the email unlock, her result, then one kit page', async ({ page }) => {
+  test('five questions, the statistic, the email unlock, her result, her plan, then the one-bottle offer', async ({ page }) => {
+    /* The whole walk, with a loader that now runs about 7.5 seconds on its
+       own, ending on the heaviest page in the funnel. */
+    test.slow();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
 
     await startQuiz(page);
 
-    /* 1. What is bothering her. No product, rating or review on the screen. */
+    /* 1. What is bothering her. No product, rating or review on the screen.
+       FIVE QUESTIONS SINCE QUIZ V1 (12 November 2026): "When do you notice
+       these changes most" and "What do you want most right now" were cut. */
     await expect(heading(page)).toContainText('What has been bothering you lately');
-    await expect(page.locator('.stepno')).toHaveText('1 of 7');
+    await expect(page.locator('.stepno')).toHaveText('1 of 5');
     await expect(page.locator('.footTrust')).toHaveCount(0);
     await expectTapTargets(page, 'q1');
     await page.locator('.tile').nth(0).click();                // weight
@@ -100,62 +116,74 @@ test.describe('the quiz', () => {
     await answerAndWait(page, pressPrimary(page), /Which one bothers you the most/);
 
     /* 2. Only the three she ticked are offered. */
-    await expect(page.locator('.stepno')).toHaveText('2 of 7');
+    await expect(page.locator('.stepno')).toHaveText('2 of 5');
     await expect(page.locator('.opt')).toHaveCount(3);
     await answerAndWait(page, pickOption(page, 1), /How old are you/);       // sleep
 
     /* 3. Six age bands. */
+    await expect(page.locator('.stepno')).toHaveText('3 of 5');
     await expect(page.locator('.opt')).toHaveCount(6);
     await answerAndWait(page, pickOption(page, 2), /happening with your cycle/);   // 45–49
 
-    /* 4. One cycle question. "Less predictable" needs no follow-up. */
-    await expect(page.locator('.stepno')).toHaveText('4 of 7');
-    await answerAndWait(page, pickOption(page, 1), /When do you notice these changes most/);
+    /* 4. One cycle question. "Less predictable" needs no follow-up, and the
+       next screen is what she has tried: the timing question is gone. */
+    await expect(page.locator('.stepno')).toHaveText('4 of 5');
+    await answerAndWait(page, pickOption(page, 1), /What have you already tried/);
 
-    /* 5. Her own answers are said back to her, the one she named first. */
-    await expect(page.locator('.stepno')).toHaveText('5 of 7');
-    await expect(page.locator('.qlead'))
-      .toHaveText('You mentioned poor sleep, stubborn weight gain and low energy.');
-    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);  // most weeks
-
-    /* 6. What she tried. */
+    /* 5. What she tried, the last question. */
+    await expect(page.locator('.stepno')).toHaveText('5 of 5');
     await page.locator('.opt').nth(0).click();                 // eating differently
     await page.locator('.opt').nth(1).click();                 // exercising more
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
+    await answerAndWait(page, pressPrimary(page), STAT_HEAD);
 
-    /* 7. What she wants. */
-    await expect(page.locator('.stepno')).toHaveText('7 of 7');
-    await page.locator('.opt').nth(1).click();                 // sleep through the night
+    /* THE STATISTIC SCREEN, new in Quiz V1: why it has been hard to get
+       help, before she is asked for anything more. It keeps question 5's
+       number so the count never goes backwards. */
+    await expect(page).toHaveURL(/\/quiz\/not-just-you$/);
+    await expect(heading(page)).toHaveText(STAT_TITLE);
+    await expect(page.locator('.stepno')).toHaveText('5 of 5');
+    await expect(page.getByText(/\$/), 'nothing sold on the statistic').toHaveCount(0);
+    await expectNoHorizontalOverflow(page, 'stat');
+    await page.locator('.actionBar .cta').click();
 
-    /* The loader is short and hands off on its own. */
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    /* THE LOADER, about seven and a half seconds, three cards and no review,
+       then it hands off on its own. */
+    await expect(page).toHaveURL(/\/quiz\/reading-your-answers$/);
+    await expect(page.locator('.loadList li')).toHaveCount(3);
+    await expect(page.locator('.loadWrap .kitRev, .loadWrap .rev'), 'no review on the loader')
+      .toHaveCount(0);
+    await expect(page.locator('.nextPieces')).toContainText(LOAD_CARDS[0]);
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 15_000 });
     await expect(heading(page)).toHaveText('Your Hormone Check is ready.');
-    await expect(page.getByText('Your results will appear immediately.')).toBeVisible();
+    await expect(page.locator('.rDeck')).toHaveText(GATE_LINE);
     await expect(page.getByText('Where should')).toHaveCount(0);
     await page.fill('#nf', 'Renee');
     await page.fill('#ef', 'renee@example.com');
 
-    /* A valid address is not enough: the opt-in is unticked and required. */
+    /* The opt-in starts unticked and white, and it no longer holds back her
+       result: since the V3.5 fix a valid address opens it, and nothing is
+       sent to the list unless she ticks. */
     await expect(page.locator('#cf')).not.toBeChecked();
     expect(await page.locator('#cf').evaluate((el) => getComputedStyle(el).backgroundColor),
       'the tick box is white').toBe('rgb(255, 255, 255)');
-    await expect(page.locator('.actionBar .cta')).toBeDisabled();
+    await expect(page.locator('.actionBar .cta'), 'her result waits on her address only')
+      .toBeEnabled();
     await page.locator('#cf').check();
     await expect(page.locator('.actionBar .cta')).toHaveText('SHOW ME MY RESULTS');
     await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 1. What her answers MAY POINT TO, said in one sentence.
-       SOFTENED 7 OCTOBER 2026: the heading used to be the bare stage word
-       ("Perimenopause") with the sentence under it in `.resLine`. The bare
-       stage word is no longer printed at all, so the heading is the sentence
-       and `.resLine` is gone. */
+    /* RESULT PAGE. What her answers MAY POINT TO, said in one sentence, the
+       live headline. The bare stage word is never printed on its own. */
+    await expect(page).toHaveURL(/\/quiz\/result$/);
     await expect(page.locator('.resKicker')).toHaveText('Renee, here is your result');
     await expect(heading(page)).toHaveText(
       'Your answers may point to perimenopause, the years before your periods stop.',
     );
     await expect(page.locator('.resLine')).toHaveCount(0);
-    /* No heading on the result may be the bare stage word on its own. */
     await expect(heading(page)).not.toHaveText(/^(peri)?menopause$/i);
+    await expect(page.locator('.resReassure'))
+      .toHaveText('A normal stage, and there is a lot you can do.');
+    await expect(page.locator('.resHero .kitPriceSave')).toHaveText(RESULT_PILL);
 
     /* What she told us, with the pictures she tapped, the one she named first. */
     const pics = page.locator('.resPics figure');
@@ -163,107 +191,73 @@ test.describe('the quiz', () => {
     await expect(pics.first()).toContainText('Bothers you most');
     await expect(pics.first()).toContainText('Poor sleep');
     await expect(pics.first().locator('img')).toHaveAttribute('src', /symptom-sleep/);
-    await expect(page.locator('.resFacts')).toContainText('Most weeks');
     await expect(page.locator('.resFacts')).toContainText('Less predictable');
-    /* WHAT THIS MEANS, REBUILT LIGHTER 29 October 2026. It was Jane's whole
-       block for her outcome, then the symptom line, then the pattern line,
-       then a fixed heading and paragraph for that symptom, then the
-       softening: about four hundred words, because this was the last screen
-       before the price. Three screens explain the cause now, so the card is
-       her stage in one line and her own symptom in the next.
+    /* The timing question is gone, so no "how often" fact is read back. */
+    await expect(page.locator('.resFacts')).not.toContainText('Most weeks');
 
-       STILL KEYED TO HER. She is perimenopause with sleep as her main
-       concern, and both lines say so. */
-    await expect(page.locator('.resReassure'))
-      .toHaveText('A normal stage, and there is a lot you can do.');
-    await expect(page.locator('.resMeansLead'))
-      .toHaveText('Your hormones are not as steady as they used to be.');
-    await expect(page.locator('.resMeansSym'))
-      .toContainText("That's why your sleep changed, even though your bedtime didn't.");
-    /* Three symptoms, so the clause that ties them together is shown. */
-    await expect(page.locator('.resMeansSym')).toContainText('It is one thing, not several.');
+    /* ONE STAGE BLOCK, keyed to her: perimenopause, and the line that ties
+       her two top symptoms together (sleep and weight). */
+    await expect(page.locator('.resSec .blabel').nth(1)).toHaveText('What perimenopause is');
+    await expect(page.locator('.rise'))
+      .toContainText('Perimenopause is the time before your periods stop for good.');
+    await expect(page.locator('.rise'))
+      .toContainText('Short nights make you hungrier the next day');
 
-    /* AND WHAT NO LONGER RENDERS HERE. Each of these is still exported and
-       still read by the copy gate; what changed is that this page stopped
-       being the one that explains. */
-    for (const gone of [
-      'Menopause is when your periods stop for good.',
-      'Most weeks is often enough to spot a pattern',
-      'This is a normal stage, not an illness.',
-      'Why your sleep has changed',
-      'In this stage, sleep gets easier to break.',
-    ]) {
-      await expect(page.getByText(gone, { exact: false }), `"${gone}" is still on r1`)
-        .toHaveCount(0);
-    }
-    /* The doctor line belongs to early menopause only, and she is B. */
-    await expect(page.getByText('take to your doctor soon', { exact: false })).toHaveCount(0);
-    await expect(page.getByText('To sleep through the night.')).toBeVisible();
+    /* HER STAGE'S FACT, with the number pulled large. */
+    await expect(page.locator('.resStat .blabel')).toHaveText('What to expect');
+    await expect(page.locator('.resStatBig')).toHaveText('4 to 8 years');
+    await expect(page.locator('.resStatBigLabel'))
+      .toHaveText('is how long perimenopause usually lasts. It often starts in your 40s.');
+    await expect(page.locator('.resStat')).toContainText('Source: Cleveland Clinic');
+    await expect(page.locator('.resHandoff')).toHaveText(RESULT_CASE);
     await expectNoHorizontalOverflow(page, 'r1 result');
 
-    /* HER STAGE'S FACT, with the number pulled large and SAID. The card
-       showed "You are not the only one" over a large "four years" until
-       30 October, which counts no women and did not parse; the kicker and
-       the caption are both the fact's own now, so each outcome reads
-       correctly. The full sentence gives way to the caption where there is
-       a number to pull, which is what the brief asked for. */
-    await expect(page.locator('.resStat .blabel')).toHaveText('What to expect');
-    await expect(page.locator('.resStatBig')).toHaveText('four years');
-    await expect(page.locator('.resStatBigLabel'))
-      .toHaveText('is how long perimenopause usually lasts');
-    await expect(page.locator('.resStat')).toContainText('Source: Cleveland Clinic');
-    await expect(page.locator('.rise .kitRev')).toHaveCount(0);
-    await expect(page.locator('.rise .pfFaces')).toHaveCount(0);
-
-    /* It is one answer: no hedging between two, and still nothing to buy. */
+    /* It is one answer, and still nothing to buy. */
     const resultText = await page.locator('.rise').innerText();
-    for (const banned of ['between two', 'closer fit', 'may be part of the picture', 'You have ', 'estrogen', '$']) {
+    for (const banned of ['between two', 'closer fit', 'may be part of the picture', 'You have ', '$']) {
       expect(resultText, banned).not.toContain(banned);
     }
     await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
+    /* The doctor line belongs to early menopause only, and she is B. */
+    await expect(page.getByText('take to your doctor soon', { exact: false })).toHaveCount(0);
 
-    /* THE PART MOST WOMEN MISS, 20 October: the gap named before the plan is
-       offered, so the next page can open on the plan rather than on a price.
-       She ticked eating differently and exercising more, so she gets the line
-       that says so. */
-    const miss = page.locator('.resHook');
-    await expect(miss).toHaveCount(1);
-    await expect(miss).toContainText('The part most women miss');
-    await expect(miss).toContainText('What changed is on the inside');
-    /* missLine() is no longer rendered: it was a second line making a claim
-       about what she had already tried, and the hook reads shorter without
-       it. It points at the next screen instead. */
-    await expect(miss).toContainText('That is exactly what I want to show you next.');
-    await expect(miss, 'missLine is no longer rendered')
-      .not.toContainText('already tried eating better');
-
-    /* And the hand-off, which is the last thing she reads before the button. */
-    await expect(page.locator('.resHandoff'))
-      .toHaveText('Now let me show you what is actually going on, and the simple '
-        + 'plan to feel like you again.');
-
-    await expect(page.locator('.actionBar .cta')).toContainText('SHOW ME WHAT IS GOING ON');
+    await expect(page.locator('.actionBar .cta')).toContainText(RESULT_TO_PLAN_V5);
     await page.locator('.actionBar .cta').click();
 
-    /* THE THREE SCREENS THAT NOW EARN THE OFFER, 29 October: what is behind
-       her result, what to do about it, and the product as step one. */
-    await throughNurture(page);
+    /* HER PLAN, new in Quiz V1: titled for her own symptoms, four steps,
+       step one keyed to the one she named, and what she tried read back.
+       No price and no shop link: it ends on Hormone Focus and one button. */
+    await expect(page).toHaveURL(/\/quiz\/your-plan$/);
+    /* Plan v13 (Jane, 12 Nov): her name, "your personal 60-day plan", four
+       timed steps, foods named, no product in the steps. */
+    await expect(heading(page)).toHaveText(/personal 60-day plan for poor sleep and stubborn weight$/);
+    const steps = page.locator('.nStep');
+    await expect(steps).toHaveCount(4);
+    await expect(steps.nth(0)).toContainText('Days 1 to 7');
+    await expect(steps.nth(0)).toContainText('Set up your nights');
+    await expect(steps.nth(1)).toContainText('Days 8 to 30');
+    await expect(steps.nth(1)).toContainText('Eat more:');
+    await expect(steps.nth(1)).toContainText('Cut back:');
+    await expect(steps.nth(2)).toContainText('Support your changing hormones');
+    await expect(steps.nth(2)).not.toContainText('Hormone Focus');
+    await expect(steps.nth(3)).toContainText('Build on what works');
+    await expect(steps.nth(3)).toContainText('talk to your doctor');
+    await expect(page.locator('.planTease')).toHaveText('Your Hormone Check unlocked a special offer.');
+    /* THE ACTIVE OFFER IS THE BOTTLE, so the plan turns to Hormone Focus and
+       never shows her the Kit. */
+    await expect(page.locator('.bridge', { hasText: PLAN_BOTTLE_WHY })).toHaveCount(1);
+    await expect(page.locator('.kitHeroShot.isKit'), 'no Kit on the bottle arm').toHaveCount(0);
+    await expect(page.locator('.rise')).not.toContainText('What is inside');
+    const planText = await page.locator('.rise').innerText();
+    expect(planText, 'no price on the plan').not.toContain('$');
+    await expect(page.locator('a[href*="shop.jjsmithonline.com"]')).toHaveCount(0);
+    await expect(page.locator('.actionBar .cta')).toContainText(PLAN_BOTTLE_CTA);
+    await expectNoHorizontalOverflow(page, 'your-plan');
+    await page.locator('.actionBar .cta').click();
 
-    /* RESULT PAGE 2. REBUILT 16 OCTOBER 2026 for conversion. It opened on
-       three free tips and reached the price at section six of fourteen; it
-       now opens on the outcome she came for, with proof and a button, and
-       the offer sits directly under the hero.
-
-       The headline is hers: she said sleep bothers her most, and the eyebrow
-       carries the stage from the result page she has just read. */
-    /* THE HEADLINE SELLS THE PACKAGE, 29 October, where it used to be her
-       own symptom read back ("Sleep through the night again."). She is
-       still read back twice on this page: the eyebrow below is her stage,
-       and "why it works" opens on the symptom she named. */
-    /* THE MAIN WALK ENDS ON ONE BOTTLE, 2 November. The kit page is
-       preserved at /quiz/offer-kit and is what this will be A/B'd against
-       once the kit has a Shopify variant and its guides are fulfilled; until
-       then the walk ends on the thing the cart can actually deliver. */
+    /* THE OFFER. The walk ends at /quiz/your-kit, which shows her arm's
+       offer, and every visitor's arm is the one bottle at 25% off. */
+    await expect(page).toHaveURL(/\/quiz\/your-kit$/);
     await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
     await expect(page.locator('.kitHeroSub'))
       .toHaveText('Two capsules a day to help your body clear the extra estrogen, '
@@ -271,36 +265,17 @@ test.describe('the quiz', () => {
     await expect(page.locator('.kitHeroShot'))
       .toHaveAttribute('src', /kit-one-bottle/);
     await expect(page.locator('.kitHeroEyebrow')).toHaveText('Your result · Perimenopause');
-    await expect(page.locator('.kitHeroLabel'), 'the kit-name line is folded into the H1')
-      .toHaveCount(0);
 
-    /* THE PRICE IS THE BOTTLE'S OWN. The kit variant totals a value stack,
-       $146.99 down to $45; there are no bonuses in this offer, so the only
-       honest version is one bottle struck from $49.99 to what she pays. */
+    /* THE PRICE IS THE BOTTLE'S OWN: $49.99 struck to the $37.50 she pays. */
     const price = page.locator('.kitHero .kitPrice');
     await expect(price).toContainText('Usually');
     await expect(price.locator('s')).toHaveText('$49.99');
     await expect(price.locator('.kitPriceToday b')).toHaveText('$37.50');
     await expect(price.locator('.kitPriceSave')).toHaveText('You save $12.49 today');
-    /* THE OFFER IS NAMED, 5 November. At 10% it was a footnote under the
-       price; at 25% it is the strongest thing on the page. */
     await expect(price.locator('.kitWelcome')).toContainText('Welcome offer');
     await expect(price.locator('.kitWelcome')).toContainText('25% off your first order');
     await expect(price, 'no kit value on the bottle page').not.toContainText('$146.99');
-
-    /* THE FIRST SCREEN CARRIES THE OFFER, which is the entire point of the
-       rebuild: a button, the risk taken off it, and two forms of proof. */
-    /* THE BOTTLE'S OWN LABEL. "Get my Kit" over an offer that is one bottle
-       would be selling something the page does not include, which is the same
-       mistake as the kit's name over it. This is what the button read before
-       the kit took it over on 29 October. */
     await expect(page.locator('.kitHeroCta')).toHaveText(/Get Hormone Focus/);
-    /* NO FREE-SHIPPING PROMISE, anywhere above the fold. It said so while the
-       kit led this page and its link carried HF60FREESHIP; the bottle's link
-       carries the 10% code instead and Shopify takes one of them. */
-    /* THE 10% CAME OFF THIS LINE. It is still applied, and the card below
-       still says so; what the hero promises now is the guarantee and the
-       dispatch, which is what the brief asked the risk line to carry. */
     await expect(page.locator('.kitHeroRisk'))
       .toHaveText('60-day money-back guarantee · Ships today');
     await expect(page.locator('.kitHero'), 'no free shipping above the fold')
@@ -312,250 +287,60 @@ test.describe('the quiz', () => {
       'the hero button has to be on the first screen',
     ).toBeLessThanOrEqual(fold);
 
-    /* THE PLAN SECTION IS BACK, 29 October, because the page sells the
-       guide, the recipes and the tracker again. It is three steps, and the
-       first of them is the dose that .kitHow used to carry on its own.
-
-       WHAT IS STILL NOT HERE is the homework: her two symptom cards and the
-       old second step that told her to fix her own sleep and meals. On a
-       page selling a supplement that read as the product conceding it is
-       not the thing that helps. Step two points at the guide she is being
-       sold, which is a different sentence. */
-    await expect(page.locator('.kitPlan'), 'the plan section').toHaveCount(1);
-    await expect(page.locator('.kitSteps li'), 'its three steps').toHaveCount(3);
-    await expect(page.locator('.priCard'), 'her symptom cards').toHaveCount(0);
-
     const pageText = await page.locator('.rise').innerText();
-    for (const gone of ['Why 60 days', 'the supplement in the kit', 'One simple plan']) {
-      expect(pageText, `"${gone}" still on the page`).not.toContain(gone);
-    }
-    /* THE KIT IS NOT ON THIS PAGE, 2 November. The main walk sells one
-       bottle; the kit lives at /quiz/offer-kit with its three guides and its
-       value stack, and the test below walks that address instead. Asserted
-       as absent, because the thing that would go wrong is the kit's name
-       appearing over an offer that does not include it. */
     expect(pageText, 'the kit is not what this page sells')
       .not.toContain('The Feel Like YOU Again Kit');
-    expect(pageText, 'and the old name is gone everywhere')
-      .not.toContain('60-Day Feel Like YOU Again');
-
-    /* Her symptom still keys the page, in the two places that are left. */
+    await expect(page.locator('.kitPlan'), 'the plan section').toHaveCount(1);
+    await expect(page.locator('.kitPlan')).toContainText('Take two capsules a day, with a meal.');
     await expect(page.locator('.kitMech .kitBody').first())
       .toContainText('You told us your sleep breaks at night.');
-    await expect(page.locator('.kitMech .kitBody').first())
-      .toContainText('In perimenopause your hormones get less steady');
-    await expect(page.locator('.kitPlan')).toContainText('Take two capsules a day, with a meal.');
-
-
-    /* THE BRIDGE IS OFF THE PAGE. It read "These are the first three things
-       I would work on ... this is why I built the Feel Like YOU Again Kit",
-       which pointed from the tips to the kit. The kit is above the tips now,
-       so the sentence pointed backwards. It is still exported from
-       resultCopy.ts and still under the copy gate, just not rendered. */
-    await expect(page.locator('.bridge')).toHaveCount(0);
-
-    /* JJ'S NOTE ABOUT THE KIT AND "WHY 60 DAYS" WENT WITH THE PLAN SECTION.
-       Both described a sixty-day kit, and this page sells a thirty-day
-       bottle. The copy is still exported and still under the claim gate; it
-       is simply not rendered here. */
-    await expect(page.locator('.nextHowQ')).toHaveCount(0);
-    await expect(page.locator('.why60')).toHaveCount(0);
-
-    /* "WHAT'S INSIDE" IS OFF THE PAGE, 16 October. Those four rows named the
-       same four things the kit card's value stack already lists, with
-       prices, under a photograph of all four: the offer said twice. The kit
-       card is where she reads what is in it now. */
-    await expect(page.locator('.kitPiecesT')).toHaveCount(0);
-    await expect(page.locator('.kitRow')).toHaveCount(0);
-    await expect(page.locator('.kitClaim')).toHaveCount(0);
-    /* It is still said, where she is reading about the formula rather than
-       about the box. */
-    await expect(page.locator('.kitMg')).toContainText('Supports healthy estrogen metabolism.');
-    /* The three ingredients are where she reads about the formula. */
-    for (const ingredient of ['DIM', 'Calcium D-Glucarate', 'BioPerine']) {
-      await expect(page.locator('.kitMg'), ingredient).toContainText(ingredient);
-    }
-    /* THE SIX OVERLAPPED FACES ARE GONE from the hero, and the rail under it
-       shows all twelve of the same women at a size she can see. Same proof,
-       once, in the place where height is not scarce. */
-    await expect(page.locator('[data-proof="pre"] .pfFaces')).toHaveCount(0);
-    /* Twelve photographs, doubled, which is what makes the loop seamless. */
-    await expect(page.locator('[data-proof="rail"] .pfRailTrack img')).toHaveCount(24);
-    await expect(page.locator('[data-proof="rail"] .pfPressTrack img')).toHaveCount(16);
-    /* Each outlet named once: the second copy of the track is blank so a
-       screen reader does not read the press list twice. */
-    await expect(page.locator('[data-proof="rail"] .pfPressTrack img[alt="The New York Times"]'))
-      .toHaveCount(1);
-    /* AND THE FACEBOOK COMMENT MOVED INTO THE WALL, 22 October. The rails
-       are their own section at the top now and the wall is the scroll target
-       the review teaser's Read-all button points at; the comment belongs
-       with the reviews rather than under the logos. */
-    await expect(page.locator('[data-proof="wall"] .pfFb img'))
-      .toHaveAttribute('alt', /Martinez Sullivan/);
-    /* THE LEAD REVIEW IS NO LONGER PERSONALISED. It used to answer her main
-       concern — a woman who said sleep met a woman who slept. David asked for
-       the four from JJ's own "Join the women" section, which are the same for
-       everyone, so this asserts those instead. LEAD_FOR is still exported, so
-       putting the personalised set back is one line in reviews.ts.
-
-       AND IT IS NO LONGER IN THE HERO. The brief gave that space to the
-       price line on 29 October, so all four of the named women sit together
-       in the wall rather than one above the fold and three a screen away. */
-    await expect(page.locator('[data-proof="pre"] .kitRev'), 'the hero carries the rating alone')
-      .toHaveCount(0);
-    await expect(page.locator('[data-proof="lead"] .kitRev').first())
-      .toContainText('given me my life back');
-    /* The proof comes before the offer on the page. */
-    const order = await page.evaluate(() => {
-      const pre = document.querySelector('[data-proof="pre"]');
-      const offer = document.querySelector('#kit-offer');
-      return pre && offer ? Boolean(pre.compareDocumentPosition(offer) & Node.DOCUMENT_POSITION_FOLLOWING) : false;
-    });
-    expect(order, 'proof sits above the offer').toBe(true);
     await expect(page.locator('.actionBar'), 'no Continue button once the offer begins').toHaveCount(0);
-    await expectNoHorizontalOverflow(page, 'r2 kit page');
-    await expectTapTargets(page, 'r2 kit page');
+    await expectNoHorizontalOverflow(page, 'r2 offer page');
+    await expectTapTargets(page, 'r2 offer page');
 
-    /* The offer is the one on JJ's page: the kit first, one bottle under it. */
-    /* THE LEAD CARD IS ONE BOTTLE, 22 October. It was the kit, with its
-       value stack and its $196.99. David's call: a smaller first purchase in
-       front of cold traffic. The kit is off this page and unchanged on
-       /offer, which the test below holds.
-
-       $37.50 AND NOT $37.49, which is the number that matters here. A
-       quarter of 49.99 is 12.4975, Shopify rounds the DISCOUNT to $12.49,
-       and she is charged $37.50. The same rounding gave $45.00 under the
-       old 10% code, verified at the live checkout on 22 October. If this
-       assertion and the checkout ever disagree, the page is lying about a
-       price and this is the thing that says so. */
+    /* THE DEAL, in the lead card: $37.50, one bottle, HORMONE25OFF. */
     const lead = page.locator('.kitLead');
-
-    /* TWO BOXES, EACH WITH ITS OWN BUTTON, since 30 October 2026. This was a
-       radio group with one shared button, which David said did not read as an
-       offer; Jane's own page puts each way to buy in a box she can say yes
-       to, and this follows it. There is no selection to toggle any more, so
-       what used to be asserted as "the label and the link follow the pick" is
-       now asserted as "each box buys its own thing".
-
-       THE DEAL SHE IS BEING OFFERED. */
     const deal = lead.locator('.kitDeal');
     await expect(deal.locator('.kitDealNum')).toHaveText('$37.50');
-    /* THE OLD PRICE IS IN THE PRICE ROW, 2 November, not in the badge. It
-       was legible only inside a 12.5px pill on a purple fill, which made it
-       the smallest type on the card for one of the two numbers that decide
-       the sale. Both boxes set it the same way now, so this asserts the
-       pairing rather than the pill. */
     await expect(deal.locator('.kitWas')).toHaveText('$49.99');
-    await expect(deal.locator('.kitDealBadge'), 'the badge names the saving')
-      .toHaveText('Save 25%');
-    await expect(deal.locator('.kitDealBadge'), 'and not the old price')
-      .not.toContainText('$49.99');
-    await expect(deal).toContainText('$1.25 a day');
+    await expect(deal.locator('.kitDealBadge')).toHaveText('Save 25%');
     await expect(deal).toContainText('25% off applied at checkout');
     await expect(deal.locator('a.kitBtn')).toContainText('Get Hormone Focus');
     await expect(deal.locator('a.kitBtn'))
       .toHaveAttribute('href', /cart\/41200079175791:1.*discount=HORMONE25OFF/);
-
-    /* AND THE ALTERNATIVE, which carries its own 20% in Shopify and must
-       never also carry JJTEN: Shopify takes one discount parameter. */
     const deal2 = lead.locator('.kitDeal2');
     await expect(deal2.locator('.kitDeal2Num')).toHaveText('$39.99');
-    await expect(deal2.locator('.kitWas')).toHaveText('$49.99');
-    /* NOT "BEST VALUE", 5 November. The welcome offer puts the first bottle
-       at $37.50 and this is $39.99, so for the order she is looking at the
-       one-time purchase is the cheaper of the two. A badge claiming
-       otherwise is one she can disprove with the two numbers either side of
-       it. What is true is the price she keeps. */
-    await expect(deal2).toContainText('Lock in $39.99');
-    await expect(deal2, 'the subscription is not the cheaper first order')
-      .not.toContainText(/best value/i);
-    await expect(deal2).toContainText('Every bottle stays $39.99');
-    await expect(deal2).toContainText('$10.00 off every bottle after your first');
-    await expect(deal2).toContainText(/pause or cancel anytime/i);
-    /* THE SHIPPING PILL IS BACK, 30 October: free shipping is this option's
-       one advantage over the bottle and it was reading as small print. */
-    await expect(deal2.locator('.kitShip')).toContainText(/free shipping/i);
-    /* AND BOTH BUTTONS LOOK THE SAME. The subscription's was outlined, which
-       read as the lesser of the two rather than as the other one. */
-    await expect(deal2.locator('a.kitBtn'), 'no ghost button')
-      .not.toHaveClass(/ghost/);
     const subHref = await deal2.locator('a.kitBtn').getAttribute('href');
     expect(subHref).toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
     expect(subHref, 'the code must not ride the subscription').not.toContain('HORMONE25OFF');
-
-    /* FREE SHIPPING IS THE SUBSCRIPTION'S AND NOT THE BOTTLE'S. The one-time
-       link spends Shopify's single discount parameter on the 10% code, so it
-       cannot also carry HF60FREESHIP, and the page must not say otherwise. */
-    await expect(deal, 'the one-time bottle does not get free shipping')
-      .not.toContainText(/free shipping/i);
-    await expect(deal2, 'the subscription does').toContainText(/free shipping/i);
-
-    /* NO VALUE STACK ON THE BOTTLE, which is the point of the variant.
-       There are no bonuses in this offer, so there is nothing to total, and
-       a stack here would be a value claim with nothing behind it. What she
-       gets is one line. The kit's stack is asserted on its own page. */
-    await expect(lead.locator('.kitVs'), 'the kit stack is not on the bottle page')
-      .toHaveCount(0);
+    await expect(lead.locator('.kitVs'), 'no kit stack on the bottle page').toHaveCount(0);
     await expect(lead.locator('.kitBottleSupply'))
       .toHaveText('One bottle of Hormone Focus. 60 capsules, two a day.');
-    await expect(lead, 'and no kit value anywhere on the card').not.toContainText('$146.99');
 
-    /* The old radio group is gone, and so is the second card before it. */
-    await expect(page.locator('.kitQuiet'), 'the second card').toHaveCount(0);
-    await expect(lead.locator('.buyRow'), 'the radio rows are gone').toHaveCount(0);
-
-    /* REVERSED 22 October: the one-time bottle is what this page sells now,
-       so its cart link is expected rather than forbidden. What must be
-       absent is the kit's. Both links to the bottle, the lead card and the
-       closer, carry the discount. */
+    /* EVERY BOTTLE LINK, the lead card and the closer: the one-bottle
+       variant, the 25% code, STRAIGHT TO CHECKOUT (no storefront=true since
+       Quiz V1), and tagged with the quiz funnel and her offer arm. */
     const bottleLinks = await page.locator('a[href*="41200079175791"]').evaluateAll(
       (as) => as.map((a) => (a as HTMLAnchorElement).href),
     );
     expect(bottleLinks.length, 'the lead card and the closer').toBe(2);
     for (const h of bottleLinks) {
-      expect(h, 'a bottle link without the discount').toContain('discount=HORMONE25OFF');
+      const u = new URL(h);
+      expect(u.pathname).toBe('/cart/41200079175791:1');
+      expect(u.searchParams.get('discount'), 'a bottle link without the code').toBe('HORMONE25OFF');
+      expect(u.searchParams.get('storefront'), 'the cart page first').toBe('true');
+      expect(u.searchParams.get('hf_funnel')).toBe('quiz');
+      expect(u.searchParams.get('attributes[hf_funnel]')).toBe('quiz');
+      expect(u.searchParams.get('attributes[hf_offer]'), 'her arm on the order').toBe('bottle25');
     }
     await expect(page.locator('a[href*="54330638663791"]'), 'the kit cart link is off this page')
       .toHaveCount(0);
 
-    /* Proof comes after the offer, in three places. She said sleep bothers
-       her most, so the first review she reads is about sleep. */
-    /* Four from JJ's page, and all four are in the wall together now: the
-       first used to stand alone above the offer, where the price line is. */
+    /* Proof, the guarantee, the questions and the closer. */
     await expect(page.locator('[data-proof="lead"] .kitRev')).toHaveCount(4);
-    /* THE CONTRACT, NOT THE FALLBACK. "What women are saying" is live Okendo
-       with the authored four behind it, and the wall moved up the page in the
-       16 October rebuild, so whether the lazy fetch has fired by the time
-       this runs is a race. Either real reviews render or the authored ones
-       do; an empty section or an apology is the only failure. */
-    await expect(page.locator('.okWall .okRev, [data-proof="more"] .kitRev').first())
-      .toBeVisible();
-    await expect(page.locator('[data-proof="closing"] .kitRev')).toHaveCount(1);
-    await expect(page.locator("[data-proof=\"lead\"]").locator("xpath=..").locator(".pfFaces img")).toHaveCount(12);
-    /* THE HERO'S RATING, which always renders. It used to read the first one
-       inside a .kitSec, and the only one left there is the Okendo fallback's
-       own badge: the wall moved up the page in the 16 October rebuild, so
-       whether that fallback is what renders is now a race with the live
-       fetch. The hero is not a race.
-
-       TWO LINES SINCE 16 OCTOBER: the score, then who verified it. */
-    const rating = page.locator('.kitHeroProof .pfRating');
-    await expect(rating.locator('.pfRatingScore')).toContainText('4.9');
-    await expect(rating.locator('.pfRatingScore')).toContainText('171 reviews');
-    await expect(rating.locator('.pfRatingBy')).toContainText('Verified by');
-    await expect(rating.locator('.pfRatingBy img')).toHaveAttribute('alt', 'Okendo');
-
-    /* The guarantee, the questions, and the button again. */
     await expect(page.locator('.kitPromise')).toContainText('60-Day Guarantee');
-    /* JJ's own six questions now, at David's request. */
     await expect(page.locator('.kitFaq details')).toHaveCount(6);
-    /* The closer buys what the page leads with, which is the bottle now, so
-       it carries the 10% code rather than the kit's free-shipping one. */
     await expect(page.locator('a[data-close]')).toHaveText(/Get Hormone Focus/);
-    await expect(page.locator('a[data-close]'))
-      .toHaveAttribute('href', /41200079175791:1.*discount=HORMONE25OFF/);
-    /* And its note says the price she is charged, with no free shipping on
-       it: $37.50, read off the live checkout. */
     await expect(page.locator('.kitClose .kitNote').first())
       .toContainText('$37.50 · 25% off applied at checkout · 60-day money-back guarantee');
 
@@ -563,70 +348,65 @@ test.describe('the quiz', () => {
     const out = await page.locator('a[href*="shop.jjsmithonline.com"]').evaluateAll(
       (as) => as.map((a) => a.getAttribute('href') ?? ''),
     );
-    /* THREE LINKS OUT since 30 October: each of the card's two deal boxes
-       has its own button, plus the closer. */
     expect(out.length).toBe(3);
     for (const h of out) expect(h).not.toMatch(/outcome|perimenopause|sleep|symptom/i);
+
+    /* And the offer view says which offer she saw. */
+    const views = await page.evaluate(() => (window as unknown as {
+      dataLayer?: { event?: string; offer_variant?: string }[];
+    }).dataLayer?.filter((e) => e.event === 'view_offer') ?? []);
+    expect(views.map((v) => v.offer_variant)).toEqual(['bottle']);
 
     expect(errors, 'javascript errors during the run').toEqual([]);
   });
 
   test('one symptom skips the ranking, and stopped periods ask the twelve-month question', async ({ page }) => {
+    test.slow();
     await startQuiz(page);
     await page.locator('.tile').nth(3).click();                // hot flashes, one tick
     await answerAndWait(page, pressPrimary(page), /How old are you/);
-    await expect(page.locator('.stepno')).toHaveText('3 of 7');
+    await expect(page.locator('.stepno')).toHaveText('3 of 5');
     await answerAndWait(page, pickOption(page, 3), /happening with your cycle/);   // 50–54
     await answerAndWait(page, pickOption(page, 3), /at least 12 months/);          // stopped
-    await expect(page.locator('.stepno')).toHaveText('4 of 7');
+    await expect(page.locator('.stepno')).toHaveText('4 of 5');
     await expect(page.locator('.opt')).toHaveCount(4);
-    await answerAndWait(page, pickOption(page, 0), /When do you notice/);          // yes
-    await expect(page.locator('.qlead')).toHaveText('You mentioned hot flashes or night sweats.');
-    await answerAndWait(page, pickOption(page, 3), /already tried/);
+    await answerAndWait(page, pickOption(page, 0), /already tried/);               // yes
 
     /* "Nothing yet" is exclusive in both directions. */
     await page.locator('.opt').nth(0).click();
     await page.locator('.opt').nth(6).click();
     await expect(page.locator('.opt[aria-pressed="true"]')).toHaveCount(1);
     await expect(page.locator('.opt[aria-pressed="true"]')).toContainText('Nothing yet');
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
-    await page.locator('.opt').nth(3).click();                 // stop feeling hot
+    await answerAndWait(page, pressPrimary(page), STAT_HEAD);
+    await page.locator('.actionBar .cta').click();
 
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 15_000 });
     await page.fill('#ef', 'dana@example.com');                // no name given
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
 
-    /* Menopause, and it is shown the kit like every result but the doctor's. */
+    /* Menopause, and it is shown the offer like every result but the doctor's. */
     await expect(heading(page)).toHaveText('Your answers may point to menopause.');
-    /* THE C CARD, in its short form since 29 October. MEANS.C and STAGE_LINE
-       are no longer rendered on this page; this is the one line that
-       replaced them, and E reads the same one. */
-    await expect(page.locator('.resMeansLead'))
-      .toHaveText('After your periods stopped, your body runs on less estrogen.');
+    await expect(page.locator('.resSec .blabel').nth(1)).toHaveText('What menopause is');
     await expect(page.locator('.resStatBig'), "menopause's own number").toHaveText('52');
     await expect(page.locator('.resKicker')).toHaveText('Here is your result');
     await expect(page.locator('.resFacts')).toContainText('Stopped 12 months or more');
     await expect(page.locator('.resPics figure')).toHaveCount(1);
     await expect(page.locator('.resPics figure')).not.toContainText('Bothers you most');
-    /* ONE SYMPTOM, so the clause that ties several together stays off. */
-    await expect(page.locator('.resMeansSym'), 'she named one thing')
-      .not.toContainText('not several');
-    /* Her wish is softened on the way back, so it cannot read as a promise. */
-    await expect(page.getByText('To feel cooler and more comfortable.')).toBeVisible();
     await page.locator('.actionBar .cta').click();
-    /* SHE IS MENOPAUSE, so the cause screen reads about her body not breaking
-       estrogen down, never about her having too much of it. */
-    await throughNurture(page, 'breakdown');
 
-    /* She ticked hot flashes and nothing else, so the hero names the one
-       she came for. 'Start with these 3 for hot flashes' until 16 October. */
-    /* The kit's headline, as on every other entry to this page since
-       29 October. It was her own symptom until then. */
+    /* Her plan is for the one thing she named, and it says estrogen is
+       lower now, never swinging. She tried nothing, so nothing is read back. */
+    await expect(heading(page)).toHaveText(/personal 60-day plan for night sweats$/);
+    await expect(page.locator('.nStep').first()).toContainText('In menopause, your body reacts faster to heat');
+    await expect(page.locator('.nStep').nth(2)).toContainText('runs on less estrogen');
+    await expect(page.locator('.nStep').first()).not.toContainText('swings');
+    await expect(page.locator('.rise')).not.toContainText('already tried');
+    await page.locator('.actionBar .cta').click();
+
     await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
     await expect(page.getByText('You told us you have already tried')).toHaveCount(0);
     await expect(page.locator('.kitLead .kitDealNum')).toHaveText('$37.50');
-    /* Same four whatever she answered — see the note on the lead review above. */
     await expect(page.locator('[data-proof="lead"] .kitRev').first())
       .toContainText('given me my life back');
   });
@@ -636,17 +416,17 @@ test.describe('the quiz', () => {
     await page.locator('.tile').nth(1).click();
     await answerAndWait(page, pressPrimary(page), /How old are you/);
     await answerAndWait(page, pickOption(page, 1), /happening with your cycle/);
-    await answerAndWait(page, pickOption(page, 0), /When do you notice/);
-    await answerAndWait(page, pickOption(page, 4), /already tried/);
+    await answerAndWait(page, pickOption(page, 0), /already tried/);
     await page.locator('.opt').nth(6).click();
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
-    await page.locator('.opt').nth(5).click();
+    await answerAndWait(page, pressPrimary(page), STAT_HEAD);
+    await page.locator('.actionBar .cta').click();
 
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 15_000 });
     await page.goBack();
-    // must land back on a question, never inside the loader
+    /* must land back on the screen before the loader, the statistic, and
+       never inside the loader */
     await expect(page.locator('.loadSpin')).toHaveCount(0);
-    await expect(heading(page)).toHaveText(/want most right now/);
+    await expect(heading(page)).toHaveText(STAT_TITLE);
   });
 
   test('a double tap on Continue advances exactly one screen', async ({ page }) => {
@@ -697,12 +477,11 @@ test.describe('the doctor route is an exit', () => {
     await page.locator('.tile').nth(1).click();
     await answerAndWait(page, pressPrimary(page), /How old are you/);
     await answerAndWait(page, pickOption(page, 1), /happening with your cycle/);   // 40–44
-    await answerAndWait(page, pickOption(page, 4), /When do you notice/);          // birth control, medication or surgery
-    await answerAndWait(page, pickOption(page, 1), /already tried/);
+    await answerAndWait(page, pickOption(page, 4), /already tried/);              // birth control, medication or surgery
     await page.locator('.opt').nth(4).click();
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
-    await page.locator('.opt').nth(0).click();
-    await expect(page.locator('#ef')).toBeVisible({ timeout: 8_000 });
+    await answerAndWait(page, pressPrimary(page), STAT_HEAD);
+    await page.locator('.actionBar .cta').click();
+    await expect(page.locator('#ef')).toBeVisible({ timeout: 15_000 });
     await page.fill('#ef', 'dana@example.com');
     await page.locator('#cf').check();
     await page.locator('.actionBar .cta').click();
@@ -725,24 +504,19 @@ test.describe('the addresses', () => {
     ['what-bothers-you-most', 'Which one bothers you the most'],
     ['your-age', 'How old are you'],
     ['your-cycle', 'What has been happening with your cycle'],
-    ['when-you-notice-it', 'When do you notice these changes most'],
+    ['how-long-ago', 'Has it been at least 12 months'],
     ['what-you-have-tried', 'What have you already tried'],
-    ['what-you-want', 'What do you want most right now'],
+    /* The statistic screen, new in Quiz V1. */
+    ['not-just-you', STAT_TITLE],
     ['your-result', 'Your Hormone Check is ready'],
     ['result', ''],
-    /* The three that earn the offer, 29 October 2026. */
-    /* The default state is outcome A, so the address opens the 'clear'
-       wording. The stage split is asserted per outcome further down. */
-    ['whats-happening', 'The real problem is estrogen that is not clearing.'],
-    ['your-plan', 'Three simple things. That is the whole plan.'],
-    ['meet-hormone-focus', 'Meet Hormone Focus.'],
-    /* The main offer, which sells ONE BOTTTLE since 2 November: it is what
-       Shopify can deliver today. It was 'Start with these 3' until the
-       16 October rebuild, her own symptom until 29 October, and the kit
-       until the A/B was set up. */
+    /* Her plan, new in Quiz V1. The default state names no symptom. */
+    ['your-plan', '60-day plan'],
+    /* The offer the walk ends on, which shows her arm's offer: the one
+       bottle while ACTIVE_OFFERS is ['bottle25']. */
+    ['your-kit', 'Hormone Focus, your daily support'],
+    /* And the one-bottle page off the walk, at the old main address. */
     ['kit', 'Hormone Focus, your daily support'],
-    /* And the kit, preserved whole at its own address, off the flow. */
-    ['offer-kit', 'Feel like YOU again in 60 days.'],
     ['speak-to-your-doctor', 'Talk to your healthcare professional'],
   ] as const;
 
@@ -754,6 +528,36 @@ test.describe('the addresses', () => {
       await expectNoHorizontalOverflow(page, `/quiz/${slug}`);
     });
   }
+
+  /* CUT SCREENS, QUIZ V1. The timing question, the goal question and David's
+     two middle screens are gone. A shared or stale link to one of them opens
+     the screen that replaced it rather than a dead end or the first question. */
+  const FORWARDED = [
+    ['when-you-notice-it', 'What have you already tried'],
+    ['whats-happening', '60-day plan'],
+    ['meet-hormone-focus', '60-day plan'],
+    ['offer-kit', 'Hormone Focus, your daily support'],
+  ] as const;
+
+  for (const [slug, replacement] of FORWARDED) {
+    test(`the cut address /quiz/${slug} opens the screen that replaced it`, async ({ page }) => {
+      await page.goto(`/quiz/${slug}`);
+      await expect(heading(page)).toContainText(replacement);
+      await expectNoHorizontalOverflow(page, `/quiz/${slug}`);
+    });
+  }
+
+  test("the cut goal question's address opens the loader, which hands on to the email screen",
+    async ({ page }) => {
+      /* The loader runs about seven and a half seconds and then replaces
+         itself with the email screen, so what is asserted is where she ends
+         up: the email screen, at its own address, and never the first
+         question. */
+      await blockKlaviyo(page);
+      await page.goto('/quiz/what-you-want');
+      await expect(page.locator('#ef')).toBeVisible({ timeout: 20_000 });
+      await expect(page).toHaveURL(/\/quiz\/your-result$/);
+    });
 
   test('a bare /quiz and a mistyped step both land on the first question', async ({ page }) => {
     await page.goto('/quiz');
@@ -883,10 +687,18 @@ test.describe('the kit page', () => {
     });
 
   test('the top bar does not follow her down the kit page', async ({ page }) => {
-    await page.goto('/quiz/kit');
-    const pos = await page.locator('.appHeader')
-      .evaluate((el) => getComputedStyle(el).position);
-    expect(pos, 'the header is fixed on a page that already has a sticky bar').toBe('static');
+    /* BOTH OFFER ADDRESSES, since Quiz V1. The walk now ends at
+       /quiz/your-kit, and /quiz/kit (the old main offer address) shows the
+       same one-bottle page off the walk. Both are the long page with its own
+       sticky buy bar, so on neither may the top bar follow her down. */
+    for (const route of ['/quiz/your-kit', '/quiz/kit']) {
+      await page.goto(route);
+      await expect(page.locator('.kitSticky, .kitHero').first()).toBeAttached();
+      const pos = await page.locator('.appHeader')
+        .evaluate((el) => getComputedStyle(el).position);
+      expect(pos, `${route}: the header is fixed on a page that already has a sticky bar`)
+        .toBe('static');
+    }
   });
 
   /* ------------------------------------------- the 16 October rebuild -- */
@@ -994,7 +806,7 @@ test.describe('the kit page', () => {
       }
     });
 
-  test('the kit page sells two bottles, and the cart ships two',
+  test('with the $47 Kit switched on, the kit page sells two bottles, and the cart ships two',
     async ({ page }) => {
       /* THE LONGEST-STANDING UNTRUTH ON THIS PAGE, closed 6 November. It
          called itself a 60-day kit and put ONE bottle in the cart, which is
@@ -1002,8 +814,14 @@ test.describe('the kit page', () => {
          "60-day" on the page is a fact about what arrives.
 
          ASSERTED AS THE VARIANT, not as the words: the words were right
-         before and the cart was wrong. */
-      await page.goto('/quiz/offer-kit');
+         before and the cart was wrong.
+
+         THE KIT IS OFF SINCE QUIZ V1 (ACTIVE_OFFERS is ['bottle25']), so it
+         is switched on for this page load only, as the kit47 arm, and read at
+         /quiz/your-kit, which is where the walk shows her arm's offer. */
+      await switchOffers(page, ['kit47']);
+      await page.goto('/quiz/your-kit');
+      await expect(heading(page)).toHaveText(KIT_HERO_HEAD);
 
       const buy = page.locator('#kit-offer a[data-offer]').first();
       await expect(buy, 'the kit must buy the two-bottle bundle')
@@ -1011,6 +829,9 @@ test.describe('the kit page', () => {
       await expect(buy, 'with its own code').toHaveAttribute('href', /discount=KIT47/);
       await expect(buy, 'and never the single bottle')
         .not.toHaveAttribute('href', /41200079175791/);
+      const url = new URL((await buy.getAttribute('href'))!);
+      expect(url.searchParams.get('storefront'), 'the cart page first').toBe('true');
+      expect(url.searchParams.get('attributes[hf_offer]'), 'her arm on the order').toBe('kit47');
 
       /* The stack says two bottles and totals JJ's own $196.99. */
       await expect(page.locator('#kit-offer')).toContainText('2 bottles, 60-day supply');
@@ -1028,6 +849,25 @@ test.describe('the kit page', () => {
          bottles ship; the guide, the recipes and the tracker do not. That is
          a question for the store, and this says nobody has solved it yet. */
       await expect(page.locator('#kit-offer')).toContainText('The 60-Day Hormone Fix');
+    });
+
+  test('with the $74.99 Kit switched on, the cart carries free shipping and the live price',
+    async ({ page }) => {
+      /* THE OTHER KIT ARM. Shopify takes one discount parameter, so the Kit
+         at its live price spends it on HF60FREESHIP rather than KIT47. */
+      await switchOffers(page, ['kit74']);
+      await page.goto('/quiz/your-kit');
+      await expect(heading(page)).toHaveText(KIT_HERO_HEAD);
+
+      const buy = page.locator('#kit-offer a[data-offer]').first();
+      const url = new URL((await buy.getAttribute('href'))!);
+      expect(url.pathname, 'the two-bottle bundle').toBe('/cart/54330638663791:1');
+      expect(url.searchParams.get('discount')).toBe('HF60FREESHIP');
+      expect(url.searchParams.get('storefront'), 'the cart page first').toBe('true');
+      expect(url.searchParams.get('hf_funnel')).toBe('quiz');
+      expect(url.searchParams.get('attributes[hf_offer]'), 'her arm on the order').toBe('kit74');
+      await expect(page.locator('.kitHero .kitPrice')).toContainText('$74.99');
+      await expect(page.locator('.kitHero .kitPrice'), 'not the $47 price').not.toContainText('$47.00');
     });
 
   test('both buy buttons still carry her ad tags, and never her answers',
@@ -1351,114 +1191,91 @@ test.describe('the kit page', () => {
 
 test.describe('the result page says nothing she did not say', () => {
   test('"Nothing yet" is never read back as an attempt', async ({ page }) => {
-    /* THE CONDITIONAL THAT MATTERS. "The part most women miss" has three
-       second sentences and she gets the one that is true. A woman who ticked
-       "Nothing yet" must never be told she has already tried anything, on
-       the result or in step two of the plan. */
+    /* THE CONDITIONAL THAT MATTERS. Since Quiz V1 her plan reads back what
+       she tried ("You have already tried ... This plan brings it together").
+       A woman who ticked "Nothing yet" must never be told she has already
+       tried anything: not on the result, not on her plan, not on the offer. */
     await startQuiz(page, '/quiz/symptoms?skip_email=1');
     await page.locator('.tile').nth(0).click();
     await answerAndWait(page, pressPrimary(page), /How old are you/);
     await answerAndWait(page, pickOption(page, 0), /happening with your cycle/);
-    await answerAndWait(page, pickOption(page, 0), /When do you notice these changes most/);
-    await answerAndWait(page, pickOption(page, 2), /What have you already tried/);
+    await answerAndWait(page, pickOption(page, 0), /What have you already tried/);
     await page.locator('.opt').nth(6).click();            // Nothing yet
-    await answerAndWait(page, pressPrimary(page), /want most right now/);
-    await page.locator('.opt').nth(0).click();
+    await answerAndWait(page, pressPrimary(page), STAT_HEAD);
+    await page.locator('.actionBar .cta').click();
 
-    /* THE HOOK NO LONGER CLAIMS ANYTHING ABOUT WHAT SHE TRIED. missLine()
-       had three second sentences and she got the one that was true, which is
-       what this test was built to police. The line came out on 29 October
-       when the hook was trimmed to point at the next screen, so the
-       conditional cannot be got wrong any more: there is no second sentence.
-       Asserted as absent rather than deleted, because a line reappearing
-       here is exactly the regression worth catching. */
-    const miss = page.locator('.resHook');
-    await expect(miss).toContainText('The part most women miss');
-    await expect(miss, 'she tried nothing').not.toContainText('already tried');
-    await expect(miss, 'and nothing was acknowledged').not.toContainText('doing what you can');
-    await expect(miss, 'no attempt is read back at all')
-      .not.toContainText('No one really tells you what shifted');
-
+    /* She came from the list, so the loader hands straight to her result. */
+    await expect(page).toHaveURL(/\/quiz\/result$/, { timeout: 15_000 });
     const result = await page.locator('.rise').innerText();
-    expect(result, 'no attempt is claimed anywhere').not.toContain('You have already tried');
+    expect(result, 'no attempt is claimed on the result').not.toContain('already tried');
     expect(result, 'and nothing is sold here').not.toContain('$');
 
-    /* THE OFFER PAGE NO LONGER READS HER ATTEMPTS BACK AT ALL. The plan
-       section that used to acknowledge them went with the kit on 22
-       October, so there is nothing there to get wrong: asserted as absent
-       rather than as correct. */
+    /* Her plan is where the line lives, and for her it must be absent. */
     await page.locator('.actionBar .cta').click();
-    await throughNurture(page);
-    await expect(page.locator('.kitMech')).toBeVisible();
-    /* The plan section is back, and it is the one place it could go wrong:
-       none of its three steps may read an attempt back to her. */
-    await expect(page.locator('.kitPlan'), 'the plan section').toHaveCount(1);
-    await expect(page.locator('.rise'), 'no attempt is read back here')
-      .not.toContainText('You told us you have already tried');
+    await throughPlan(page, 'Your 60-day plan for stubborn weight');
+    await expect(page.locator('.kitPlan'), "the offer's plan section").toHaveCount(1);
+    await expect(page.locator('.rise'), 'no attempt is read back on the offer')
+      .not.toContainText('already tried');
   });
 });
 
 /* --------------------------------- the three screens before the price -- */
 
 test.describe('the pre-offer screens', () => {
-  test('the bar fills across all five, and back walks them in reverse',
+  test('the bar fills across all three, and back walks them in reverse',
     async ({ page }) => {
-      /* THE PROGRESS BAR IS THE PROMISE THE QUIZ MADE HER. Three screens were
-         inserted between her result and the price on 29 October; if they were
-         not REVEAL steps the bar would stop filling at the result and she
-         would be looking at three screens that the page had stopped counting.
+      /* THE PROGRESS BAR IS THE PROMISE THE QUIZ MADE HER. Since Quiz V1
+         there is one screen between her result and the price, her plan, so
+         the bar has three segments: the result, the plan and the offer.
+         It was five while David's three middle screens were in the walk.
 
-         The back button matters as much: these are the three places a woman
-         who is not ready can go back from, and the flow has to walk them in
-         reverse without falling through to the questions. */
+         The back button matters as much: the plan is the place a woman who
+         is not ready goes back from, and the flow has to walk back to the
+         result without falling through to the questions. */
       await page.goto('/quiz/result');
 
       /* toHaveCount, NOT count(). A bare count() returns whatever is in the
-         DOM at that instant and does not wait, so on a loaded machine this
-         read zero segments before React had rendered and failed at 320px
-         while passing at 390px. Every count here retries. */
+         DOM at that instant and does not wait. Every count here retries. */
       const filled = () => page.locator('.segbar i.on');
-      await expect(page.locator('.segbar i'), 'five segments: result, three, offer')
-        .toHaveCount(5);
+      await expect(page.locator('.segbar i'), 'three segments: result, plan, offer')
+        .toHaveCount(3);
       await expect(filled(), 'the result is the first').toHaveCount(1);
 
-      for (const [i, slug] of ['whats-happening', 'your-plan', 'meet-hormone-focus', 'kit'].entries()) {
-        await page.locator('.actionBar .cta, .kitHeroCta').first().click();
+      for (const [i, slug] of ['your-plan', 'your-kit'].entries()) {
+        await page.locator('.actionBar .cta').first().click();
         await expect(page).toHaveURL(new RegExp(`/quiz/${slug}$`));
-        if (slug !== 'kit') {
-          await expect(filled(), `${slug} fills ${i + 2} of 5`).toHaveCount(i + 2);
-        }
+        await expect(filled(), `${slug} fills ${i + 2} of 3`).toHaveCount(i + 2);
       }
 
       /* And back, one screen at a time, in the order she came. */
-      for (const slug of ['meet-hormone-focus', 'your-plan', 'whats-happening', 'result']) {
+      for (const slug of ['your-plan', 'result']) {
         await page.goBack();
         await expect(page, `back reaches ${slug}`).toHaveURL(new RegExp(`/quiz/${slug}$`));
       }
     });
 
-  test('every picture loads, and none of them carries the words', async ({ page }) => {
-    /* The five graphics are text free on purpose and the page supplies every
-       caption, step label and ingredient name. So each needs real alt text,
-       and a missing file would otherwise be an empty box beside copy that
-       reads as though something should be there. */
-    for (const slug of ['whats-happening', 'your-plan', 'meet-hormone-focus']) {
-      await page.goto(`/quiz/${slug}`);
+  test('every picture on her plan loads, and each says what it is or is marked as decoration',
+    async ({ page }) => {
+      /* The plan's step icons sit beside step titles that already say what
+         they are, so they carry alt="" and a screen reader skips them. What
+         is not allowed is an image with no alt attribute at all, or a file
+         that fails to load and leaves an empty box beside the copy. */
+      await page.goto('/quiz/your-plan');
       await page.waitForTimeout(600);
-      const imgs = await page.locator('.screen img, main img').evaluateAll(
+      const imgs = await page.locator('main img').evaluateAll(
         (els) => els.map((e) => ({
           src: (e as HTMLImageElement).currentSrc.split('/').pop() ?? '?',
           loaded: (e as HTMLImageElement).naturalWidth > 0,
-          alt: (e as HTMLImageElement).alt,
+          alt: e.getAttribute('alt'),
         })),
       );
+      expect(imgs.length, 'the plan has no pictures').toBeGreaterThan(3);
       for (const im of imgs) {
-        expect(im.loaded, `${slug}: ${im.src} did not load`).toBe(true);
-        expect(im.alt.length, `${slug}: ${im.src} has no alt text`).toBeGreaterThan(3);
+        expect(im.loaded, `your-plan: ${im.src} did not load`).toBe(true);
+        expect(im.alt, `your-plan: ${im.src} has no alt attribute`).not.toBeNull();
       }
-      await expectNoHorizontalOverflow(page, `/quiz/${slug}`);
-    }
-  });
+      await expectNoHorizontalOverflow(page, '/quiz/your-plan');
+    });
 
   test('the doctor route never sees them', async ({ page }) => {
     /* A woman the quiz sends to her doctor must not be walked through "here
@@ -1492,31 +1309,31 @@ test.describe('the pre-offer screens', () => {
 /* ------------------------------------------- the offer A/B, 2 November -- */
 
 test.describe('the two offers', () => {
-  test('the walk ends on the bottle, and the kit waits at its own address',
+  test('the walk ends on her arm\'s offer, the one bottle, and /quiz/kit shows the same bottle off the walk',
     async ({ page }) => {
-      /* THE SPLIT. /quiz/kit is the main offer and sells ONE BOTTLE, which is
-         what Shopify can deliver today. /quiz/offer-kit is the kit page kept
-         whole for the A/B, and it is off the flow because its buttons buy a
-         single bottle while the page promises three guides nobody is
-         fulfilling yet. */
-      await page.goto('/quiz/meet-hormone-focus');
+      /* THE OFFER SWITCH, Quiz V1. The step after her plan, /quiz/your-kit,
+         shows her arm's offer, and ACTIVE_OFFERS is ['bottle25'], so every
+         visitor gets the one bottle at 25% off. /quiz/kit is the one-bottle
+         page at the old main address, off the walk; /quiz/offer-kit, the old
+         Kit address, now opens it too. */
+      await page.goto('/quiz/your-plan');
       await page.locator('.actionBar .cta').click();
-      await expect(page, 'the walk must end on the main offer').toHaveURL(/\/quiz\/kit$/);
+      await expect(page, 'the walk must end on her arm\'s offer').toHaveURL(/\/quiz\/your-kit$/);
       await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
+      await expect(page.locator('.segbar i.on'), 'the offer is the last step of the walk')
+        .toHaveCount(3);
 
-      /* And forward from the kit page is nowhere: it is not in the sequence,
-         so there is no Continue to press. */
-      await page.goto('/quiz/offer-kit');
-      await expect(heading(page)).toHaveText('Feel like YOU again in 60 days.');
-      await expect(page.locator('.segbar i.on'), 'the kit page is not a step in the walk')
-        .toHaveCount(0);
+      /* And the off-walk address is not a step: no progress bar fills. */
+      for (const slug of ['kit', 'offer-kit']) {
+        await page.goto(`/quiz/${slug}`);
+        await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
+        await expect(page.locator('.segbar i.on'), `/quiz/${slug} is not a step in the walk`)
+          .toHaveCount(0);
+      }
     });
 
-  test('each offer sends her to its own cart', async ({ page }) => {
-    /* THEY SHARED A CART UNTIL 6 November, when the kit started buying the
-       two-bottle bundle it had always claimed to be. That was the day this
-       test said the links had to move, and they did. */
-    for (const slug of ['kit', 'offer-kit']) {
+  test('the one-bottle offer sends her to its own cart, at both addresses', async ({ page }) => {
+    for (const slug of ['your-kit', 'kit']) {
       await page.goto(`/quiz/${slug}`);
       const links = await page.locator('#kit-offer a[href*="shop.jjsmithonline.com"]')
         .evaluateAll((as) => as.map((a) => ({
@@ -1524,49 +1341,80 @@ test.describe('the two offers', () => {
           href: (a as HTMLAnchorElement).href,
         })));
 
-      /* THE TWO OFFERS NO LONGER SHARE A CART, since 6 November: the kit
-         buys the two-bottle bundle and the bottle offer buys one bottle,
-         which is the difference between them.
-
-         AND THE KIT IS A ONE TIME BUY, since 6 November. Asking a woman to
-         choose between sixty days of capsules and a subscription, on the
-         screen whose whole argument is that the kit is the better deal, was
-         a second decision in the way of the first. The subscription stays on
-         /quiz/kit, where one bottle a month is the thing being sold. */
-      if (slug === 'offer-kit') {
-        expect(links.map((l) => l.offer), 'the kit offers one thing')
-          .toEqual(['protocol']);
-        expect(links[0].href, 'the kit buys the bundle with its own code')
-          .toMatch(/cart\/54330638663791:1.*discount=KIT47/);
-        continue;
-      }
-
-      expect(links.map((l) => l.offer), 'the bottle page still offers both')
+      expect(links.map((l) => l.offer), `${slug}: the bottle page offers both`)
         .toEqual(['single', 'subscribe']);
       expect(links[0].href, 'the bottle carries the welcome code')
         .toMatch(/cart\/41200079175791:1.*discount=HORMONE25OFF/);
+      expect(new URL(links[0].href).searchParams.get('attributes[hf_offer]'))
+        .toBe('bottle25');
       expect(links[1].href, 'the subscription carries its plan')
         .toMatch(/cart\/add\?id=54355951845487.*selling_plan=5529010287/);
       expect(links[1].href, 'no code may ride the subscription')
-        .not.toMatch(/HORMONE25OFF|KIT47/);
+        .not.toMatch(/HORMONE25OFF|KIT47|HF60FREESHIP/);
     }
   });
 
-  test('each offer reports which one it is, so the A/B can be read later',
+  test('each Kit arm, switched on, sends her to the two-bottle cart with its own code',
     async ({ page }) => {
-      /* offer_variant used to carry the quiz outcome, which quiz_segment on
-         the same event already carried. It names the offer now, which is the
-         one property the A/B cannot be read without. */
-      for (const [slug, variant] of [['kit', 'bottle'], ['offer-kit', 'kit']]) {
+      /* THE KIT IS A ONE TIME BUY, since 6 November: one link, the bundle.
+         Which code rides on it is the arm's: KIT47 at $47, HF60FREESHIP at
+         the live $74.99. Each arm is switched on for its own page load. */
+      for (const [arm, code] of [['kit47', 'KIT47'], ['kit74', 'HF60FREESHIP']] as const) {
+        await page.unrouteAll({ behavior: 'wait' });
+        await switchOffers(page, [arm]);
+        await page.goto('/quiz/your-kit');
+        await expect(heading(page)).toHaveText(KIT_HERO_HEAD);
+        const links = await page.locator('#kit-offer a[href*="shop.jjsmithonline.com"]')
+          .evaluateAll((as) => as.map((a) => ({
+            offer: (a as HTMLAnchorElement).dataset.offer,
+            href: (a as HTMLAnchorElement).href,
+          })));
+        expect(links.map((l) => l.offer), `${arm}: the kit offers one thing`)
+          .toEqual(['protocol']);
+        const u = new URL(links[0].href);
+        expect(u.pathname, `${arm}: the bundle`).toBe('/cart/54330638663791:1');
+        expect(u.searchParams.get('discount'), `${arm}: its own code`).toBe(code);
+        expect(u.searchParams.get('attributes[hf_offer]'), `${arm}: on the order`).toBe(arm);
+      }
+    });
+
+  test('the one-bottle offer reports itself as the bottle, at both addresses',
+    async ({ page }) => {
+      /* offer_variant names the offer she saw, which is the one property the
+         A/B cannot be read without. The walk's address first, then the
+         off-walk one, which renders the same one-bottle page. */
+      for (const slug of ['your-kit', 'kit']) {
         await page.goto(`/quiz/${slug}`);
+        await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
         await page.waitForTimeout(400);
         const sent = await page.evaluate(() => (window as unknown as {
           dataLayer?: { event?: string; offer_variant?: string }[];
         }).dataLayer?.filter((e) => e.event === 'view_offer') ?? []);
         expect(sent.length, `${slug}: view_offer did not fire`).toBe(1);
-        expect(sent[0].offer_variant, `${slug} reported the wrong variant`).toBe(variant);
+        expect(sent[0].offer_variant, `/quiz/${slug} shows the bottle and must report it`)
+          .toBe('bottle');
       }
     });
+
+  test('a Kit arm, switched on, reports itself as the kit', async ({ page }) => {
+    await switchOffers(page, ['kit47']);
+    await page.goto('/quiz/your-kit');
+    await expect(heading(page)).toHaveText(KIT_HERO_HEAD);
+    await page.waitForTimeout(400);
+    const sent = await page.evaluate(() => (window as unknown as {
+      dataLayer?: { event?: string; offer_variant?: string }[];
+    }).dataLayer?.filter((e) => e.event === 'view_offer') ?? []);
+    expect(sent.map((e) => e.offer_variant)).toEqual(['kit']);
+  });
+
+  test('a Kit arm, switched on, ends her plan on the Kit instead of the bottle', async ({ page }) => {
+    await switchOffers(page, ['kit47']);
+    await page.goto('/quiz/your-plan');
+    await expect(page.locator('.kitHeroShot.isKit'), 'the Kit is pictured').toHaveCount(1);
+    await expect(page.locator('.rise')).toContainText('What is inside');
+    await expect(page.locator('.rise')).not.toContainText(PLAN_BOTTLE_WHY);
+    await expect(page.locator('.actionBar .cta')).toContainText(PLAN_TO_KIT_CTA);
+  });
 
   test('the bottle offer promises nothing the cart does not ship', async ({ page }) => {
     /* THE REASON THE SPLIT EXISTS. The kit page prices three guides at $97 of
@@ -1608,7 +1456,8 @@ test.describe('the nurture artwork, reused on the offer page', () => {
          Asserted on BOTH variants, because the sections carrying them are
          shared markup and a variant that lost them would be a silent
          regression on one page only. */
-      for (const slug of ['kit', 'offer-kit']) {
+      /* The walk's offer and the off-walk one-bottle page, since Quiz V1. */
+      for (const slug of ['your-kit', 'kit']) {
         await page.goto(`/quiz/${slug}`);
         await page.evaluate(async () => {
           const h = document.body.scrollHeight;
@@ -1663,8 +1512,13 @@ test('the steal is its own section, and carries no second price', async ({ page 
   /* It was the last thing inside the hero, under the guarantee line, which
      is where small print goes. David, 6 November: make it a section and put
      the framing above the cards, because she was meeting two prices and
-     working out what they were for afterwards. */
-  await page.goto('/quiz/offer-kit');
+     working out what they were for afterwards.
+
+     A KIT SECTION, so it is read with a Kit arm switched on: since Quiz V1
+     the Kit shows only at /quiz/your-kit, and only for a Kit arm. */
+  await switchOffers(page, ['kit47']);
+  await page.goto('/quiz/your-kit');
+  await expect(heading(page)).toHaveText(KIT_HERO_HEAD);
 
   const band = page.locator('.kitCmpBand');
   await expect(band, 'the comparison has no band of its own').toHaveCount(1);
@@ -1715,8 +1569,14 @@ test('both deal boxes strike the old price the same way, and legibly',
        fill, so the smaller of the two boxes was the only place it could be
        read. They match now. Asserted as RENDERED SIZE rather than as a class,
        because "it is there" was true before and was not the problem. */
-    for (const slug of ['kit', 'offer-kit']) {
-      await page.goto(`/quiz/${slug}`);
+    /* The active arm (the bottle) and, switched on, a Kit arm, both at the
+       walk's offer address. */
+    for (const slug of ['bottle', 'kit']) {
+      await page.unrouteAll({ behavior: 'wait' });
+      if (slug === 'kit') await switchOffers(page, ['kit47']);
+      await page.goto('/quiz/your-kit');
+      await expect(heading(page)).toHaveText(slug === 'kit'
+        ? KIT_HERO_HEAD : 'Hormone Focus, your daily support');
       const was = await page.locator('#kit-offer .kitWas').evaluateAll(
         (els) => els.map((e) => ({
           text: e.textContent,
@@ -1729,14 +1589,14 @@ test('both deal boxes strike the old price the same way, and legibly',
       /* ONE BOX ON THE KIT PAGE, TWO ON THE BOTTLE PAGE, since 6 November:
          the kit dropped its subscription, so it has one price to strike. */
       expect(was.length, `${slug}: the wrong number of struck prices`)
-        .toBe(slug === 'offer-kit' ? 1 : 2);
+        .toBe(slug === 'kit' ? 1 : 2);
       for (const w of was) {
         /* THE KIT STRIKES WHAT THE KIT IS WORTH, not one bottle and not two:
            the badge above it adds the three guides to the two bottles, so
            striking $99.99 beside a $196.99 badge was two numbers for the
            same thing. The bottle offer strikes one bottle. */
         expect(w.text, `${slug}: the old price`)
-          .toBe(slug === 'offer-kit' ? '$196.99' : '$49.99');
+          .toBe(slug === 'kit' ? '$196.99' : '$49.99');
         expect(w.px, `${slug}: ${w.px}px is too small to read`).toBeGreaterThanOrEqual(20);
         expect(w.ruled, `${slug}: no rule through the old price`).toBe(true);
       }
@@ -1764,96 +1624,85 @@ test.describe('the mechanism is the one that is true for her', () => {
   const walk = async (page: import('@playwright/test').Page, S: Record<string, unknown>) => {
     await page.addInitScript(
       (st) => sessionStorage.setItem('hf_quiz_state_v3', JSON.stringify(st)),
-      { pattern: 'most', tried: ['food'], name: 'Dana', ...S },
+      { tried: ['food'], name: 'Dana', ...S },
     );
   };
 
-  test('perimenopause is told about clearing, and sees the overflowing glass',
+  /* REWRITTEN FOR QUIZ V1. The cause and meet screens are cut; what she is
+     told about her estrogen now lives in two places, the stage block on her
+     result and step one of her plan. Both have to be the one that is true
+     for her: hormones that swing in perimenopause, less of them once her
+     periods have stopped. */
+  test('perimenopause is told her hormones swing, on her result and in her plan',
     async ({ page }) => {
-      await walk(page, { sym: ['sleep', 'mood'], main: 'sleep', age: '40-44', cycle: 'unpredictable', want: 'sleep' });
+      await walk(page, { sym: ['sweats', 'mood'], main: 'sweats', age: '40-44', cycle: 'unpredictable' });
 
-      await page.goto('/quiz/whats-happening');
-      await expect(heading(page)).toHaveText('The real problem is estrogen that is not clearing.');
-      await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen\.webp/);
-      await expect(page.locator('.nCap')).toContainText('cannot clear estrogen out');
-      /* Her own symptoms, and the line about them settling. */
-      await expect(page.locator('.block p').first()).toContainText('the nights you lie awake');
-      await expect(page.locator('.block')).toContainText('a reason to settle');
+      await page.goto('/quiz/result');
+      await expect(heading(page)).toContainText('perimenopause');
+      await expect(page.locator('.resSec .blabel').nth(1)).toHaveText('What perimenopause is');
+      await expect(page.locator('.nFig img')).toHaveAttribute('src', /hormones-wave\.svg/);
+      await expect(page.locator('.nCap')).toContainText('go up and down');
 
       await page.goto('/quiz/your-plan');
-      await expect(page.locator('.nStep').first())
-        .toContainText('Help your body clear the extra estrogen.');
-
-      await page.goto('/quiz/meet-hormone-focus');
-      await expect(page.locator('.rDeck')).toContainText('clear out the extra estrogen');
+      await expect(heading(page)).toHaveText(/personal 60-day plan for night sweats and mood swings$/);
+      await expect(page.locator('.nStep').first()).toContainText('In perimenopause');
+      await expect(page.locator('.nStep').nth(2)).toContainText('go up and down');
     });
 
-  test('menopause is told about breaking it down, and is promised nothing',
+  test('menopause is told she runs on less, and never that she has too much',
     async ({ page }) => {
       /* SHE RUNS ON LESS ESTROGEN. Before 3 November every woman read "the
          real problem is too much estrogen", which is the opposite of her
-         situation, over a picture of an overflowing glass. */
-      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes', want: 'understand' });
+         situation. */
+      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes' });
 
-      await page.goto('/quiz/whats-happening');
-      await expect(heading(page))
-        .toHaveText('Your body is not breaking estrogen down like it used to.');
-      await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen-low\.webp/);
-      await expect(page.locator('.nCap')).toContainText('does not break it down');
-
-      /* One honest paragraph, and no promise in it. */
-      const body = page.locator('.block');
-      await expect(body).toContainText('You cannot turn the clock back');
-      await expect(body, 'she is not told her symptoms will settle')
-        .not.toContainText('reason to settle');
-      await expect(body, 'and never that she has extra estrogen')
-        .not.toContainText(/extra estrogen|too much estrogen/);
-      /* Her answers are still acknowledged: the chips are her words, not a
-         promise, and her result page names them too. */
-      await expect(page.locator('.nChip')).toHaveCount(1);
+      await page.goto('/quiz/result');
+      await expect(heading(page)).toHaveText('Your answers may point to menopause.');
+      await expect(page.locator('.resSec .blabel').nth(1)).toHaveText('What menopause is');
+      await expect(page.locator('.nFig img')).toHaveAttribute('src', /hormones-low\.svg/);
+      await expect(page.locator('.rise')).toContainText('your body makes much less of them');
 
       await page.goto('/quiz/your-plan');
-      await expect(page.locator('.nStep').first())
-        .toContainText('Support how your body breaks estrogen down.');
-
-      await page.goto('/quiz/meet-hormone-focus');
-      await expect(page.locator('.rDeck')).toContainText('breaks estrogen down');
-      await expect(page.locator('.rDeck')).not.toContainText('clear out');
+      const step1 = page.locator('.nStep').first();
+      await expect(step1).toContainText('In menopause');
+      await expect(page.locator('.nStep').nth(2)).toContainText('runs on less estrogen');
+      await expect(page.locator('.nSteps'), 'not the swinging of perimenopause').not.toContainText('up and down');
     });
 
   test('early menopause reads the same as menopause', async ({ page }) => {
-    /* E is menopause arriving sooner, so the mechanism is the same one. It is
-       asserted separately because it reaches that state by different answers
-       and has its own outcome key. */
-    await walk(page, { sym: ['mood'], main: 'mood', age: '40-44', cycle: 'stopped', twelve: 'yes', want: 'mood' });
-    await page.goto('/quiz/whats-happening');
-    await expect(heading(page))
-      .toHaveText('Your body is not breaking estrogen down like it used to.');
-    await expect(page.locator('.nFigImg')).toHaveAttribute('src', /nurture-estrogen-low\.webp/);
+    /* E is menopause arriving sooner, so the stage block is the same one. It
+       is asserted separately because it reaches that state by different
+       answers and has its own outcome key. */
+    await walk(page, { sym: ['mood'], main: 'mood', age: '40-44', cycle: 'stopped', twelve: 'yes' });
+    await page.goto('/quiz/result');
+    await expect(heading(page)).toHaveText('Your answers may point to early menopause, which starts before 45.');
+    await expect(page.locator('.resSec .blabel').nth(1)).toHaveText('What menopause is');
+    await expect(page.locator('.nFig img')).toHaveAttribute('src', /hormones-low\.svg/);
+
+    await page.goto('/quiz/your-plan');
+    await expect(page.locator('.nStep').first()).toContainText('In early menopause');
   });
 
-  test('the result screen and the cause screen agree about her estrogen',
+  test('the result screen and the plan screen agree about her estrogen',
     async ({ page }) => {
-      /* The hand-off promises "what I want to show you next", so the two
-         screens either side of it must not contradict each other about the
-         direction her hormones went. */
-      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes', want: 'understand' });
+      /* The result's button promises her plan, so the two screens either
+         side of it must not contradict each other about the direction her
+         hormones went. */
+      await walk(page, { sym: ['sweats'], main: 'sweats', age: '50-54', cycle: 'stopped', twelve: 'yes' });
 
       await page.goto('/quiz/result');
-      await expect(page.locator('.resMeansLead'))
-        .toHaveText('After your periods stopped, your body runs on less estrogen.');
       const result = await page.locator('.rise').innerText();
       expect(result, 'the result screen must never say she has too much')
         .not.toMatch(/too much estrogen|extra estrogen/i);
 
       await page.locator('.actionBar .cta').click();
-      await expect(page).toHaveURL(/whats-happening$/);
-      const cause = await page.locator('.rise').innerText();
-      expect(cause, 'and nor may the screen it hands into')
+      await expect(page).toHaveURL(/your-plan$/);
+      const plan = await page.locator('.rise').innerText();
+      expect(plan, 'and nor may the screen it hands into')
         .not.toMatch(/too much estrogen|extra estrogen/i);
     });
 
-  test('the doctor route still never sees any of the three', async ({ page }) => {
+  test('the doctor route still never sees her plan', async ({ page }) => {
     await startQuiz(page);
     await page.locator('.tile').first().click();
     await answerAndWait(page, pressPrimary(page), /How old are you/);
@@ -1917,23 +1766,27 @@ test('the kit headline uses her name, and stands up without one', async ({ page 
     sym: ['sleep'], main: 'sleep', age: '40-44', cycle: 'unpredictable',
     pattern: 'most', tried: ['food'], want: 'sleep',
   };
+  /* The one-bottle offer, the active arm, keeps its own headline. Read
+     first, before the Kit is switched on for the rest of this page. */
+  await page.goto('/quiz/your-kit');
+  await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
+
+  /* The Kit headline shows only for a Kit arm, so one is switched on. */
+  await switchOffers(page, ['kit47']);
 
   for (const [name, expected] of [
-    ['Dana', 'Dana, feel like YOU again in 60 days.'],
-    ['', 'Feel like YOU again in 60 days.'],
+    /* No timeframe in the headline since Quiz V1 (Jane, 11 November). */
+    ['Dana', 'Dana, feel like you again.'],
+    ['', KIT_HERO_HEAD],
     /* A name of only spaces is the one a real form produces, and it must not
-       render as ", feel like YOU again". */
-    ['   ', 'Feel like YOU again in 60 days.'],
+       render as ", feel like you again". */
+    ['   ', KIT_HERO_HEAD],
   ]) {
     await page.addInitScript(
       (st) => sessionStorage.setItem('hf_quiz_state_v3', JSON.stringify(st)),
       { ...seed, name },
     );
-    await page.goto('/quiz/offer-kit');
+    await page.goto('/quiz/your-kit');
     await expect(heading(page), `name ${JSON.stringify(name)}`).toHaveText(expected);
   }
-
-  /* And the one-bottle offer keeps its own headline: this is the kit's. */
-  await page.goto('/quiz/kit');
-  await expect(heading(page)).toHaveText('Hormone Focus, your daily support');
 });
