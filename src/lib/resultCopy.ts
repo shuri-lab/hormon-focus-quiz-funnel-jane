@@ -1093,10 +1093,9 @@ export const PLAN_BOTTLE_STORY =
 export const PLAN_BOTTLE_PUSH = 'Two capsules a day, from a woman who has been where you are. One bottle covers your first 30 days.';
 export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';
 
-/* Jane 12 Nov: one small line above the plan button so she knows an offer
-   waits. The price itself stays on the offer page. */
+/* Jane 12 Nov: one small curiosity line above the plan button, the same for
+   every offer. What the offer is, and its price, stay on the offer page. */
+export const PLAN_OFFER_TEASE_LINE = 'A special offer for taking the Hormone Check.';
 export const PLAN_OFFER_TEASE: Record<'kit74' | 'bottle25' | 'kit47', string> = {
-  bottle25: 'Your Hormone Check offer: 25% off your first bottle.',
-  kit47: 'Your Hormone Check offer: two bottles and the whole plan, for less than one bottle.',
-  kit74: 'Your Hormone Check offer: the full 60-day kit, with free shipping.',
+  bottle25: PLAN_OFFER_TEASE_LINE, kit47: PLAN_OFFER_TEASE_LINE, kit74: PLAN_OFFER_TEASE_LINE,
 };
