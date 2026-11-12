@@ -995,7 +995,7 @@ export const PLAN_PHASES: string[] = [
   'Days 46 to 60: Keep your momentum',
 ];
 
-export const PLAN_TO_KIT_CTA = 'GET JJ’S KIT NOW';
+export const PLAN_TO_KIT_CTA = 'Get my welcome offer';
 
 /* Direction 2, plan page closing: the four Kit items as her four steps. */
 export const KIT_STEPS_D2: string[] = [
@@ -1091,11 +1091,11 @@ export const PLAN_BOTTLE_WHY = 'That is why JJ made Hormone Focus.';
 export const PLAN_BOTTLE_STORY =
   'JJ started perimenopause at 38. As a nutritionist, she researched it like her life depended on it, and made Hormone Focus for this exact purpose. It has DIM, from the same family of compounds found in broccoli and cabbage, to support healthy estrogen metabolism.*';
 export const PLAN_BOTTLE_PUSH = 'Two capsules a day, from a woman who has been where you are. One bottle covers your first 30 days.';
-export const PLAN_BOTTLE_CTA = 'Start my plan with Hormone Focus';
+export const PLAN_BOTTLE_CTA = 'Get my welcome offer';
 
 /* Jane 12 Nov: one small curiosity line above the plan button, the same for
    every offer. What the offer is, and its price, stay on the offer page. */
-export const PLAN_OFFER_TEASE_LINE = 'A special offer for taking the Hormone Check.';
+export const PLAN_OFFER_TEASE_LINE = 'Your Hormone Check unlocked a special offer.';
 export const PLAN_OFFER_TEASE: Record<'kit74' | 'bottle25' | 'kit47', string> = {
   bottle25: PLAN_OFFER_TEASE_LINE, kit47: PLAN_OFFER_TEASE_LINE, kit74: PLAN_OFFER_TEASE_LINE,
 };
